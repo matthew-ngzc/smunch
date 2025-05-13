@@ -26,7 +26,7 @@ SMUNCH is a student-driven platform that facilitates group food ordering within 
 
 ## Technology Stack
 
-![React](https://img.shields.io/badge/Frontend-React.js-61DAFB?logo=react&logoColor=white&style=for-the-badge)
+![Vue](https://img.shields.io/badge/Frontend-Vue.js-42b883?logo=vue.js&logoColor=white&style=for-the-badge)
 ![Express](https://img.shields.io/badge/Backend-Express.js-000000?logo=express&logoColor=white&style=for-the-badge)
 ![MySQL](https://img.shields.io/badge/Database-MySQL-4479A1?logo=mysql&logoColor=white&style=for-the-badge)
 ![Bootstrap](https://img.shields.io/badge/Styling-Bootstrap-7952B3?logo=bootstrap&logoColor=white&style=for-the-badge)
