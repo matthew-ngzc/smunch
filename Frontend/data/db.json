@@ -1,3 +1,8 @@
 {
-    
+    "merchants": [ 
+                { "title": "Braek", "id": 1 },
+                { "title": "Floursh", "id": 2 },
+                { "title": "Koufu", "id": 3 },
+                { "title": "Onalu", "id": 4 } 
+            ]
 }
