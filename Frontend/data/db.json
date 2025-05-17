@@ -1,8 +1,8 @@
 {
-    "merchants": [ 
-                { "title": "Braek", "id": 1 },
-                { "title": "Floursh", "id": 2 },
-                { "title": "Koufu", "id": 3 },
-                { "title": "Onalu", "id": 4 } 
-            ]
+  "orders": [ 
+    { "title": "Braek", "id": 1, "dynamicDeliveryFee": 1 },
+    { "title": "Floursh", "id": 2, "dynamicDeliveryFee": 1 },
+    { "title": "Koufu", "id": 3, "dynamicDeliveryFee": 1 },
+    { "title": "Onalu", "id": 4, "dynamicDeliveryFee": 1 }
+  ]
 }

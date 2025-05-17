@@ -11,6 +11,7 @@ import Home from '../views/Home.vue'
 import OrderPage from '../views/OrderPage.vue'
 import OrderMerchant from '../views/OrderMerchant.vue'
 import PageNotFound from '../views/PageNotFound.vue'
+import RunnerPage from '../views/RunnerPage.vue'
 
 
 // REIWEN : this is a routes array and each route object has 3 properties
@@ -32,24 +33,27 @@ const routes = [
 
   {
     path: '/orders',
-    name: "OrderPage",
+    name: "orderPage",
     component: OrderPage
   },
   {
     path: '/orders/:id',
-    name: "OrderMerchant",
+    name: "orderMerchant",
     component: OrderMerchant
+  },
+  {
+    path: '/runners',
+    name: "runnerPage",
+    component: RunnerPage
   },
 
 
   // redirect user to this page if path is not a valid one 
   {
     path: '/:catchAll(.*)',
-    name: "PageNotFound",
+    name: "pageNotFound",
     component: PageNotFound
   }
-
-
 ]
 
 

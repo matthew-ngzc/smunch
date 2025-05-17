@@ -11,19 +11,15 @@
  -->
 
 <script setup lang="ts">
+import Navbar from './components/Navbar.vue'
 import { RouterLink, RouterView } from 'vue-router'
 </script>
 
+
 <template>
   <div class="app-container"> 
-    <header>
-      <nav>
-        <!-- REIWEN: this is one way to route, aka route by path -->
-        <RouterLink to="/">SMUNCH</RouterLink>
-        <!-- REIWEN: this is another way to route, aka by name -->
-        <RouterLink :to="{ name: 'home' }">Home</RouterLink>
-      </nav>
-    </header>
+    <!-- REIWEN: use your global Navbar component here -->
+    <Navbar/>
   
     <main>
       <!-- REIWEN: This is where our route components will be dynamically injected -->
