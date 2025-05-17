@@ -1,16 +1,16 @@
 <template>
   <div class ="home">
-    <h1>Welcome to Homepage</h1>
-    <p>Are you a customer? or Are you a runner?</p>
+    <h1>Welcome to SMUNCH</h1>
+    <p>This is the landing page.</p>
+    <p>blah blah blah</p>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'Home',
+  name: 'LandingPage',
   components: {},
   methods: {}
-
 }
 
 </script>

@@ -6,8 +6,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 // REIWEN : remember to import the components used for each router object in routes[]
+import LandingPage from '../views/LandingPage.vue'
 import Home from '../views/Home.vue'
-import About from '../views/About.vue'
+import OrderPage from '../views/OrderPage.vue'
+import OrderMerchant from '../views/OrderMerchant.vue'
+import PageNotFound from '../views/PageNotFound.vue'
 
 
 // REIWEN : this is a routes array and each route object has 3 properties
@@ -15,16 +18,38 @@ const routes = [
   {
     path: '/',
     // REIWEN : name is just the name/identifier for the path
-    name: 'homeView',
+    name: 'landingPage',
     // REIWEN : we also have the vue component that we want to use when user goes to '/' path
     // go to your views directory to see what you have named your component
-    component: Home
+    component: LandingPage
   },
   {
-    path: '/about',
-    name: 'aboutView',
-    component: About
+    path: '/home',
+    name: 'home',
+    component: Home
+  },
+
+
+  {
+    path: '/orders',
+    name: "OrderPage",
+    component: OrderPage
+  },
+  {
+    path: '/orders/:id',
+    name: "OrderMerchant",
+    component: OrderMerchant
+  },
+
+
+  // redirect user to this page if path is not a valid one 
+  {
+    path: '/:catchAll(.*)',
+    name: "PageNotFound",
+    component: PageNotFound
   }
+
+
 ]
 
 
