@@ -10,7 +10,7 @@
     - Global error handlers / loading states 
  -->
 
-<script setup lang="ts">
+<script setup lang="js">
 import Navbar from './components/Navbar.vue'
 import { RouterLink, RouterView } from 'vue-router'
 </script>

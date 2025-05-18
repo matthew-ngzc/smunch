@@ -31,3 +31,7 @@ coverage
 
 logs/
 tests_output/
+
+
+#Environment File
+.env
