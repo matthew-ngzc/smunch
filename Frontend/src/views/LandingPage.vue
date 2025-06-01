@@ -38,6 +38,10 @@ export default defineComponent({
 
 <style scoped>
 
+.container {
+  display: 100% ;
+}
+
 
 .text-section {
   flex: 1;

@@ -3,6 +3,7 @@ import axiosInstance from '@/utility/axiosInstance'
 /**
  * Get all merchants 
  */
+// calling backend endpoint
 export async function fetchAllMerchants() {
   return axiosInstance.get('/orders')
 }

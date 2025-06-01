@@ -18,6 +18,7 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
+        // function to get merchants from backend
         const response = await fetchAllMerchants() // Adjust to your actual endpoint
         merchants.value = response.data
       } catch (error) {
