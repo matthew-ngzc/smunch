@@ -4,10 +4,16 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes.js";
 import merchantRoutes from "./routes/merchant.routes.js";
 import errorHandler from "./middlewares/error.middleware.js";
+import cors from 'cors'
 
 dotenv.config();
 
 const app = express();
+
+
+// Enable CORS
+app.use(cors())
+
 
 app.use(express.json());
 app.use(cookieParser());
