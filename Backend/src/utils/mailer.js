@@ -16,6 +16,17 @@
 
 //Using Gmail account
 import nodemailer from 'nodemailer';
+import dotenv from "dotenv";
+
+dotenv.config();
+
+// 1. ENV validation — log and fail fast if missing
+if (!process.env.SMUNCH_EMAIL || !process.env.SMUNCH_APP_PASS) {
+  console.error('[ERROR] Missing Gmail credentials in environment variables!');
+  console.error('[DEBUG] SMUNCH_EMAIL:', process.env.SMUNCH_EMAIL);
+  console.error('[DEBUG] SMUNCH_APP_PASS:', process.env.SMUNCH_APP_PASS ? '[REDACTED]' : undefined);
+  throw new Error('Missing SMUNCH_EMAIL or SMUNCH_APP_PASS');
+}
 
 export const transporter = nodemailer.createTransport({
   service: 'Gmail', // or your SMTP provider
@@ -25,7 +36,18 @@ export const transporter = nodemailer.createTransport({
   },
 });
 
+// 3. Run verification test once when module is loaded
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('[MAILER VERIFY FAILED]', error);
+  } else {
+    console.log('[MAILER] Transporter ready to send emails.');
+  }
+});
+
 export const sendVerificationEmail = async (to, token) => {
+  console.log('[DEBUG]', process.env.SMUNCH_EMAIL, process.env.SMUNCH_APP_PASS);
+
   const link = `${process.env.BACKEND_URL}/api/auth/verify?token=${token}`;
   return transporter.sendMail({
     from: '"SMUNCH" <smunch.dev@gmail.com>',

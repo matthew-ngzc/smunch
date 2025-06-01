@@ -12,7 +12,9 @@ export async function getMenuItemsByMerchantIdOrThrow(merchantId, includeUnavail
   let query = supabase
     .from('menu_items')
     .select('*')
-    .eq('merchant_id', merchantId);
+    .eq('merchant_id', merchantId)
+    .order('type', { ascending: true })  // <- alphabetical by type
+    .order('name', { ascending: true }); // <- secondary sort within type
 
   if (!includeUnavailable) {
     query = query.eq('is_available', true);
@@ -51,7 +53,8 @@ export async function createMenuItemOrThrow(payload) {
       description,
       price_cents,
       image_url,
-      is_available
+      is_available,
+      type
     })
     .maybeSingle();
 

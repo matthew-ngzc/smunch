@@ -25,7 +25,7 @@ export const signup = async (req, res, next) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
     //only allow SMU emails
-    if (!email.endsWith('@smu.edu.sg')) {
+    if (!email.endsWith('smu.edu.sg')) {
       return res.status(400).json({ message: 'Only SMU emails allowed' });
     }
 
