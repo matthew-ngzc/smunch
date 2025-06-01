@@ -10,7 +10,7 @@ export default defineComponent({
   },
   setup() {
     // No reactive state or methods needed for now
-    return {}
+    return {bellIcon}
   }
 })
 </script>

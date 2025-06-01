@@ -11,15 +11,31 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="runner">
-    <h1>This is the first runner page</h1>
-    <p>Choose all the slots you want.</p>
-    <p>blah blah blah</p>
+  <div class="page">
+    <h2>coming soon!</h2>
+
   </div>
 </template>
 
+
+
 <style scoped>
-.runner {
-  text-align: center;
+.page {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  color: black;
+  margin-top: 300px; /* pushes it down by 20px */
+  margin-left: 460px;
+
 }
+
+
+.page h2 {
+    font-size: 70px;
+}
+
+
+
 </style>
