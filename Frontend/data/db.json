@@ -1,8 +1,7 @@
 {
   "orders": [
-    { "id": 1, "title": "Braek", "dynamicDeliveryFee": 0.80 },
-    { "id": 2, "title": "Floursh", "dynamicDeliveryFee": 1.0 },
-    { "id": 3, "title": "Koufu", "dynamicDeliveryFee": 0.50 },
-    { "id": 4, "title": "Onalu", "dynamicDeliveryFee": 0.70 }
+    { "id": 1, "title": "Braek", "DeliveryFee": 0.80 },
+    { "id": 2, "title": "Supergreen", "DeliveryFee": 1.0 },
+    { "id": 3, "title": "Koufu", "DeliveryFee": 0.50 }
   ]
 }
