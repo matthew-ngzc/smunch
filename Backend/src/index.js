@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes.js";
 import merchantRoutes from "./routes/merchant.routes.js";
+import orderRoutes from "./routes/order.routes.js";
 import errorHandler from "./middlewares/error.middleware.js";
 import cors from 'cors'
 
@@ -18,6 +19,7 @@ app.use(cors())
 app.use(express.json());
 app.use(cookieParser());
 
+app.use("/api/orders", orderRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/merchants", merchantRoutes);
 
