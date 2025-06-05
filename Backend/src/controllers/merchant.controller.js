@@ -16,9 +16,23 @@ import {
  * GET /api/merchants
  * Fetches all merchants with basic public fields.
  */
-export const getMerchants = async (req, res, next) => {
+export const getAllMerchants = async (req, res, next) => {
   try {
     const merchants = await getAllMerchantsOrThrow();
+    res.json(merchants);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * GET /api/merchants/:id
+ * Fetches a specific merchant by ID.
+ */
+export const getMerchant = async (req, res, next) => {
+  try {
+    const { id: merchantId } = req.params;
+    const merchants = await getMerchantByIdOrThrow(merchantId, 'name, location, contact, image_url');
     res.json(merchants);
   } catch (err) {
     next(err);
