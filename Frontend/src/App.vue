@@ -13,13 +13,14 @@
 <script setup lang="js">
 import Navbar from './components/Navbar.vue'
 import { RouterLink, RouterView } from 'vue-router'
+
 </script>
 
 
 <template>
   <div class="app-container"> 
     <!-- REIWEN: use your global Navbar component here -->
-    <Navbar/>
+     <Navbar v-if="!hideNavbar" />
   
     <main>
       <!-- REIWEN: This is where our route components will be dynamically injected -->
@@ -27,6 +28,8 @@ import { RouterLink, RouterView } from 'vue-router'
     </main>
   </div>
 </template>
+
+
 
 <style scoped>
 /* Full-page layout */

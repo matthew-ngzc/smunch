@@ -4,17 +4,13 @@
     <div class="delivery-form-box">
       <h2>📍 where should your food be delivered?</h2>
 
-      <p class="subtext">
-        filter your exact location so we can calculate the delivery fee — the more people ordering to the same place, the cheaper it gets!
-      </p>
-
       <!-- filter dropdowns -->
       <div class="filters">
         <label>building</label>
-        <select>
+        <select v-model="building">
           <option value="" disabled selected hidden>select</option>
-          <option value="law">school of law</option>
           <option value="business">school of business</option>
+          <option value="law">school of law</option>
           <option value="economics">school of economics</option>
           <option value="accounting">school of accounting</option>
           <option value="scis1">school of computing and information systems 1</option>
@@ -25,32 +21,47 @@
       <!-- floor dropdown -->
       <div class="filters">
         <label>floor</label>
-        <select><option>select</option></select>
+        <select v-model="floor">
+          <option value="" disabled selected hidden>select</option>
+          <option value="level2">2</option>
+          <option value="level3">3</option>
+          <option value="level4">4</option>
+        </select>
       </div>
 
       <!-- facility type dropdown -->
       <div class="filters">
         <label>facility type</label>
-        <select><option>select</option></select>
+        <select v-model="facilityType">
+          <option value="" disabled selected hidden>select</option>
+          <option value="classroom">classroom</option>
+          <option value="gsr">group study room</option>
+          <option value="meeting-pod">meeting pod</option>
+          <option value="sr">seminar room</option>
+        </select>
       </div>
 
       <!-- date input -->
       <div class="filters">
         <label>date</label>
-        <input type="date" />
+        <input type="date" v-model="date" />
       </div>
 
       <!-- time input -->
-      <div class="filters">
+       <div class="filters">
+        <label>time</label>
+        <select  v-model="time">
+          <option value="" disabled selected hidden>select</option>
+          <option value="afternoon-slot">12:00 PM</option>
+        </select>
+      </div>
+      <!-- <div class="filters">
         <label>time</label>
         <input type="time" />
-      </div>
+      </div> -->
 
       <!-- next button -->
-    <button class="next-btn" @click="goToOrder">next</button>
-    
-    <!-- adding a component -->
-    <!-- <hello></hello> -->
+    <button class="next-btn" @click="goToSummary">next</button>
 
     </div>
 
@@ -60,15 +71,30 @@
 <script setup>
 
 
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-
-// must import the component 
-// import Hello from '../components/hello.vue'
+import { useDeliveryStore } from '@/stores/delivery'
 
 const router = useRouter()
+const deliveryStore = useDeliveryStore()
 
-function goToOrder() {
-  router.push('/order')
+const building = ref('')
+const floor = ref('')
+const facilityType = ref('')
+const date = ref('')
+const time = ref('')
+
+
+
+function goToSummary() {
+  deliveryStore.setDeliveryInfo({
+    building: building.value,
+    floor: floor.value,
+    facilityType: facilityType.value,
+    date: date.value,
+    time: time.value
+  })
+  router.push('/summary')
 }
 </script>
 

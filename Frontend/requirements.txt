@@ -1,0 +1,4 @@
+pinia
+bootstrap
+@popperjs/core
+cors 

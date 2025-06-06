@@ -3,6 +3,7 @@ import axiosInstance from '@/utility/axiosInstance'
 /**
  * Get all merchants 
  */
+// calling backend endpoint
 export async function fetchAllMerchants() {
   return axiosInstance.get('/api/merchants')
 }
@@ -24,5 +25,5 @@ export async function getMenuById(id) {
  *  - image_url 
  */ 
 export async function getMerchantInfoById(id) {
-  return axiosInstance.get(`/api/merchants/${id}/info`)
+  return axiosInstance.get(`/api/merchants/${id}`)
 }

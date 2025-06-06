@@ -12,7 +12,9 @@ import auth from './auth'
 
 export default createStore({
   modules: {
-    auth
+    auth,
+    cart,
+    delivery
     // more to be added 
   }
 })
