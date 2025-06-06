@@ -27,17 +27,19 @@ import SelectLocation from '../views/SelectLocation.vue'
   { path: '/home', name: 'Home', component: Home },
   { path: '/signup', name: 'signup', component: signup },
   { path: '/login', name: 'login', component: login },
-  { path: '/:catchAll(.*)', name: "pageNotFound", component: PageNotFound} ,// redirect user to this page if path is not a valid one 
+  { path: '/order/:id', name: 'orderMerchant', component: OrderMerchant },
+  
   {
   path: '/cart',
   name: "cartPage",
   component: CartPage
-},
-{
-  path: '/location',
-  name: "selectLocation",
-  component: SelectLocation
-}
+  },
+  {
+    path: '/location',
+    name: "selectLocation",
+    component: SelectLocation
+  },
+  { path: '/:catchAll(.*)', name: "pageNotFound", component: PageNotFound} // redirect user to this page if path is not a valid one 
 ]
 
 

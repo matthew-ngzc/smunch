@@ -33,8 +33,8 @@ export default defineComponent({
  
     <!-- nav links that switch between pages -->
     <div class="navbar-center">
-      <router-link to="/orders">order</router-link> 
-      <router-link to="/runners">run</router-link>
+      <router-link to="/order">order</router-link> 
+      <router-link to="/run">run</router-link>
       <router-link to="/home">home</router-link>
     </div>
 
