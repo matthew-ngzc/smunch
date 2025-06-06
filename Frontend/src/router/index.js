@@ -16,8 +16,8 @@ import signup from '../views/signup.vue'
 import login from '../views/login.vue'
 import CartPage from '../views/CartPage.vue'
 import SelectLocation from '../views/SelectLocation.vue'
-
-
+import OrderSummary from '../views/OrderSummary.vue'
+import Payment from '../views/Payment.vue'
 
 // REIWEN : this is a routes array and each route object has 3 properties
   const routes = [
@@ -28,6 +28,8 @@ import SelectLocation from '../views/SelectLocation.vue'
   { path: '/signup', name: 'signup', component: signup },
   { path: '/login', name: 'login', component: login },
   { path: '/order/:id', name: 'orderMerchant', component: OrderMerchant },
+  { path: '/summary', name: 'orderSummary', component: OrderSummary },
+  { path: '/payment', name: 'payment', component: Payment },
   
   {
   path: '/cart',
