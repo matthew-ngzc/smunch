@@ -10,8 +10,20 @@ export async function fetchAllMerchants() {
 
 
 /* 
- * Fetch one order/merchant by ID 
+ * Fetch one menu of merchant by merchant_ID 
  */
-export async function getOrderById(id) {
+export async function getMenuById(id) {
   return axiosInstance.get(`/api/merchants/${id}/menu`)
+}
+
+
+/*
+ * Get a merchant by ID 
+ *  - merchant name
+ *  - location
+ *  - contact
+ *  - image_url 
+ */ 
+export async function getMerchantInfoById(id) {
+  return axiosInstance.get(`/api/merchants/${id}`)
 }

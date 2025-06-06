@@ -14,6 +14,9 @@ import PageNotFound from '../views/PageNotFound.vue'
 import RunnerPage from '../views/RunnerPage.vue'
 import signup from '../views/signup.vue'
 import login from '../views/login.vue'
+import CartPage from '../views/CartPage.vue'
+import SelectLocation from '../views/SelectLocation.vue'
+
 
 
 // REIWEN : this is a routes array and each route object has 3 properties
@@ -24,7 +27,17 @@ import login from '../views/login.vue'
   { path: '/home', name: 'Home', component: Home },
   { path: '/signup', name: 'signup', component: signup },
   { path: '/login', name: 'login', component: login },
-  { path: '/:catchAll(.*)', name: "pageNotFound", component: PageNotFound} // redirect user to this page if path is not a valid one 
+  { path: '/:catchAll(.*)', name: "pageNotFound", component: PageNotFound} ,// redirect user to this page if path is not a valid one 
+  {
+  path: '/cart',
+  name: "cartPage",
+  component: CartPage
+},
+{
+  path: '/location',
+  name: "selectLocation",
+  component: SelectLocation
+}
 ]
 
 

@@ -1,20 +1,10 @@
 <script lang="js">
 import { defineComponent, onMounted, ref } from 'vue'
 import { fetchAllMerchants } from '@/services/orderFoodService' 
-import KoufuLogo from '@/assets/Koufu.png'
-import SupergreenLogo from '@/assets/Supergreen.png'
-import BraekLogo from '@/assets/Braek.png'
 
 export default defineComponent({
   setup() {
     const merchants = ref([])
-
-    const merchantImages = {
-      Koufu: KoufuLogo,
-      Supergreen: SupergreenLogo,
-      Braek: BraekLogo
-    }
-
 
     onMounted(async () => {
       try {
@@ -27,7 +17,7 @@ export default defineComponent({
       }
     })
 
-    return { merchants, merchantImages }
+    return { merchants }
   }
 })
 </script>
