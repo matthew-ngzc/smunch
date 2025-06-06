@@ -3,6 +3,7 @@ import {
   updateOrderStatusOrThrow,
   getOrdersByUserIdOrThrow
 } from '../models/order.model.js';
+import { generatePayNowQRCode } from '../services/payment.service.js';
 
 /**
  * POST /api/orders
@@ -10,8 +11,33 @@ import {
  */
 export const createOrder = async (req, res, next) => {
   try {
+    //create the otder in the database
     const newOrder = await createOrderOrThrow(req.body);
-    res.status(201).json({ order: newOrder });
+    //if order creation failed, return error
+    if (!newOrder) {
+      return res.status(400).json({ message: 'Failed to create order' });
+    }
+
+    //extract data we need to create the PayNow QR code
+    const { order_id, customer_id, total_amount_cents } = newOrder;
+    const amountDollars = (Number(total_amount_cents) / 100).toFixed(2);
+
+    //generate the PayNow QR code
+    const qrCodeDataURL = await generatePayNowQRCode({
+      amount: amountDollars,
+      orderId: order_id,
+      customerId: customer_id
+    });
+    //if QR code generation failed, return error
+    if (!qrCodeDataURL) {
+      return res.status(500).json({ message: 'Failed to generate QR code' });
+    }
+
+    //output order and qr code
+    res.status(201).json({
+      order: newOrder,
+      qrCode: qrCodeDataURL
+    });
   } catch (err) {
     next(err);
   }

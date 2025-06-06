@@ -21,6 +21,8 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.3",
+    "paynow-generator": "^1.0.7",
+    "qrcode": "^1.5.4",
     "resend": "^4.5.1"
   },
   "devDependencies": {
