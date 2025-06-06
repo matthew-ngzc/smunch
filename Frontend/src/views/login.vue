@@ -3,30 +3,32 @@
     <div class="login-container">
       <!-- child 1 -->
       <div class="login-left">
-          <h2 class="welcome"> WELCOME BACK</h2>
+          <h2 class="welcome"> welcome back!</h2>
           <p class="tagline">
-            from koufu straight to your favourite <br />
-            study spot — we gotchu <br />
-            connecting hungry students alike, <br />
-            smunch is the way to go <br />
+           lazy to walk to your favourite store? <br />
+           —dont worry we gotchu.
+           <br /><br /> 
+           skip the walk and ditch the queue. <br />
+           we'll bring your meal right to you. <br />
+           here at smunch, that's what we do. <br />   
              <br /><br />
              <br /><br />
              <br /><br />
-             <br /><br />
-            skip the queue. get your food delivered. <br />
+             </p>
+          <p class="tagline-continued"> 
              by students, for students.
-            <br />
-            
           </p>
         </div>
 
 
       <!-- child 2 -->
       <div class="login-right">
+        <div class="right-headers"> 
         <h1 class="logo"> SMUNCH </h1>
         <h2 class="subheading">Login with your SMU email!</h2>
 
-        
+        </div>
+
         <form @submit.prevent="handleLogin" class="form-fields">
             <label for="email">Email</label>
             <input 
@@ -44,11 +46,13 @@
                 v-model="password" 
                 type="password" 
                 placeholder="Enter your password" required />
+            
 
             <button type="submit">log in</button>
         </form>
         <p class="signup-prompt">
-          don't have an account? <a href="#">sign up</a> now!
+          don't have an account? 
+          <router-link to="/signup">sign up</router-link> now! 
         </p>
       </div>
       </div>
@@ -66,7 +70,7 @@ export default {
   },
   methods: {
     handleLogin() {
-      if (!this.email.includes('@')) {
+      if (!this.email.includes('@smu.edu.sg')) {
         this.emailError = "Please enter a valid smu email address.";
         return;
       }
@@ -83,6 +87,7 @@ export default {
 
 <style scoped>
 
+
 .login-container {
   height: 100vh;
   width: 100vw;
@@ -94,10 +99,13 @@ export default {
 
 
 .login-left {
-  background-image: url('/bird.jpg');
+  background-color: white;
+  /* background-image: url('/bird.jpg'); */
+  background-image: url('/dinoburger2.jpg');
   background-repeat: no-repeat;       /* stops it from repeating */
-  background-size: cover;             /* stretches to cover entire area */
-  background-position: center;        /* centers the image */
+  /* background-size: cover;             /* stretches to cover entire area */
+  background-position:  30px 630px;     /* 30px from left, 50px from top */
+  background-size: 1000px auto;  /* 150px wide, height auto-adjusts */
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -107,9 +115,10 @@ export default {
 }
 
 
+
 .login-right {
   background-color: #0d3d31;
-  flex: 1;
+  flex: 1.5;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -120,41 +129,56 @@ export default {
 
 .logo {
   color: white;
-  font-size: 6rem;
+  font-size: 3.5rem;
   font-weight: bold;
-  margin-top: -30px;
+  margin-top: -180px;
   margin-bottom: 230px;
+  margin-left: 240px;
 }
 
 .welcome {
-    color: white;
-    font-size: 5rem;
+    color: #0d3d31;
+    font-size: 3.2rem;
     font-weight: bold;
-    margin-top: 8px;
+    margin-top: -130px;
     margin-right: 200px;
     margin-left: 120px;
     justify-content: center;
     align-items: center;
+    
 }
 
 .tagline {
-  font-size: 3.4rem;
-  color: white;
+  font-size: 2.3rem;
+  color: #0d3d31;
   line-height: 1.5;
-  
   justify-content: center;
   align-items: center;
   margin-top: 80px;
+  margin-right: 160px;
+}
+
+.tagline-continued {
+  font-size: 2.3rem;
+  color: black;
+  line-height: 1.5;
+  justify-content: center;
+  align-items: center;
+  margin-top: 80px;
+  margin-left: 450px;
 }
 
 
+
 .subheading {
-  font-size: 3.2rem;
+  font-size: 2.5rem;
   text-align: center;
+  justify-content: center;
   width: 100%;
   font-family: inter;
   margin-bottom: 790px;
   margin-top: -176px;
+  margin-left: 90px;
   
 }
 
@@ -162,13 +186,13 @@ export default {
 .form-fields {
   display: flex;
   flex-direction: column;
-  gap: 15px; /* controls space btwn the fields */
-  margin-top: -650px; /* move form upwards */
-  width: 750px;
+  gap: 29px; /* controls space btwn the fields */
+  margin-top: -690px; /* move form upwards */
+  width: 600px;
 }
 
 .form-fields label {
-  font-size: 25px;
+  font-size: 26px;
   color: white;
   margin-bottom: -15px;
   margin-left: 10px;
@@ -178,9 +202,10 @@ export default {
   padding: 24px;
   border-radius: 40px;
   outline: none;
-  font-size: 23px;
+  font-size: 25px;
   border: none;
   box-shadow: 9px 9px 10px rgba(40, 47, 46, 0.5);
+  width: 760px;
 }
 
 /* on a click, enter your xx appears */
@@ -188,6 +213,7 @@ input::placeholder {
   color: transparent;
   transition: color 0.3s ease;
   border: none;
+  font-size: 25px;
 }
 
 input:focus::placeholder {
@@ -202,13 +228,14 @@ input:hover {
 
 button {
   margin-top: 59px;
-  padding: 10px;
+  padding: 4px;
   background-color: #148b53;
   color: white;
   border: none;
-  border-radius: 19px;
-  height: 80px;
-  font-size:31px;
+  border-radius: 23px;
+  height: 82px;
+  width: 760px;;
+  font-size:30px;
   font-weight: bold;
 }
 
@@ -216,10 +243,13 @@ button:hover {
     box-shadow: 9px 9px 10px rgba(40, 47, 46, 0.5);
 }
 
+
+
 .signup-prompt {
   margin-top: 1.5rem;
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   text-align: center;
+  margin-left: 170px;
 }
 
 .signup-prompt a {
@@ -228,7 +258,7 @@ button:hover {
 }
 
 .error-msg {
-    margin-left: 460px;
+    margin-left: 270px;
     color: rgb(220, 61, 61);
 }
 </style>

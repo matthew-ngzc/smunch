@@ -16,10 +16,11 @@ export default defineComponent({
 </script>
 
 <template>
-  
+   <div class="navbar-wrapper">
+    <div class="nav-hover-zone"></div>
+
+
   <nav class="navbar-box">
-    
-   
     <div class="navbar-left">
       
       <router-link to="/" class = "smunch"> smunch</router-link>
@@ -28,54 +29,78 @@ export default defineComponent({
     <div class="navbar-right">
         <!-- bell icon -->
         <img :src="bellIcon" class="bell" alt="bell" />
-        </div>
+    </div>
 
  
     <!-- nav links that switch between pages -->
     <div class="navbar-center">
+      <router-link to="/home">home</router-link>
       <router-link to="/order">order</router-link> 
       <router-link to="/run">run</router-link>
-      <router-link to="/home">home</router-link>
     </div>
 
   </nav>
+   </div>
 </template>
 
 
 <style scoped>
-/* styles for the whole nav bar box */
-.navbar-box {
-  display: flex;                      
-  justify-content: space-between;   
-  align-items: center;               
-  height: 60px;                     
-  padding: 0 30px;                   
-  border-bottom: 2px solid #eee;    
-  background-color: #17956b;;            
-  font-family: sans-serif;          
-  font-size: 16px;                  
-  position: fixed;                   
+
+.navbar-wrapper {
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 999;                      
+  z-index: 999;
+  background-color: #0d3d31;
 }
+
+/* top hover zone */
+.nav-hover-zone {
+  height: 60px;
+  background: transparent;
+}
+
+/* navbar hidden by default */
+.navbar-box {
+  overflow: hidden;
+  max-height: 0;
+  background-color:  #0d3d31;
+  transition: max-height 0.4s ease, opacity 0.4s ease;
+  opacity: 0;
+  pointer-events: none;
+  padding: 0 30px;
+  border-bottom: 2px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: sans-serif;
+  font-size: 16px;
+  height: 60px;
+}
+/* show on hover */
+.navbar-wrapper:hover .navbar-box {
+  max-height: 60px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
 
 
 /* left side: brand */
 .navbar-left {
   font-weight: bold;
-  font-size: 20px;
   display: flex;
   align-items: center;
   gap: 8px;             
-  color: #ffffff;       
+  color: #ffffff;  
+       
 }
 
 /* left side: brand */
 .navbar-left a {
   font-weight: bold;
-  font-size: 20px;
+  font-size: 37px;
   display: flex;
   align-items: center;
   gap: 8px;             
@@ -97,6 +122,7 @@ export default defineComponent({
   color: white;
   font-weight: bold;
   text-decoration: none;
+  font-size: 25px;
 }
 
 
@@ -116,8 +142,8 @@ export default defineComponent({
 
 /* bell icon */
 .bell {
-  width: 24px;
-  height: 24px;
+  width: 5rem;
+  height: 5rem;
 }
 
 </style>
