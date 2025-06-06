@@ -20,6 +20,7 @@ export default defineComponent({
       try {
         // function to get merchants from backend
         const response = await fetchAllMerchants() // Adjust to your actual endpoint
+        console.log(response)
         merchants.value = response.data
       } catch (error) {
         console.error('Failed to load merchants:', error)
@@ -45,11 +46,11 @@ export default defineComponent({
 
     <div class="merchant-list" v-if="merchants.length">
       <div v-for="merchant in merchants" :key="merchant.id" class="merchant-card">
-        <router-link :to="{ name: 'orderMerchant', params: { id: merchant.id } }">
+        <router-link :to="{ name: 'orderMerchant', params: { id: merchant.merchant_id } }">
           <!-- Use actual images if available -->
-          <img :src="merchantImages[merchant.title]" alt="merchant logo" class="merchant-logo" />
-          <h3>smu {{ merchant.title.toLowerCase() }}</h3>
-          <p>${{ merchant.DeliveryFee.toFixed(2) }} delivery fee</p>
+          <img :src="merchant.image_url" alt="merchant logo" class="merchant-logo" />
+          <h3>smu {{ merchant.name }}</h3>
+          <p>$1.00 delivery fee</p>
         </router-link>
       </div>
     </div>

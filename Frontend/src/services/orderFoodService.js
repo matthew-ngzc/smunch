@@ -5,7 +5,7 @@ import axiosInstance from '@/utility/axiosInstance'
  */
 // calling backend endpoint
 export async function fetchAllMerchants() {
-  return axiosInstance.get('/orders')
+  return axiosInstance.get('/api/merchants')
 }
 
 
@@ -13,5 +13,5 @@ export async function fetchAllMerchants() {
  * Fetch one order/merchant by ID 
  */
 export async function getOrderById(id) {
-  return axiosInstance.get(`/orders/${id}`)
+  return axiosInstance.get(`/api/merchants/${id}/menu`)
 }

@@ -32,6 +32,13 @@ export default defineComponent({
       <div class="image-section">
         <img :src="deliveryManIcon" class="bell" alt="bell" />
       </div>
+
+    <!-- setting up routing to signing in -->
+      <div> 
+        <router-link to="/login" class="router-link-style">login</router-link>
+        <router-link to="/signup" class="router-link-style">signup</router-link>
+      </div>
+
       </div>
 </template>
 
@@ -87,4 +94,22 @@ export default defineComponent({
   max-width: 100%;
   height: auto;
 }
+
+.router-link-style {
+  padding: 0.5rem 1.2rem;
+  margin: 0 0.5rem;
+  background-color: white;
+  color: #006e52;
+  border-radius: 999px; /* full round edges */
+  text-decoration: none;
+  font-weight: bold;
+  border: 2px solid #006e52;
+  transition: background-color 0.2s ease;
+}
+
+.router-link-style:hover {
+  background-color: #006e52;
+  color: white;
+}
+
 </style>

@@ -12,48 +12,19 @@ import OrderPage from '../views/OrderPage.vue'
 import OrderMerchant from '../views/OrderMerchant.vue'
 import PageNotFound from '../views/PageNotFound.vue'
 import RunnerPage from '../views/RunnerPage.vue'
+import signup from '../views/signup.vue'
+import login from '../views/login.vue'
 
 
 // REIWEN : this is a routes array and each route object has 3 properties
-const routes = [
-  {
-    path: '/',
-    // REIWEN : name is just the name/identifier for the path
-    name: 'landingPage',
-    // REIWEN : we also have the vue component that we want to use when user goes to '/' path
-    // go to your views directory to see what you have named your component
-    component: LandingPage
-  },
-  {
-    path: '/home',
-    name: 'home',
-    component: Home
-  },
-
-
-  {
-    path: '/orders',
-    name: "orderPage",
-    component: OrderPage
-  },
-  {
-    path: '/orders/:id',
-    name: "orderMerchant",
-    component: OrderMerchant
-  },
-  {
-    path: '/runners',
-    name: "runnerPage",
-    component: RunnerPage
-  },
-
-
-  // redirect user to this page if path is not a valid one 
-  {
-    path: '/:catchAll(.*)',
-    name: "pageNotFound",
-    component: PageNotFound
-  }
+  const routes = [
+  { path: '/', name: 'landingPage', component: LandingPage },     
+  { path: '/order', name: 'Order', component: OrderPage },
+  { path: '/run', name: 'Run', component: RunnerPage },        
+  { path: '/home', name: 'Home', component: Home },
+  { path: '/signup', name: 'signup', component: signup },
+  { path: '/login', name: 'login', component: login },
+  { path: '/:catchAll(.*)', name: "pageNotFound", component: PageNotFound} // redirect user to this page if path is not a valid one 
 ]
 
 
