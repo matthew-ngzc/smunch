@@ -24,5 +24,5 @@ export async function getMenuById(id) {
  *  - image_url 
  */ 
 export async function getMerchantInfoById(id) {
-  return axiosInstance.get(`/api/merchants/${id}/info`)
+  return axiosInstance.get(`/api/merchants/${id}`)
 }

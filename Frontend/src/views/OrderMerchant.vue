@@ -8,7 +8,7 @@ export default defineComponent({
   setup() {
     const route = useRoute()
     const merchantId = route.params.id
-    // const merchantInfo = ref({})
+    const merchantInfo = ref({})
     const merchantMenu = ref([])
     const quantities = ref({})
 
@@ -22,13 +22,12 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
-        // const [menuRes, infoRes] = await Promise.all([
-        //   getMenuById(merchantId),
-        //   getMerchantInfoById(merchantId)
-        // ])
-        const menuRes = await getMenuById(merchantId)
+        const [menuRes, infoRes] = await Promise.all([
+          getMenuById(merchantId),
+          getMerchantInfoById(merchantId)
+        ])
         merchantMenu.value = menuRes.data
-        // merchantInfo.value = infoRes.data
+        merchantInfo.value = infoRes.data
 
         // Initialize quantities
         merchantMenu.value.forEach(item => {
@@ -40,7 +39,7 @@ export default defineComponent({
     })
 
     return {
-      // merchantInfo,
+      merchantInfo,
       merchantMenu,
       quantities,
       increase,
@@ -52,12 +51,9 @@ export default defineComponent({
 
 <template>
   <div class="merchant-page">
-    <!-- <div class="merchant-header">
+    <div class="merchant-header">
       <img :src="merchantInfo.image_url" alt="Merchant Logo" class="merchant-logo" />
-      <div>
-        <h2>{{ merchantInfo.name }}</h2>
-      </div>
-    </div> -->
+    </div>
 
     <hr />
 
