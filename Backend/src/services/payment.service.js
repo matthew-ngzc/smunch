@@ -1,5 +1,6 @@
 import QRCode from 'qrcode';
 import {paynowGenerator} from 'paynow-generator';
+import { CRC } from 'crc-full';
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -33,7 +34,7 @@ export async function generatePayNowQRCode({amount, orderId, customerId,}) {
      * - proxyType: 'mobile' or 'UEN'
      * - proxyValue: 8-digit SG number or company UEN
      * - edit: 'yes' or 'no' (allow user to edit amount)
-     * - price: amount in SGD
+     * - amount: amount in SGD
      * - merchantName (optional): display name (defaults to 'NA')
      * - additionalComments (optional): reference or comment (e.g. order ID)
     
@@ -41,16 +42,26 @@ export async function generatePayNowQRCode({amount, orderId, customerId,}) {
      * - EMVCo-compliant string payload to be encoded as a QR code
      */
     const reference = await generatePaymentReference(orderId, customerId);
-    const payload = paynowGenerator(
+    // const payload = paynowGenerator(
+    //   PAYNOW_PROXYTYPE, //"mobile"
+    //   process.env.PAYNOW_NUMBER, // PayNow-registered phone number from .env
+    //   "no", // no editing
+    //   amount, //payment amount in SGD
+    //   MERCHANT_NAME, //merchant name
+    //   reference // reference number
+    // );
+
+    const payload = generatePayNowPayload(
       PAYNOW_PROXYTYPE, //"mobile"
       process.env.PAYNOW_NUMBER, // PayNow-registered phone number from .env
-      "no", // no editing
+      false,
       amount, //payment amount in SGD
       MERCHANT_NAME, //merchant name
       reference // reference number
     );
     // Generate the QR code as a Data URI
     const qrCodeDataURL = await QRCode.toDataURL(payload);
+
     // Return a Base64-encoded PNG image that can be embedded in HTML
     return qrCodeDataURL;
   } catch (error) {
@@ -73,4 +84,53 @@ export async function generatePaymentReference(orderId, customerId){
 
   // Generate a unique reference using the order ID and customer ID
   return `${REFERENCE_PREFIX}${orderIdStr}-${customerIdStr}`;
+}
+
+/*
+
+*/
+export function generatePayNowPayload(
+  proxyType = 'mobile',     // 'mobile' or 'UEN'
+  proxyValue,               // e.g. '91234567' or '202312345A'
+  editable = false,         // true allows user to change amount
+  amount,                   // e.g. '7.90'
+  merchantName = 'SMUNCH',  // up to 25 chars
+  reference = ''            // e.g. 'SMUNCH-42-12'
+) {
+  console.log("[DEBUG] : " + reference)
+  const pad = (val, len = 2) => val.toString().padStart(len, '0');
+  const build = (id, value) => pad(id) + pad(value.length) + value;
+
+  const proxyTypeCode = proxyType === 'UEN' ? '2' : '0';
+  const fullProxy = proxyType === 'mobile' ? `+65${proxyValue}` : proxyValue;
+
+  
+  const refField = build('01', reference);     // Subfield ID "05"
+  const field62 = build('62', refField);       // Wrap it properly as EMV template
+
+  const payload = [
+    build('00', '01'), // Payload Format Indicator
+    build('01', '12'), // Point of Initiation Method (dynamic)
+    build('26',
+      build('00', 'SG.PAYNOW') +
+      build('01', proxyTypeCode) +
+      build('02', fullProxy)
+    ),
+    build('30', editable ? '1' : '0'), // Amount editable flag
+    build('04', '99991231'), // optional, end of time
+    build('52', '0000'), // Merchant category
+    build('53', '702'),  // Currency (SGD)
+    build('54', Number(amount).toFixed(2)), // Amount
+    build('58', 'SG'),   // Country
+    build('59', merchantName.substring(0, 25)), // Merchant name
+    build('60', 'Singapore'), // City
+    field62 // Reference field
+  ];
+  
+  const joined = payload.join('');
+  const crc = CRC.default('CRC16_CCITT_FALSE');
+  const checksum = crc.compute(Buffer.from(joined + '6304', 'ascii'))
+    .toString(16).toUpperCase().padStart(4, '0');
+
+  return joined + '6304' + checksum;
 }
