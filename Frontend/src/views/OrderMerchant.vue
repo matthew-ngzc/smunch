@@ -1,12 +1,16 @@
 <script lang="js">
 import { defineComponent, ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { getMenuById, getMerchantInfoById } from '@/services/orderFoodService' 
+import { useCartStore } from '@/stores/cart'
+
 
 export default defineComponent({
   name: 'OrderMerchant',
   setup() {
+    const router = useRouter()
     const route = useRoute()
+    const cart = useCartStore()
     const merchantId = route.params.id
     const merchantInfo = ref({})
     const merchantMenu = ref([])
@@ -18,6 +22,24 @@ export default defineComponent({
 
     const decrease = (id) => {
       if (quantities.value[id] > 0) quantities.value[id]--
+    }
+
+    // this function is triggered when user presses the "checkout" button
+    const checkout = () => {
+    const selectedItems = merchantMenu.value
+        .filter(item => quantities.value[item.menu_item_id] > 0)
+        .map(item => ({
+          id: item.menu_item_id,
+          name: item.name,
+          quantity: quantities.value[item.menu_item_id],
+          price: item.price_cents / 100,
+          image_url: item.image_url,
+          merchant_id: merchantInfo.value.merchant_id,
+          merchant_name: merchantInfo.value.name
+        }))
+
+      cart.setCart(selectedItems)
+      router.push({ name: 'cartPage' })  // Make sure cartPage is a valid route
     }
 
     onMounted(async () => {
@@ -43,12 +65,12 @@ export default defineComponent({
       merchantMenu,
       quantities,
       increase,
-      decrease
+      decrease,
+      checkout
     }
   }
 })
 </script>
-
 <template>
   <div class="merchant-page">
     <div class="merchant-header">
@@ -71,9 +93,10 @@ export default defineComponent({
       <div class="menu-price">${{ (item.price_cents / 100).toFixed(2) }}</div>
     </div>
 
-    <button class="checkout-btn">checkout</button>
+    <button class="checkout-btn" @click="checkout">checkout</button>
   </div>
 </template>
+
 
 <style scoped>
 .merchant-page {

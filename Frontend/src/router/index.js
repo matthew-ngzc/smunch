@@ -12,6 +12,9 @@ import OrderPage from '../views/OrderPage.vue'
 import OrderMerchant from '../views/OrderMerchant.vue'
 import PageNotFound from '../views/PageNotFound.vue'
 import RunnerPage from '../views/RunnerPage.vue'
+import CartPage from '../views/CartPage.vue'
+import SelectLocation from '../views/SelectLocation.vue'
+
 
 
 // REIWEN : this is a routes array and each route object has 3 properties
@@ -46,7 +49,16 @@ const routes = [
     name: "runnerPage",
     component: RunnerPage
   },
-
+  {
+    path: '/cart',
+    name: "cartPage",
+    component: CartPage
+  },
+  {
+    path: '/location',
+    name: "selectLocation",
+    component: SelectLocation
+  },
 
   // redirect user to this page if path is not a valid one 
   {
