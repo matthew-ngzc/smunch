@@ -20,7 +20,7 @@ import { RouterLink, RouterView } from 'vue-router'
 <template>
   <div class="app-container"> 
     <!-- REIWEN: use your global Navbar component here -->
-     <Navbar/>
+     <Navbar v-if="!hideNavbar" />
   
     <main>
       <!-- REIWEN: This is where our route components will be dynamically injected -->
