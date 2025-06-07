@@ -16,9 +16,6 @@ export default defineComponent({
 </script>
 
 <template>
-   <div class="navbar-wrapper">
-    <div class="nav-hover-zone"></div>
-
 
   <nav class="navbar-box">
     <div class="navbar-left">
@@ -40,35 +37,15 @@ export default defineComponent({
     </div>
 
   </nav>
-   </div>
 </template>
 
 
 <style scoped>
 
-.navbar-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 999;
-  background-color: #0d3d31;
-}
-
-/* top hover zone */
-.nav-hover-zone {
-  height: 60px;
-  background: transparent;
-}
 
 /* navbar hidden by default */
 .navbar-box {
-  overflow: hidden;
-  max-height: 0;
-  background-color:  #0d3d31;
-  transition: max-height 0.4s ease, opacity 0.4s ease;
-  opacity: 0;
-  pointer-events: none;
+  background-color: #0d3d31;
   padding: 0 30px;
   border-bottom: 2px solid #eee;
   display: flex;
@@ -77,14 +54,12 @@ export default defineComponent({
   font-family: sans-serif;
   font-size: 16px;
   height: 60px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
 }
-/* show on hover */
-.navbar-wrapper:hover .navbar-box {
-  max-height: 60px;
-  opacity: 1;
-  pointer-events: auto;
-}
-
 
 
 /* left side: brand */
@@ -97,16 +72,22 @@ export default defineComponent({
        
 }
 
+
+
 /* left side: brand */
 .navbar-left a {
   font-weight: bold;
-  font-size: 37px;
+  font-size: 22px;
   display: flex;
   align-items: center;
   gap: 8px;             
   color: #ffffff;    
-  text-decoration: none;   
+  text-decoration: none;  
+  display: inline;
+  background-color: transparent; 
 }
+
+
 
 /* edits the entire centre container, not the specific links yet  */
 .navbar-center {
@@ -122,15 +103,13 @@ export default defineComponent({
   color: white;
   font-weight: bold;
   text-decoration: none;
-  font-size: 25px;
+  font-size: 16px;
+  background: transparent;
 }
 
 
-  /* margin: 0 12px;       horizontal space between links */
-
-
 .navbar-center a:hover {
-  color: #938986;                  /* grey on hover */
+  text-shadow: 4px 4px 5px#a9b5cd;                  /* grey on hover */
 }
 
 /* 🎒 right side: profile */
@@ -142,8 +121,9 @@ export default defineComponent({
 
 /* bell icon */
 .bell {
-  width: 5rem;
-  height: 5rem;
+  width: 3rem;
+  height: 3rem;
 }
 
 </style>
+
