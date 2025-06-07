@@ -11,11 +11,11 @@ export default defineComponent({
     const userName = 'sexy' // change it to be dynamic 
 
     const goToOrder = () => {
-      router.push('/orders')
+      router.push('/order')
     }
 
     const goToRun = () => {
-      router.push('/runners')
+      router.push('/run')
     }
 
     return { userName, OrderIcon, RunIcon, goToOrder, goToRun }
