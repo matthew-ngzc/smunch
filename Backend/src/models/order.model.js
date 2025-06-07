@@ -66,7 +66,8 @@ export async function createOrderOrThrow(payload) {
     menu_item_id: item.menu_item_id,
     quantity: item.quantity,
     price_cents: item.price_cents,
-    customisations: item.customisations || {}
+    customisations: item.customisations || {},
+    notes: item.notes
   }));
   const { data: items, error: itemsError } = await supabase
     .from('order_items')
