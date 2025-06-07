@@ -1,8 +1,9 @@
 import {
   createOrderOrThrow,
   updateOrderStatusOrThrow,
-  getOrdersByUserIdOrThrow
+  getOrdersByCustomerIdOrThrow
 } from '../models/order.model.js';
+import { generatePayNowQRCode } from '../services/payment.service.js';
 
 /**
  * POST /api/orders
@@ -10,9 +11,47 @@ import {
  */
 export const createOrder = async (req, res, next) => {
   try {
+    //create the otder in the database
     const newOrder = await createOrderOrThrow(req.body);
-    res.status(201).json({ order: newOrder });
+    //if order creation failed, return error
+    if (!newOrder) {
+      return res.status(400).json({ message: 'Failed to create order' });
+    }
+
+    //extract data we need to create the PayNow QR code
+    const { order_id, customer_id, total_amount_cents } = newOrder;
+    const amountDollars = (Number(total_amount_cents) / 100).toFixed(2);
+
+    //generate the PayNow QR code
+    const qrCodeDataURL = await generatePayNowQRCode({
+      amount: amountDollars,
+      orderId: order_id,
+      customerId: customer_id
+    });
+    //if QR code generation failed, return error
+    if (!qrCodeDataURL) {
+      return res.status(500).json({ message: 'Failed to generate QR code' });
+    }
+
+    //output order and qr code
+    res.status(201).json({
+      order: newOrder,
+      qrCode: qrCodeDataURL
+    });
   } catch (err) {
+    // Handle foreign key violations for customer_id, merchant_id, or menu_item_id
+    const constraint = err.constraint || err.details || '';
+    if (err.code === '23503') {
+      if (constraint.includes('orders_customer_id_fkey')) {
+        return res.status(400).json({ message: 'Invalid customer_id: user does not exist' });
+      }
+      if (constraint.includes('orders_merchant_id_fkey')) {
+        return res.status(400).json({ message: 'Invalid merchant_id: merchant does not exist' });
+      }
+      if (constraint.includes('order_items_menu_item_id_fkey')) {
+        return res.status(400).json({ message: 'Invalid menu_item_id: menu item does not exist' });
+      }
+    }
     next(err);
   }
 };
@@ -46,7 +85,7 @@ export const getUserOrders = async (req, res, next) => {
     } else if (type === 'history') {
       statuses = ['completed', 'cancelled'];
     }
-    const orders = await getOrdersByUserIdOrThrow(userId, statuses);
+    const orders = await getOrdersByCustomerIdOrThrow(userId, statuses);
     res.json({ orders });
   } catch (err) {
     next(err);

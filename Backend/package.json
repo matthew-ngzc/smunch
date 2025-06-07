@@ -18,10 +18,13 @@
     "cookie-parser": "^1.4.7",
     "cor": "^0.0.0",
     "cors": "^2.8.5",
+    "crc-full": "^1.1.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.3",
+    "paynow-generator": "^1.0.7",
+    "qrcode": "^1.5.4",
     "resend": "^4.5.1"
   },
   "devDependencies": {
