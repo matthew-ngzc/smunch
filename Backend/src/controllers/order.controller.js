@@ -1,7 +1,7 @@
 import {
   createOrderOrThrow,
   updateOrderStatusOrThrow,
-  getOrdersByUserIdOrThrow
+  getOrdersByCustomerIdOrThrow
 } from '../models/order.model.js';
 import { generatePayNowQRCode } from '../services/payment.service.js';
 
@@ -39,6 +39,19 @@ export const createOrder = async (req, res, next) => {
       qrCode: qrCodeDataURL
     });
   } catch (err) {
+    // Handle foreign key violations for customer_id, merchant_id, or menu_item_id
+    const constraint = err.constraint || err.details || '';
+    if (err.code === '23503') {
+      if (constraint.includes('orders_customer_id_fkey')) {
+        return res.status(400).json({ message: 'Invalid customer_id: user does not exist' });
+      }
+      if (constraint.includes('orders_merchant_id_fkey')) {
+        return res.status(400).json({ message: 'Invalid merchant_id: merchant does not exist' });
+      }
+      if (constraint.includes('order_items_menu_item_id_fkey')) {
+        return res.status(400).json({ message: 'Invalid menu_item_id: menu item does not exist' });
+      }
+    }
     next(err);
   }
 };
@@ -72,7 +85,7 @@ export const getUserOrders = async (req, res, next) => {
     } else if (type === 'history') {
       statuses = ['completed', 'cancelled'];
     }
-    const orders = await getOrdersByUserIdOrThrow(userId, statuses);
+    const orders = await getOrdersByCustomerIdOrThrow(userId, statuses);
     res.json({ orders });
   } catch (err) {
     next(err);
