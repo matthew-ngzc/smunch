@@ -9,13 +9,13 @@
         <h1 class="hero-title">smunch</h1>
         <p class="hero-subtitle">By students, for students.</p>
         <router-link to="/signup">
-          <button class="hero-button">Sign Up</button>
+          <button class="hero-button">Get Started</button>
         </router-link>
       </div>
     </section>
 
     <!-- Testimonials -->
-    <section class="section text-center">
+    <section class="section">
       <h4 class="testimonial-header">Hear what our customers say about us!</h4>
       <Testimonials />
     </section>
@@ -104,6 +104,7 @@ export default defineComponent({
   flex-direction: column;
   align-items: center;
   width: 100%;
+  margin-bottom:-5.5%; /* Remove witespace below footer */
 }
 
 .hero-image-row {
@@ -113,7 +114,7 @@ export default defineComponent({
   align-items: center;
   padding: 4rem 2rem;
   background-color: #e8f6ef;
-  width: 100%;
+  width: 200%;
 }
 
 .hero-image-left,
@@ -123,21 +124,21 @@ export default defineComponent({
 }
 
 .hero-title {
-  font-size: 4rem;
+  font-size: 7rem;
   font-weight: 700;
   color: #0d3d31;
 }
 
 .hero-subtitle {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 600;
   color: #0d3d31;
   margin-bottom: 2rem;
 }
 
 .hero-button {
-  background-color: rgba(153, 203, 227, 0.8);
-  color: #0d3d31;
+  background-color: #0d3d31;
+  color: white;
   font-size: 1.125rem;
   font-weight: 600;
   padding: 0.75rem 1.5rem;
@@ -149,11 +150,12 @@ export default defineComponent({
 }
 
 .hero-button:hover {
-  background-color: rgba(153, 203, 227, 1);
+  background-color: #5faf9b(153, 203, 227, 1);
 }
 
 .full-img {
-  max-width: 100%;
+  padding-left: 30%;
+  max-width: 80%;
   height: auto;
   display: block;
 }
@@ -164,8 +166,9 @@ export default defineComponent({
 }
 
 .testimonial-header {
-  font-weight: 600;
+  font-weight: 700;
   color: #0d3d31;
+  margin-top: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
@@ -177,17 +180,21 @@ export default defineComponent({
   font-weight: 700;
   font-size: 2.25rem;
   color: #0d3d31;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 }
 
 .section-subtitle {
   font-size: 1rem;
   color: #6c757d;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .benefit-icon {
-  width: 60px;
-  height: 60px;
-  margin-bottom: 1rem;
+  width: 100px;
+  height: 150px;
+  margin-bottom: 3rem;
 }
 
 .benefit-title {
@@ -202,15 +209,15 @@ export default defineComponent({
 }
 
 .cta-section {
-  background-color: #071c2c;
+  background-color: #0d3d31;
   color: white;
-  width: 100%;
+  width:200%;
+  padding-top: 2%;
 }
 
 .cta-title {
   font-size: 2rem;
   font-weight: bold;
-  margin-bottom: 1rem;
 }
 
 .cta-subtitle {
@@ -237,7 +244,6 @@ export default defineComponent({
   color: white;
   padding: 3rem 1rem 1rem;
   width: 100vw;
-  bottom: 0;
 }
 
 .footer-container {
@@ -250,7 +256,7 @@ export default defineComponent({
 }
 
 .footer-links li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
 }
 
 .footer-links a {
@@ -264,7 +270,6 @@ export default defineComponent({
 
 .footer-divider {
   border-top: 1px solid rgba(255, 255, 255, 0.2);
-  margin: 2rem 0 1rem;
 }
 
 .footer-copy {
