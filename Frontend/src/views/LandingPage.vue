@@ -14,35 +14,43 @@
       </div>
     </section>
 
-    <!-- Testimonials -->
-    <section class="section">
-      <h4 class="testimonial-header">Hear what our customers say about us!</h4>
-      <Testimonials />
-    </section>
-
     <!-- Why Use SMUNCH Section -->
     <section class="section benefits-section">
       <div class="text-center benefits-header">
         <h2 class="section-title">Why Use SMUNCH?</h2>
-        <p class="section-subtitle">Our platform offers unique advantages for the campus community</p>
+        <p class="section-subtitle">
+          Our platform offers unique advantages for the campus community
+        </p>
       </div>
       <div class="row text-center justify-content-center">
         <div class="col-md-4 benefit">
           <img src="/src/assets/deliveryMan.png" alt="Save Time" class="benefit-icon" />
           <h5 class="benefit-title">Save Time</h5>
-          <p class="benefit-text">No need to leave class or study spots. Get food delivered during short breaks.</p>
+          <p class="benefit-text">
+            No need to leave class or study spots. Get food delivered during short breaks.
+          </p>
         </div>
         <div class="col-md-4 benefit">
           <img src="/src/assets/deliveryMan.png" alt="Earn Money" class="benefit-icon" />
           <h5 class="benefit-title">Earn Money</h5>
-          <p class="benefit-text">Turn free time between classes into an earning opportunity by delivering food.</p>
+          <p class="benefit-text">
+            Turn free time between classes into an earning opportunity by delivering food.
+          </p>
         </div>
         <div class="col-md-4 benefit">
           <img src="/src/assets/deliveryMan.png" alt="Connect with Peers" class="benefit-icon" />
           <h5 class="benefit-title">Connect with Peers</h5>
-          <p class="benefit-text">Build community by helping fellow students and making new connections.</p>
+          <p class="benefit-text">
+            Build community by helping fellow students and making new connections.
+          </p>
         </div>
       </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="section">
+      <h4 class="testimonial-header">Hear what our customers say about us!</h4>
+      <Testimonials />
     </section>
 
     <!-- CTA Section -->
@@ -60,7 +68,9 @@
         <div class="row footer-content">
           <div class="col-md-4 mb-3">
             <h5>SMUNCH</h5>
-            <p>Connecting hungry students with fellow students willing to deliver food on campus.</p>
+            <p>
+              Connecting hungry students with fellow students willing to deliver food on campus.
+            </p>
           </div>
           <div class="col-md-4 mb-3">
             <h5>Quick Links</h5>
@@ -94,7 +104,7 @@ export default defineComponent({
   components: { Testimonials },
   setup() {
     return { deliveryManIcon }
-  }
+  },
 })
 </script>
 
@@ -104,7 +114,7 @@ export default defineComponent({
   flex-direction: column;
   align-items: center;
   width: 100%;
-  margin-bottom:-5.5%; /* Remove witespace below footer */
+  margin-bottom: -5.5%; /* Remove witespace below footer */
 }
 
 .hero-image-row {
@@ -168,8 +178,8 @@ export default defineComponent({
 .testimonial-header {
   font-weight: 700;
   color: #0d3d31;
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
+  margin-top: 3rem;
+  margin-bottom: 3rem;
 }
 
 .benefits-section {
@@ -185,8 +195,8 @@ export default defineComponent({
 }
 
 .section-subtitle {
-  font-size: 1rem;
-  color: #6c757d;
+  font-size: 1.5rem;
+  color: #244f36;
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
 }
@@ -211,7 +221,7 @@ export default defineComponent({
 .cta-section {
   background-color: #0d3d31;
   color: white;
-  width:200%;
+  width: 200%;
   padding-top: 2%;
 }
 

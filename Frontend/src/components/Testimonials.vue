@@ -32,7 +32,7 @@ const testimonials = ref([
 
 onMounted(() => {
     new Carousel(carouselElement.value, {
-        interval: 5000,
+        interval: 9000,
         touch: true,
     });
 });
@@ -68,7 +68,7 @@ onMounted(() => {
 
 <style scoped>
 .testimonial-carousel {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
