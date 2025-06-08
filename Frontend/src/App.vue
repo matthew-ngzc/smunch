@@ -34,7 +34,7 @@ import { RouterLink, RouterView } from 'vue-router'
 <style scoped>
 /* Full-page layout */
 html, body, .app-container {
-  height: 100%;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
 }
