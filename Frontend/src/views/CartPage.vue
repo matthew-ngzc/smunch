@@ -1,9 +1,21 @@
 <script>
+// import OrderTimeline from '../components/OrderTimeline.vue'
 import { defineComponent, computed } from 'vue'
 import { useCartStore } from '@/stores/cart'
-import { useRouter } from 'vue-router' 
+import { useRouter } from 'vue-router'
+
+
+// progress timeline
+// const data = {
+//   steps: [ 'step1', 'step2', 'step3', 'step4'],
+//   currentStep: 1,
+//   activeColor: rgb(0, 0, 0),
+//   passiveColor: white,
+// };
+
 
 export default defineComponent({
+  
   setup() {
     const cart = useCartStore()
     const router = useRouter() 
@@ -18,10 +30,19 @@ export default defineComponent({
     return { cart, total, next }
   }
 })
+
+
 </script>
 
 <template>
+
   <div class="cart-page">
+
+    <!-- <div class="top"> 
+      <OrderTimeline :data="data"/>
+    </div> -->
+    
+
     <h2 v-if="cart.items.length > 0">Your {{ cart.items[0].merchant_name }} Cart</h2>
     <h2 v-else>Your Cart</h2>
 
@@ -76,4 +97,4 @@ export default defineComponent({
   font-size: 16px;
   cursor: pointer;
 }
-</style>
+</style> 

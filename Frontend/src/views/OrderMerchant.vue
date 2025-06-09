@@ -71,6 +71,8 @@ export default defineComponent({
   }
 })
 </script>
+
+
 <template>
   <div class="merchant-page">
     <div class="merchant-header">
@@ -196,9 +198,9 @@ export default defineComponent({
   align-items: center;
   border: none;
   border-radius: 30px;
-  width: 23px;
-  height: 23px;
-  font-size: 18px;
+  width: 20px;
+  height: 20px;
+  font-size: 16px;
   cursor: pointer;
   color: white;
 }
@@ -207,6 +209,14 @@ export default defineComponent({
   box-shadow: 1px 1px 2px #848383;
 
 }
+
+.menu-controls span { /* to prevent the number from moving the buttons */
+  display: inline-block;
+  width: 2.5ch;       /* enough for 2–3 digits */
+  text-align: center;
+  flex: 0 0 auto;
+}
+
 
 .menu-price {
   font-weight: bold;
