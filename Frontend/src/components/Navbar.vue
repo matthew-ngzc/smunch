@@ -59,6 +59,7 @@ export default defineComponent({
   left: 0;
   width: 100%;
   z-index: 1000;
+  
 }
 
 
