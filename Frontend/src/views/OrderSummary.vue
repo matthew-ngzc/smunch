@@ -3,6 +3,17 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router' 
 import { useDeliveryStore } from '@/stores/delivery'
 import { useCartStore } from '@/stores/cart'
+import ordertimeline from '../components/ordertimeline.vue'
+
+   // progress timeline
+    const data = {
+      steps: [ 'order details', 'select delivery location', 'order confirmation', 'payment'],
+      currentStep: 3,
+      activeColor: 'rgb(0, 0, 0)',
+      passiveColor: 'grey',
+    };
+
+
 
 const router = useRouter() 
 const delivery = useDeliveryStore()
@@ -19,6 +30,8 @@ const next = () => {
 
 <template>
   <div class="summary-page">
+
+     <ordertimeline :data="data" :routes="routes" />
     
     <!-- Main Summary Box -->
     <div class="summary-box">

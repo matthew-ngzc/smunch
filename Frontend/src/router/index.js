@@ -30,17 +30,8 @@ import Payment from '../views/Payment.vue'
   { path: '/order/:id', name: 'orderMerchant', component: OrderMerchant },
   { path: '/summary', name: 'orderSummary', component: OrderSummary },
   { path: '/payment', name: 'payment', component: Payment },
-  
-  {
-  path: '/cart',
-  name: "cartPage",
-  component: CartPage
-  },
-  {
-    path: '/location',
-    name: "selectLocation",
-    component: SelectLocation
-  },
+  { path: '/cart', name: 'cartPage', component: CartPage },
+  { path: '/location', name: 'selectLocation', component: SelectLocation },
   { path: '/:catchAll(.*)', name: "pageNotFound", component: PageNotFound} // redirect user to this page if path is not a valid one 
 ]
 

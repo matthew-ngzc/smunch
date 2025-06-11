@@ -1,105 +1,124 @@
 <script setup>
-  // import { defineProps } from 'vue';
+import { defineProps, readonly, computed } from 'vue'
 
-  const props = defineProps({
-    data: Object,
-  });
-
-  props.data.currentStep--;
-
-  const data =red(props.data);
-
-  const cssStyle = computed(() => {
-    return {
-      '--active-color': data.value.activeColor,
-      '--passive-color' : data.value.passiveColor,
-    };
+const props = defineProps({
+  data: {
+    type: Object,
+    required: true
   }
+})
 
+const data = readonly(
+  /** @type {{ steps: string[]; currentStep: number; activeColor: string; passiveColor: string }} */
+  props.data
 )
 
+const cssStyle = computed(() => ({
+  '--active-color': data.activeColor,
+  '--passive-color': data.passiveColor
+}))
 </script>
 
-
-
 <template>
-  
-  <div class="steps-container"> :style="cssStyle"
-    <ul class="steps-list"> 
-       <li class="step" v-for="(step, index) in data.steps"
-         :key="index" :class="(index == data.currentStep)? 
-         'step-active' : '' (index < data.currentStep)?
-         'step-done' : '' ">
-          <div class="step-bubble"></div>
-              <div class="step-line">
-                <div class="line-fill"> </div>
-              </div>
-       </li> 
+  <div class="steps-container" :style="cssStyle">
+    <ul class="steps-list">
+      <li
+        v-for="(step, index) in data.steps"
+        :key="index"
+        class="step"
+        :class="{
+          'step-active': index === data.currentStep - 1,
+          'step-done': index < data.currentStep - 1
+        }"
+      >
+        <div class="step-content">
+          <div class="step-bubble">{{ index + 1 }}</div>
+          <div class="step-label">{{ step }}</div>
+        </div>
+        <div class="step-line"></div>
+      </li>
     </ul>
   </div>
 </template>
 
-
 <style scoped>
-  .steps-container {
-    width: 100%;
-    margin: 0 auto;
-  }
+.steps-container {
+  width: 100%;
+  margin: 20px auto;
+}
 
-  .steps-list {
-    display: flex;
-    list-style: none;
-  }
+.steps-list {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  gap: 120px;
+}
 
-  .step{
-    display: flex;
-    align-items: center;
-    flex-grow: 1;
-    max-width: 100%;
-    position: relative;
-    height: 60px;
-  }
+.step {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  text-align: center;
+}
 
-  .step:last-child {
-    max-width: 60px;
-  }
+.step-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+}
 
-  .step-bubble {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    background-color: var(--passive-color);
-    transition: all .3s ease;
-    align-items: center;
-    justify-content: center;
-    margin-left: 10px;
-  }
+.step-bubble {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: var(--passive-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: background-color .3s ease;
+}
 
-  .step-line {
-    width: 100%;
-    height: 5px;
-     background-color: var(--passive-color);
-     position: absolute;
-     top: 50%;
-     left: 0;
-     transform: translateY(-50%);
-     z-index: -10;
-  }
+.step-label {
+  margin-top: 8px;
+  font-size: 16px;
+  text-transform: uppercase;
+  color: var(--passive-color);
+  transition: color .3s ease;
+  background-color: white;
+}
 
-  .line
+.step-line {
+  position: absolute;
+  top: 18%;
+  left: 95px;
+  width: 140%;
+  height: 4px;
+  transform: translateY(-50%);
+  background-color: var(--passive-color);
+  z-index: 0;
+  border-radius: 2px;
+}
 
-  .step:last-child .step-line {
-    display: none;
-  }
+.step:last-child .step-line {
+  display: none;
+}
 
-  .step-active .step-bubble {
-    color: black;
-  }
+.step-done .step-line,
+.step-done .step-bubble,
+.step-active .step-bubble {
+  background-color: var(--active-color) !important;
+  color: white;
+}
 
-  .step-done .step-bubble {
-    color: black;
-  }
-
+.step-active .step-label,
+.step-done .step-label {
+  color: var(--active-color);
+  font-weight: bold;
+}
 </style>
-
-

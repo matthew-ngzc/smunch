@@ -1,24 +1,35 @@
 <script>
-// import OrderTimeline from '../components/OrderTimeline.vue'
+
 import { defineComponent, computed } from 'vue'
 import { useCartStore } from '@/stores/cart'
 import { useRouter } from 'vue-router'
-
-
-// progress timeline
-// const data = {
-//   steps: [ 'step1', 'step2', 'step3', 'step4'],
-//   currentStep: 1,
-//   activeColor: rgb(0, 0, 0),
-//   passiveColor: white,
-// };
+import ordertimeline from '../components/ordertimeline.vue'
 
 
 export default defineComponent({
+
+  components: { ordertimeline },
   
   setup() {
     const cart = useCartStore()
-    const router = useRouter() 
+    const router = useRouter()
+
+    // progress timeline
+    const data = {
+      steps: [ 'order details', 'select delivery location', 'order confirmation', 'payment'],
+      currentStep: 1,
+      activeColor: 'rgb(0, 0, 0)',
+      passiveColor: 'grey',
+    };
+
+    // for routing buttons --- soon!!
+    // routes array must line up with data.steps
+    const routes = [
+     { name: 'cartPage' },
+     { name: 'selectLocation' },
+     { name: 'orderSummary' },
+     { name: 'payment' }
+   ]
 
     const total = computed(() => {
       return cart.items.reduce((sum, item) => sum + item.quantity * item.price, 0)
@@ -27,7 +38,9 @@ export default defineComponent({
     const next = () => {
       router.push({ name: 'selectLocation' })  // Make sure is a valid route
     }
-    return { cart, total, next }
+
+    // have to also return data for progress timeline!
+    return { cart, total, next, data, routes }
   }
 })
 
@@ -38,9 +51,8 @@ export default defineComponent({
 
   <div class="cart-page">
 
-    <!-- <div class="top"> 
-      <OrderTimeline :data="data"/>
-    </div> -->
+    <!-- pass both data and routes -->
+     <ordertimeline :data="data" :routes="routes" />
     
 
     <h2 v-if="cart.items.length > 0">Your {{ cart.items[0].merchant_name }} Cart</h2>
