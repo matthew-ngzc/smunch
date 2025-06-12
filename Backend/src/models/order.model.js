@@ -21,7 +21,6 @@ export async function createOrderOrThrow(payload) {
     customer_id,
     merchant_id,
     delivery_fee_cents,
-    payment_reference,
     building,
     room_type,
     room_number,
@@ -45,7 +44,6 @@ export async function createOrderOrThrow(payload) {
       food_amount_cents,
       delivery_fee_cents,
       total_amount_cents,
-      payment_reference,
       payment_status: 'pending',
       order_status: 'pending',
       customer_confirmed: false,
@@ -91,6 +89,31 @@ export async function updateOrderStatusOrThrow(orderId, status) {
   const { data, error } = await supabase
     .from('orders')
     .update({ order_status: status })
+    .eq('order_id', orderId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  if (!data) {
+    const err = new Error(`Order with ID ${orderId} not found`);
+    err.status = 404;
+    throw err;
+  }
+  return data;
+}
+
+/**
+ * Updates the payment status of an order by ID.
+ *
+ * @param {number|string} orderId - Order ID
+ * @param {string} status - New status
+ * @returns {Promise<object>} - Updated order object
+ * @throws {Error} - If update fails or order not found
+ */
+export async function updatePaymentStatusOrThrow(orderId, status) {
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ payment_status: status })
     .eq('order_id', orderId)
     .select()
     .single();
