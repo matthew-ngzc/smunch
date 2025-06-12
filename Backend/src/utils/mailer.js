@@ -57,3 +57,14 @@ export const sendVerificationEmail = async (to, token) => {
   });
 };
 
+/*
+Generate a receipt email for an order once payment is verified
+*/
+export async function sendReceiptEmail(to, receiptHtml) {
+  return transporter.sendMail({
+    from: '"SMUNCH" <smunch.dev@gmail.com>',
+    to,
+    subject: 'Your SMUNCH Receipt',
+    html: receiptHtml,
+  });
+}
