@@ -1,20 +1,22 @@
 import { supabase } from '../lib/supabaseClient.js';
 
 /**
- * Creates a new order with associated items.
+ * Creates a new order and its associated items.
+ * 
+ * Price is fetched server-side from the database to ensure integrity.
  *
- * @param {object} payload - Order fields:
- *   customer_id (integer),
- *   merchant_id (integer),
- *   delivery_fee_cents (integer),
- *   payment_reference (string),
- *   building (string),
- *   room_type (string),
- *   room_number (string),
- *   delivery_time (timestamp),
- *   order_items: Array<{menu_item_id:number, quantity:number, price_cents:number, customisations?:object}>
- * @returns {Promise<object>} - Created order object including inserted items
- * @throws {Error} - If insertion fails
+ * @param {object} payload - Order details including:
+ *   - customer_id (int)
+ *   - merchant_id (int)
+ *   - delivery_fee_cents (int)
+ *   - building (string)
+ *   - room_type (string)
+ *   - room_number (string)
+ *   - delivery_time (timestamp)
+ *   - order_items: Array<{menu_item_id, quantity, customisations?, notes?}>
+ *
+ * @returns {Promise<object>} - Created order object with items
+ * @throws {Error} - If insertion or menu lookup fails
  */
 export async function createOrderOrThrow(payload) {
   const {
@@ -28,14 +30,38 @@ export async function createOrderOrThrow(payload) {
     order_items
   } = payload;
 
-  // Calculate totals
-  const food_amount_cents = order_items.reduce(
-    (sum, item) => sum + item.price_cents * item.quantity,
-    0
-  );
+  let food_amount_cents = 0;
+
+  // Step 1: Retrieve prices from DB and build enriched items
+  const enrichedItemsRaw = await Promise.all(order_items.map(async (item) => {
+    const { data: menuItem, error } = await supabase
+      .from('menu_items')
+      .select('price_cents')
+      .eq('menu_item_id', item.menu_item_id)
+      .single();
+
+    if (error || !menuItem) {
+      throw new Error(`Invalid menu_item_id: ${item.menu_item_id}`);
+    }
+
+    const price_cents = menuItem.price_cents;
+    const quantity = item.quantity || 1;
+
+    // Update running total
+    food_amount_cents += price_cents * quantity;
+
+    return {
+      menu_item_id: item.menu_item_id,
+      quantity,
+      price_cents,
+      customisations: item.customisations || null,
+      notes: item.notes || null
+    };
+  }));
+
   const total_amount_cents = food_amount_cents + delivery_fee_cents;
 
-  // Insert order
+  // Step 2: Insert the order
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .insert([{
@@ -58,24 +84,22 @@ export async function createOrderOrThrow(payload) {
 
   if (orderError) throw orderError;
 
-  // Insert order items
-  const itemsPayload = order_items.map(item => ({
-    order_id: order.order_id,
-    menu_item_id: item.menu_item_id,
-    quantity: item.quantity,
-    price_cents: item.price_cents,
-    customisations: item.customisations || {},
-    notes: item.notes
+  // Step 3: Insert order_items, attaching order_id
+  const enrichedItems = enrichedItemsRaw.map(item => ({
+    ...item,
+    order_id: order.order_id
   }));
+
   const { data: items, error: itemsError } = await supabase
     .from('order_items')
-    .insert(itemsPayload)
+    .insert(enrichedItems)
     .select();
 
   if (itemsError) throw itemsError;
 
   return { ...order, items };
 }
+
 
 /**
  * Updates the status of an order by ID.
@@ -172,3 +196,38 @@ export async function getOrderByIdOrThrow(orderId) {
   }
   return data;
 }
+
+/**
+ * Retrieves a single order by ID ALONG WITH ITS ITEMS
+ *
+ * @param {number|string} orderId - Order ID
+ * @returns {Promise<object>} - Order object with `items: [...]`
+ * @throws {Error} - If not found or query fails
+ */
+export async function getFullOrderByIdOrThrow(orderId) {
+  const { data: order, error: orderError } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('order_id', orderId)
+    .maybeSingle();
+
+  if (orderError) throw orderError;
+  if (!order) {
+    const err = new Error(`Order with ID ${orderId} does not exist`);
+    err.status = 404;
+    throw err;
+  }
+
+  const { data: items, error: itemsError } = await supabase
+    .from('order_items')
+    .select('quantity, price_cents, notes, customisations, menu_items(name)')
+    .eq('order_id', orderId);
+
+  // Debugging output
+  console.log('[DEBUG] raw order_items:', items);
+
+  if (itemsError) throw itemsError;
+
+  return { ...order, items };
+}
+
