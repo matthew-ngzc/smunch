@@ -26,6 +26,31 @@ export async function getUserByEmailOrThrow(email) {
 }
 
 /**
+ * Retrieves the email of a user by user ID.
+ *
+ * @param {number|string} userId - The ID of the user
+ * @returns {Promise<string>} - The user's email
+ * @throws {Error} - If not found or query fails
+ */
+export async function getUserEmailByIdOrThrow(userId) {
+  const { data, error } = await supabase
+    .from('users')
+    .select('email')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) {
+    const err = new Error(`User with ID ${userId} does not exist`);
+    err.status = 404;
+    throw err;
+  }
+
+  return data.email;
+}
+
+
+/**
  * Checks whether an email is already registered.
  *
  * @param {string} email - Email to check
