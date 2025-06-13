@@ -50,7 +50,7 @@ export const createOrder = async (req, res, next) => {
     const amountDollars = (Number(total_amount_cents) / 100).toFixed(2);
 
     //generate the PayNow QR code
-    const {qrCodeDataURL, payment_reference, paynow_number} = await generatePayNowQRCode({
+    const {qrCodeDataURL, paymentReference, paynowNumber} = await generatePayNowQRCode({
       amount: amountDollars,
       orderId: order_id,
       customerId: customer_id
@@ -64,8 +64,8 @@ export const createOrder = async (req, res, next) => {
     res.status(201).json({
       order: newOrder,
       qrCode: qrCodeDataURL,
-      payment_reference: payment_reference,
-      paynow_number: paynow_number
+      payment_reference: paymentReference,
+      paynow_number: paynowNumber
     });
   } catch (err) {
     // Handle foreign key violations for customer_id, merchant_id, or menu_item_id

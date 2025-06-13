@@ -45,6 +45,13 @@ transporter.verify((error, success) => {
   }
 });
 
+/**
+ * Sends a verification email to the user with a link to verify their account.
+ *
+ * @param {string} to - The recipient's email address
+ * @param {string} token - The verification token
+ * @returns {Promise} - Resolves when the email is sent successfully
+ */
 export const sendVerificationEmail = async (to, token) => {
   console.log('[DEBUG]', process.env.SMUNCH_EMAIL, process.env.SMUNCH_APP_PASS);
 
@@ -57,14 +64,24 @@ export const sendVerificationEmail = async (to, token) => {
   });
 };
 
-/*
-Generate a receipt email for an order once payment is verified
-*/
-export async function sendReceiptEmail(to, receiptHtml) {
+/**
+ * Sends a confirmation email with the receipt PDF attached.
+ *
+ * @param {string} to - The recipient's email address
+ * @param {string} htmlBody - The HTML content of the email
+ * @param {Buffer} pdfBuffer - The generated receipt PDF as a Buffer
+ * @returns {Promise<void>}
+ */
+export async function sendReceiptEmail(to, receiptHtml, pdfBuffer) {
   return transporter.sendMail({
     from: '"SMUNCH" <smunch.dev@gmail.com>',
     to,
-    subject: 'Your SMUNCH Receipt',
+    subject: 'Payment Received! Your SMUNCH Order is Confirmed',
     html: receiptHtml,
+    attachments: [{
+      filename: 'SMUNCH_Receipt.pdf',
+      content: pdfBuffer,
+      contentType: 'application/pdf'
+    }]
   });
 }

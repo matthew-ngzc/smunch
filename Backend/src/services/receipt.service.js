@@ -1,6 +1,6 @@
 //for generating pdf
 import PDFDocument from 'pdfkit';
-import { Readable } from 'stream';
+import getStream from 'get-stream';
 
 /**
  * Generates an HTML-formatted receipt for embedding in a confirmation email.
@@ -23,6 +23,7 @@ import { Readable } from 'stream';
  * Receipt:
  *   1x Coffee .................. $2.50
  *   2x Toast ................... $3.00
+ *   Delivery Fee ............... $1.00
  *   -------------------------------
  *   Total ...................... $5.50
  *
@@ -41,6 +42,7 @@ export async function generateReceiptHtml(order) {
   }).join('');
 
   const total = (order.total_amount_cents / 100).toFixed(2);
+  const delivery_fee = (order.delivery_fee_cents / 100).toFixed(2);
 
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px;">
@@ -55,6 +57,9 @@ export async function generateReceiptHtml(order) {
       <h3 style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">Your Receipt</h3>
       <table style="width: 100%; border-collapse: collapse;">
         ${rows}
+        <tr>
+          <td>Delivery Fee</td><td style="text-align:right;">$${delivery_fee}</td>
+        </tr>
         <tr style="border-top:1px solid #ccc;">
           <td><strong>Total</strong></td><td style="text-align:right;"><strong>$${total}</strong></td>
         </tr>
@@ -74,16 +79,14 @@ export async function generateReceiptHtml(order) {
  * @returns {Promise<Buffer>} - A Buffer containing the PDF file content
  */
 export async function generateReceiptPDF(order) {
+  const items = order.items || [];
   const doc = new PDFDocument();
-  const stream = new Readable({
-    read() {}
-  });
 
-  doc.pipe(stream);
+  //doc.pipe(stream);
   // PDF Header
   doc.fontSize(20).text('SMUNCH Receipt', { align: 'center' });
   doc.moveDown();
-  doc.fontSize(12).text(`Order ID: ${orderId}`);
+  doc.fontSize(12).text(`Order ID: ${order.orderId}`);
   doc.text(`Payment reference: ${order.payment_reference}`);
   doc.text(`Delivery to: ${order.building} ${order.room_type} ${order.room_number}`);
   doc.text(`Delivery time: ${order.delivery_time}`);
@@ -103,10 +106,12 @@ export async function generateReceiptPDF(order) {
 
   doc.end();
   // Convert the PDF stream to a Buffer
-  const chunks = [];
-  return new Promise((resolve, reject) => {
-    doc.on('data', chunk => chunks.push(chunk));
-    doc.on('end', () => resolve(Buffer.concat(chunks)));
-    doc.on('error', reject);
-  });
+  return await getStream(doc);
+//   const chunks = [];
+//   return new Promise((resolve, reject) => {
+//     doc.on('data', chunk => chunks.push(chunk));
+//     doc.on('end', () => resolve(Buffer.concat(chunks)));
+//     doc.on('error', reject);
+//   });
+  
 }
