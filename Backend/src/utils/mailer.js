@@ -69,19 +69,13 @@ export const sendVerificationEmail = async (to, token) => {
  *
  * @param {string} to - The recipient's email address
  * @param {string} htmlBody - The HTML content of the email
- * @param {Buffer} pdfBuffer - The generated receipt PDF as a Buffer
  * @returns {Promise<void>}
  */
-export async function sendReceiptEmail(to, receiptHtml, pdfBuffer) {
+export async function sendReceiptEmail(to, receiptHtml) {
   return transporter.sendMail({
     from: '"SMUNCH" <smunch.dev@gmail.com>',
     to,
     subject: 'Payment Received! Your SMUNCH Order is Confirmed',
-    html: receiptHtml,
-    attachments: [{
-      filename: 'SMUNCH_Receipt.pdf',
-      content: pdfBuffer,
-      contentType: 'application/pdf'
-    }]
+    html: receiptHtml
   });
 }
