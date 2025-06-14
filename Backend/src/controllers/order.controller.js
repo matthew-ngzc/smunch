@@ -122,10 +122,20 @@ export const getUserOrders = async (req, res, next) => {
     const { type } = req.query;
     let statuses;
     if (type === 'active') {
-      statuses = ['pending', 'in_progress'];
+      statuses = [
+        'created',               // order placed, awaiting payment
+        'payment_verified',      // payment confirmed
+        'preparing',             // merchant preparing order (optional, future dev)
+        'collected_by_runner',   // in transit
+        'delivered'              // food delivered, not yet confirmed by user
+      ];
     } else if (type === 'history') {
-      statuses = ['completed', 'cancelled'];
+      statuses = [
+        'completed',             // user confirmed receipt
+        'cancelled'              // user or system cancelled
+      ];
     }
+
     const orders = await getOrdersByCustomerIdOrThrow(userId, statuses);
     res.json({ orders });
   } catch (err) {
