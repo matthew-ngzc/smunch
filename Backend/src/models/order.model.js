@@ -164,7 +164,13 @@ export async function getOrdersByCustomerIdOrThrow(customerId, statuses) {
     .from('orders')
     .select('*')
     .eq('customer_id', customerId);
+  
+  // Validate statuses input
+  if (statuses && !Array.isArray(statuses)) {
+    throw new Error('statuses must be an array of strings');
+  }
 
+  // Optionally filter by statuses
   if (Array.isArray(statuses) && statuses.length > 0) {
     query = query.in('order_status', statuses);
   }
