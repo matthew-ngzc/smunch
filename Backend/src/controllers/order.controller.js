@@ -1,6 +1,7 @@
 import {
   createOrderOrThrow,
   updateOrderStatusOrThrow,
+  updatePaymentStatusOrThrow,
   getOrdersByCustomerIdOrThrow
 } from '../models/order.model.js';
 import { generatePayNowQRCode } from '../services/payment.service.js';
@@ -86,10 +87,17 @@ export const createOrder = async (req, res, next) => {
 };
 
 /**
- * PUT /api/orders/:orderId/status
+ * PUT /api/orders/:orderId/order-status
  *
  * Updates the status of a specific order.
- * Only accepts predefined status strings (e.g., 'pending', 'confirmed', 'cancelled', etc.)
+ * Only accepts predefined status strings
+ * - 'created'
+ * - 'payment_verified'
+ * - 'preparing'
+ * - 'collected_by_runner'
+ * - 'delivered'
+ * - 'completed'
+ * - 'cancelled'
  *
  * 📥 Expected `req.body`:
  * {
@@ -100,12 +108,46 @@ export const createOrder = async (req, res, next) => {
  * {
  *   order: { ... }  // updated order object
  * }
+ * 
+ * @throws {Error} - If status is invalid or order not found
  */
 export const updateOrderStatus = async (req, res, next) => {
   try {
     const { orderId } = req.params;
     const { status } = req.body;
     const updatedOrder = await updateOrderStatusOrThrow(orderId, status);
+    res.json({ order: updatedOrder });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * PUT /api/orders/:orderId/payment-status
+ *
+ * Updates the payment status of a specific order.
+ * Only accepts predefined status strings:
+ * - 'awaiting_payment'
+ * - 'awaiting_verification'
+ * - 'payment_confirmed'
+ *
+ * 📥 Expected `req.body`:
+ * {
+ *   status: string
+ * }
+ *
+ * 📤 Response:
+ * {
+ *   order: { ... }  // updated order object
+ * }
+ *
+ * @throws {Error} - If status is invalid or order not found
+ */
+export const updatePaymentStatus = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    const updatedOrder = await updatePaymentStatusOrThrow(orderId, status);
     res.json({ order: updatedOrder });
   } catch (err) {
     next(err);

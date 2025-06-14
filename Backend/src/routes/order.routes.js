@@ -2,7 +2,8 @@ import express from 'express';
 import {
   createOrder,
   updateOrderStatus,
-  getUserOrders
+  getUserOrders,
+  updatePaymentStatus
 } from '../controllers/order.controller.js';
 import { 
   confirmPaymentAndSendReceipt,
@@ -17,7 +18,11 @@ router.post('/', createOrder);
 
 // Update order status
 // PUT /api/orders/:orderId/status
-router.put('/:orderId/OrderStatus', updateOrderStatus);
+router.put('/:orderId/order-status', updateOrderStatus);
+
+// Update payment status of an order
+// PUT /api/orders/:orderId/status
+router.put('/:orderId/payment-status', updatePaymentStatus);
 
 // View orders for a user (active or history via query param `type`)
 // GET /api/orders/user/:userId?type=active|history
