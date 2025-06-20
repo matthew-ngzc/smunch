@@ -4,6 +4,7 @@ import { ORDER_STATUSES, PAYMENT_STATUSES } from '../constants/enums.constants.j
  * Enhanced centralized error handler for Supabase/Postgres errors
  */
 export default function errorHandler(err, req, res, next) {
+  console.error('[ERROR]', err); // <-- add this line
   const message = err.message || '';
   const code = err.code || '';
 
@@ -47,6 +48,22 @@ export default function errorHandler(err, req, res, next) {
     return res.status(409).json({
       error: 'Duplicate value',
       detail: err.detail || 'A record with this value already exists'
+    });
+  }
+
+  // === Manually thrown 404 errors
+  if (err.status === 404) {
+    return res.status(404).json({
+      error: err.message || 'Resource not found',
+      code: err.code || 'NOT_FOUND'
+    });
+  }
+
+  // === Manually thrown 409 Conflict errors
+  if (err.status === 409) {
+    return res.status(409).json({
+      error: err.message || 'Conflict',
+      code: err.code || 'CONFLICT'
     });
   }
 

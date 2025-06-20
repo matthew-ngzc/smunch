@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient.js';
+import { DuplicateError, NotFoundError } from '../utils/error.utils.js';
 
 /**
  * Retrieves all merchants with basic public fields.
@@ -10,7 +11,8 @@ import { supabase } from '../lib/supabaseClient.js';
 export async function getAllMerchantsOrThrow() {
   const { data, error } = await supabase
     .from('merchants')
-    .select('merchant_id, name, location, contact, image_url');
+    .select('merchant_id, name, location, contact_number, image_url')
+    .order('merchant_id', {ascending: true});
 
   if (error) throw error;
   return data;
@@ -32,11 +34,7 @@ export async function getMerchantByIdOrThrow(merchantId, fields = 'merchant_id')
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) {
-    const err = new Error(`Merchant with ID ${merchantId} does not exist`);
-    err.status = 404;
-    throw err;
-  }
+  if (!data) throw NotFoundError("Merchant", merchantId);
 
   return data;
 }
@@ -55,9 +53,10 @@ export async function updateMerchantByIdOrThrow(merchantId, updates) {
     .update(updates)
     .eq('merchant_id', merchantId)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
+  if (!data) throw NotFoundError("Merchant", merchantId);
   return data;
 }
 
@@ -69,21 +68,17 @@ export async function updateMerchantByIdOrThrow(merchantId, updates) {
  * @throws {Error} - If insertion fails or an identical merchant already exists (all fields match)
  */
 export async function createMerchantOrThrow(payload) {
-  const { name, location, contact, image_url, payout_frequency } = payload;
+  const { name, location, contact_number, image_url, payout_frequency } = payload;
 
   const { data: existing, error: checkError } = await supabase
     .from('merchants')
     .select('merchant_id')
-    .match({ name, location, contact, image_url, payout_frequency })
+    .match({ name, location, contact_number, image_url, payout_frequency })
     .maybeSingle();
 
   if (checkError) throw checkError;
-  if (existing) {
-    const err = new Error(`Identical merchant already exists with ID ${existing.merchant_id}`);
-    err.status = 409;
-    err.existingMerchantId = existing.merchant_id;
-    throw err;
-  }
+  if (existing) throw DuplicateError("Merchant", existing.merchant_id);
+
 
   const { data, error } = await supabase
     .from('merchants')

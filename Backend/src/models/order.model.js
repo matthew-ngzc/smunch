@@ -1,4 +1,8 @@
 import { supabase } from '../lib/supabaseClient.js';
+import { ORDER_STATUSES, PAYMENT_STATUSES } from '../constants/enums.constants.js';
+import { generatePaymentReference } from '../services/payment.service.js';
+import { NotFoundError } from '../utils/error.utils.js';
+import { getUserByIdOrThrow } from './user.model.js';
 
 /**
  * Creates a new order and its associated items.
@@ -70,8 +74,8 @@ export async function createOrderOrThrow(payload) {
       food_amount_cents,
       delivery_fee_cents,
       total_amount_cents,
-      payment_status: 'pending',
-      order_status: 'pending',
+      payment_status: PAYMENT_STATUSES[0],
+      order_status: ORDER_STATUSES[0],
       customer_confirmed: false,
       customer_confirmed_at: null,
       building,
@@ -90,6 +94,18 @@ export async function createOrderOrThrow(payload) {
     order_id: order.order_id
   }));
 
+  // Step 4: Set Payment Reference
+  const payment_reference = await generatePaymentReference(order.order_id, customer_id);
+  const { error: updateError } = await supabase
+  .from('orders')
+  .update({ payment_reference })
+  .eq('order_id', order.order_id);
+
+  if (updateError) throw updateError;
+  // Merge it into returned order object
+  order.payment_reference = payment_reference;  
+
+  // Step 5: Insert order items
   const { data: items, error: itemsError } = await supabase
     .from('order_items')
     .insert(enrichedItems)
@@ -115,14 +131,10 @@ export async function updateOrderStatusOrThrow(orderId, status) {
     .update({ order_status: status })
     .eq('order_id', orderId)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
-  if (!data) {
-    const err = new Error(`Order with ID ${orderId} not found`);
-    err.status = 404;
-    throw err;
-  }
+  if (!data) throw NotFoundError("Order", orderId);
   return data;
 }
 
@@ -140,14 +152,10 @@ export async function updatePaymentStatusOrThrow(orderId, status) {
     .update({ payment_status: status })
     .eq('order_id', orderId)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
-  if (!data) {
-    const err = new Error(`Order with ID ${orderId} not found`);
-    err.status = 404;
-    throw err;
-  }
+  if (!data) throw NotFoundError("Order", orderId);
   return data;
 }
 
@@ -160,21 +168,25 @@ export async function updatePaymentStatusOrThrow(orderId, status) {
  * @throws {Error} - If query fails
  */
 export async function getOrdersByCustomerIdOrThrow(customerId, statuses) {
-  let query = supabase
-    .from('orders')
-    .select('*')
-    .eq('customer_id', customerId);
-  
   // Validate statuses input
   if (statuses && !Array.isArray(statuses)) {
     throw new Error('statuses must be an array of strings');
   }
+  // Validate user existence
+  await getUserByIdOrThrow(customerId) // throws 404 if user not found
+
+  // Build Query
+  let query = supabase
+    .from('orders')
+    .select('*')
+    .eq('customer_id', customerId);
 
   // Optionally filter by statuses
   if (Array.isArray(statuses) && statuses.length > 0) {
     query = query.in('order_status', statuses);
   }
 
+  // Query Database
   const { data, error } = await query.order('created_at', { ascending: false });
   if (error) throw error;
   return data;
@@ -195,11 +207,7 @@ export async function getOrderByIdOrThrow(orderId) {
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) {
-    const err = new Error(`Order with ID ${orderId} does not exist`);
-    err.status = 404;
-    throw err;
-  }
+  if (!data) throw NotFoundError("Order", orderId);
   return data;
 }
 
@@ -218,11 +226,7 @@ export async function getFullOrderByIdOrThrow(orderId) {
     .maybeSingle();
 
   if (orderError) throw orderError;
-  if (!order) {
-    const err = new Error(`Order with ID ${orderId} does not exist`);
-    err.status = 404;
-    throw err;
-  }
+  if (!order) throw NotFoundError("Order", orderId);
 
   const { data: items, error: itemsError } = await supabase
     .from('order_items')

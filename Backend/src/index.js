@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.routes.js";
 import merchantRoutes from "./routes/merchant.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import errorHandler from "./middlewares/error.middleware.js";
+import { swaggerSpec, swaggerUi } from './config/swagger.config.js';
 import cors from 'cors'
 
 dotenv.config();
@@ -15,6 +16,8 @@ const app = express();
 // Enable CORS
 app.use(cors())
 
+// Swagger documentation setup
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -34,5 +37,6 @@ if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
 //starting server
 app.listen(PORT, () => {
   console.log(`[SYSTEM] Server running on port ${PORT}...`);
+  console.log(`[DOCS] Swagger UI available at: http://localhost:${PORT}/api-docs`);
 });
 

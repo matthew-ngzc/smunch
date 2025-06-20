@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient.js';
 import bcrypt from 'bcryptjs';
+import { NotFoundError } from '../utils/error.utils.js';
 
 /**
  * Retrieves a user by email and throws if not found.
@@ -26,27 +27,24 @@ export async function getUserByEmailOrThrow(email) {
 }
 
 /**
- * Retrieves the email of a user by user ID.
+ * Fetches a user by ID and throws if not found.
  *
- * @param {number|string} userId - The ID of the user
- * @returns {Promise<string>} - The user's email
- * @throws {Error} - If not found or query fails
+ * @param {number} userId - User ID
+ * @param {string} fields - Comma-separated fields to select (default: 'user_id')
+ * @returns {Promise<object>} - The user object
+ * @throws {Error} - If user is not found or query fails
  */
-export async function getUserEmailByIdOrThrow(userId) {
+export async function getUserByIdOrThrow(userId, fields = 'user_id') {
   const { data, error } = await supabase
     .from('users')
-    .select('email')
+    .select(fields)
     .eq('user_id', userId)
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) {
-    const err = new Error(`User with ID ${userId} does not exist`);
-    err.status = 404;
-    throw err;
-  }
+  if (!data) throw NotFoundError('User', userId);
 
-  return data.email;
+  return data;
 }
 
 

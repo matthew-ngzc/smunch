@@ -9,13 +9,74 @@ import {
 } from '../models/user.model.js';
 
 
+
+
+/** SWAGGER DOCS
+ * @swagger
+ * /api/auth/signup:
+ *   post:
+ *     summary: Start signup process by sending verification email
+ *     description: |
+ *       Verifies if email is valid and unique, then sends a verification email.
+ *       Actual user account is created only after verifying the token from the email.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, name, phoneNo, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email the user is signing up with (must be @smu.edu.sg)
+ *                 example: student@smu.edu.sg
+ *               name:
+ *                 type: string
+ *                 description: User's full name
+ *                 example: Alice Tan
+ *               phoneNo:
+ *                 type: string
+ *                 description: User's phone number
+ *                 example: "91234567"
+ *               password:
+ *                 type: string
+ *                 description: Account password (plaintext at this stage)
+ *                 example: MyPass123
+ *     responses:
+ *       200:
+ *         description: Verification email sent
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Verification email sent. Please check your inbox.
+ *       400:
+ *         description: Missing or invalid fields
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Only SMU emails allowed
+ *       409:
+ *         description: Email already registered
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Account already exists
+ */
+
 /**
  * POST /api/auth/signup
  * Starts the signup process by verifying the email is allowed and not taken,
  * and then sends a verification email containing a JWT token.
  * Account is only created after verification.
  * TODO: password strength validation
+ * TODO: email format validation
+ * TODO: phone number format validation
  * TODO: rate limit signup attempts
+ * TODO: add reCAPTCHA to prevent spam
+ * TODO: prevent sql injection in email/password
  */
 export const signup = async (req, res, next) => {
   try {
@@ -44,6 +105,43 @@ export const signup = async (req, res, next) => {
     next(err);
   }
 };
+
+
+/** SWAGGER DOCS
+ * @swagger
+ * /api/auth/verify:
+ *   get:
+ *     summary: Verifies email token and creates account
+ *     description: Accepts JWT token from email link and completes account creation
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         required: true
+ *         description: JWT token received in email
+ *         schema:
+ *           type: string
+ *     responses:
+ *       201:
+ *         description: Account created
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Account successfully verified. You may now log in.
+ *       400:
+ *         description: Missing or expired token
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Verification link expired
+ *       409:
+ *         description: Account already activated
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Account already activated
+ */
+
 /**
  * GET /api/auth/verify
  * No postman, click on link
@@ -75,6 +173,51 @@ export const verifyAndCreateUser = async (req, res, next) => {
     next(err);
   }
 };
+
+
+/** SWAGGER DOCS
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Login with email and password
+ *     description: Authenticates a user and returns a signed JWT
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: Registered SMU email address
+ *                 example: student@smu.edu.sg
+ *               password:
+ *                 type: string
+ *                 description: Account password
+ *                 example: MyPass123
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             example:
+ *               token: eyJhbGciOiJIUzI1NiIsInR...
+ *       400:
+ *         description: Missing credentials
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Email and password are required
+ *       401:
+ *         description: Invalid email or password
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Invalid email or password
+ */
 
 /**
  * POST /api/auth/login
