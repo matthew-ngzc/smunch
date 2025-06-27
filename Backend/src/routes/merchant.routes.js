@@ -8,17 +8,54 @@ import {
   addMenuItem,
   updateMenuItem,
 } from '../controllers/merchant.controller.js';
+import { requireRole } from '../middlewares/role.middleware.js';
+import { authenticateToken } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
-router.get('/', getAllMerchants);        // Get all merchants
-router.get('/:id', getMerchant);        // Get specific merchant by ID
-router.get('/:id/menu', getMenu);        // Get menu for a specific merchant
-router.post('/', addMerchant);           // Add new merchant
-router.put('/:id', updateMerchant);      // Update existing merchant
-router.post('/:id/menu', addMenuItem);   // Add menu item to merchant with ID
-router.put('/:merchantId/menu/:menuItemId', updateMenuItem) // Update menu item
+/**
+ * Get All Merchants
+ * GET /api/merchants
+ * Anybody can access
+ */
+router.get('/', getAllMerchants);
 
+/**
+ * Get specific merchant by ID
+ * GET /api/merchants/:id
+ * Anybody can access
+ */
+router.get('/:id', getMerchant);
+
+/**
+ * Get a specific merchant's menu
+ * GET /api/merchants/:id/menu
+ * Anybody can access
+ */
+router.get('/:id/menu', getMenu);
+
+
+
+/**
+ * Update a merchant's details (not menu)
+ * PUT /api/merchants/:id
+ * Must be logged in as merchant
+ */
+router.put('/:id', authenticateToken, requireRole('merchant'), updateMerchant);
+
+/**
+ * Add a menu item for a specific merchant
+ * POST /api/merchants/:id/menu
+ * Must be logged in as merchant
+ */
+router.post('/:id/menu', authenticateToken, requireRole('merchant'), addMenuItem);
+
+/**
+ * Update the menu item for a specific merchant
+ * POST /api/merchants/:merchantId/menu/:menuItemId
+ * Must be logged in as merchant
+ */
+router.put('/:merchantId/menu/:menuItemId', authenticateToken, requireRole('merchant'),updateMenuItem);
 
 
 export default router;

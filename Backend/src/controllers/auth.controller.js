@@ -95,7 +95,7 @@ export const signup = async (req, res, next) => {
       return res.status(409).json({ message: 'Account already exists' });
     }
     //create JWT token for email verification
-    const token = jwt.sign({ email, name, phoneNo, password }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ email, name, phoneNo, password, role: 'user' }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     //Send verification email
     await sendVerificationEmail(email, token);
@@ -155,7 +155,7 @@ export const verifyAndCreateUser = async (req, res, next) => {
 
     //extract user details from token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const { email, name, phoneNo, password } = decoded;
+    const { email, name, phoneNo, password, role } = decoded;
 
     //check that account has not already been verified
     if (await isEmailTakenOrThrow(email)) {
@@ -163,7 +163,7 @@ export const verifyAndCreateUser = async (req, res, next) => {
     }
 
     //create user in database
-    await createUserOrThrow({ email, name, phoneNo, password });
+    await createUserOrThrow({ email, name, phoneNo, password, role });
 
     res.status(201).json({ message: 'Account successfully verified. You may now log in.' });
   } catch (err) {
@@ -241,8 +241,8 @@ export const login = async (req, res, next) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Generate auth token
-    const token = jwt.sign({ id: user.user_id }, process.env.JWT_SECRET, {
+    // Generate auth token using userid and role
+    const token = jwt.sign({ id: user.user_id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: '1d',
     });
 

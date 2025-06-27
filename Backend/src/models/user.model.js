@@ -74,7 +74,7 @@ export async function isEmailTakenOrThrow(email) {
  * @throws {Error} - If creation fails
  */
 export async function createUserOrThrow(payload) {
-  const { email, name, phoneNo, password } = payload;
+  const { email, name, phoneNo, password, role } = payload;
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const { data, error } = await supabase
@@ -83,7 +83,8 @@ export async function createUserOrThrow(payload) {
       email,
       name,
       phone: phoneNo,
-      hashed_password: hashedPassword
+      hashed_password: hashedPassword,
+      role
     }])
     .select()
     .single();

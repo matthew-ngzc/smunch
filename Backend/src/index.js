@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes.js";
 import merchantRoutes from "./routes/merchant.routes.js";
 import orderRoutes from "./routes/order.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 import errorHandler from "./middlewares/error.middleware.js";
 import { swaggerSpec, swaggerUi } from './config/swagger.config.js';
 import cors from 'cors'
@@ -25,6 +26,7 @@ app.use(cookieParser());
 app.use("/api/orders", orderRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/merchants", merchantRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.use(errorHandler);
 

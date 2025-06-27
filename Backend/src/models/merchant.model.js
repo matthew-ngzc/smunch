@@ -68,12 +68,12 @@ export async function updateMerchantByIdOrThrow(merchantId, updates) {
  * @throws {Error} - If insertion fails or an identical merchant already exists (all fields match)
  */
 export async function createMerchantOrThrow(payload) {
-  const { name, location, contact_number, image_url, payout_frequency } = payload;
+  const { name, location, contact_number, image_url, payout_frequency, email } = payload;
 
   const { data: existing, error: checkError } = await supabase
     .from('merchants')
     .select('merchant_id')
-    .match({ name, location, contact_number, image_url, payout_frequency })
+    .match({ name, location, contact_number, image_url, payout_frequency, email })
     .maybeSingle();
 
   if (checkError) throw checkError;
