@@ -46,21 +46,26 @@ transporter.verify((error, success) => {
 });
 
 /**
- * Sends a verification email to the user with a link to verify their account.
+ * Sends a verification email to the user or merchant with a link to verify their account.
  *
- * @param {string} to - The recipient's email address
- * @param {string} token - The verification token
+ * @param {Object} options
+ * @param {string} options.to - The recipient's email address
+ * @param {string} options.token - The verification token
+ * @param {'user'|'merchant'} options.type - Type of signup ('user' or 'merchant')
  * @returns {Promise} - Resolves when the email is sent successfully
  */
-export const sendVerificationEmail = async (to, token) => {
+export const sendVerificationEmail = async ({ to, token, role} ) => {
   console.log('[DEBUG]', process.env.SMUNCH_EMAIL, process.env.SMUNCH_APP_PASS);
 
-  const link = `${process.env.BACKEND_URL}/api/auth/verify?token=${token}`;
+  const path = role === 'merchant' ? 'merchant/verify-signup' : 'verify';
+  //const link = `${process.env.BACKEND_URL}/api/auth/verify?token=${token}`;
+  const link = `${process.env.BACKEND_URL}/api/auth/${path}?token=${token}`;
+  const displayType = role === 'merchant' ? 'Merchant' : 'User';
   return transporter.sendMail({
     from: '"SMUNCH" <smunch.dev@gmail.com>',
     to,
     subject: 'Verify your SMUNCH Account',
-    html: `<p>Click <a href="${link}">here</a> to activate your account. Link expires in 1 hour.</p>`,
+    html: `<p>Click <a href="${link}">here</a> to complete your ${displayType.toLowerCase()} signup. Link expires in 1 hour.</p>`,
   });
 };
 

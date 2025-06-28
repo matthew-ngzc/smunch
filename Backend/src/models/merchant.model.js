@@ -42,10 +42,19 @@ export async function getMerchantByIdOrThrow(merchantId, fields = 'merchant_id')
 /**
  * Fetches a merchant by ID and throws if not found.
  *
- * @param {number} email - Merchant's email
+ * @param {string} email - Merchant's email
  * @param {string} fields - Comma-separated fields to select (default: 'merchant_id')
  * @returns {Promise<object>} - The merchant object
- * @throws {Error} - If merchant is not found or query fails
+ * @throws {Error} - If merchant is not found or query 
+ * @example
+ * const merchant = await getMerchantByEmailOrThrow(email, 'merchant_id,name,email');
+ * @output
+ * merchant = {
+    merchant_id: 5,
+    name: "Alice's Cafe",
+    email: "alice@example.com"
+ * }
+
  */
 export async function getMerchantByEmailOrThrow(email, fields = 'merchant_id') {
   const { data, error } = await supabase
