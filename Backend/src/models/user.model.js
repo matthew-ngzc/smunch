@@ -18,7 +18,7 @@ export async function getUserByEmailOrThrow(email) {
 
   if (error) throw error;
   if (!data) {
-    const err = new Error('User with this email does not exist');
+    const err = new NotFoundError('User', 'email', email);
     err.status = 404;
     throw err;
   }
@@ -42,7 +42,7 @@ export async function getUserByIdOrThrow(userId, fields = 'user_id') {
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) throw NotFoundError('User', userId);
+  if (!data) throw NotFoundError('User', "ID", userId);
 
   return data;
 }

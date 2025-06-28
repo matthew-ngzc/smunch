@@ -34,7 +34,28 @@ export async function getMerchantByIdOrThrow(merchantId, fields = 'merchant_id')
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) throw NotFoundError("Merchant", merchantId);
+  if (!data) throw NotFoundError("Merchant", "ID", merchantId);
+
+  return data;
+}
+
+/**
+ * Fetches a merchant by ID and throws if not found.
+ *
+ * @param {number} email - Merchant's email
+ * @param {string} fields - Comma-separated fields to select (default: 'merchant_id')
+ * @returns {Promise<object>} - The merchant object
+ * @throws {Error} - If merchant is not found or query fails
+ */
+export async function getMerchantByEmailOrThrow(email, fields = 'merchant_id') {
+  const { data, error } = await supabase
+    .from('merchants')
+    .select(fields)
+    .eq('email', email)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) throw NotFoundError("Merchant", "email", email);
 
   return data;
 }
@@ -56,7 +77,7 @@ export async function updateMerchantByIdOrThrow(merchantId, updates) {
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) throw NotFoundError("Merchant", merchantId);
+  if (!data) throw NotFoundError("Merchant", "ID", merchantId);
   return data;
 }
 
@@ -77,7 +98,7 @@ export async function createMerchantOrThrow(payload) {
     .maybeSingle();
 
   if (checkError) throw checkError;
-  if (existing) throw DuplicateError("Merchant", existing.merchant_id);
+  if (existing) throw DuplicateError("Merchant", "ID", existing.merchant_id);
 
 
   const { data, error } = await supabase
