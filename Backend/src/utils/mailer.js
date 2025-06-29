@@ -59,7 +59,7 @@ export const sendVerificationEmail = async ({ to, token, role} ) => {
 
   const path = role === 'merchant' ? 'merchant/verify-signup' : 'verify';
   //const link = `${process.env.BACKEND_URL}/api/auth/verify?token=${token}`;
-  const link = `${process.env.BACKEND_URL}/api/auth/${path}?token=${token}`;
+  const link = `${process.env.FRONTEND_URL}/api/auth/${path}?token=${token}`;
   const displayType = role === 'merchant' ? 'Merchant' : 'User';
   return transporter.sendMail({
     from: '"SMUNCH" <smunch.dev@gmail.com>',

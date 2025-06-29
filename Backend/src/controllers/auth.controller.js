@@ -1,4 +1,6 @@
 import jwt from 'jsonwebtoken';
+import redis from '../lib/redisClient.js';
+import { v4 as uuidv4 } from 'uuid';
 import { sendVerificationEmail } from '../utils/mailer.js';
 import {
   getUserByEmailOrThrow,
@@ -102,8 +104,15 @@ export const signup = async (req, res, next) => {
     if (await isEmailTakenOrThrow(email)) {
       return res.status(409).json({ message: 'Account already exists' });
     }
+
+    // TODO: store everything in redis, only put signupId in jwt token, which is the key in redis
+    const signupId = uuidv4(); // generate unique signup ID. This is the key in redis, put this into jwt
+    const redisKey = `signup:${signupId}`;
+    // store in user detail in redis for 1 hour
+    await redis.set(redisKey, JSON.stringify({ email, name, phoneNo, password }), 'EX', 3600);
+
     //create JWT token for email verification
-    const token = jwt.sign({ email, name, phoneNo, password, role: 'user' }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ redisKey, role: 'user' }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     //Send verification email
     await sendVerificationEmail({ to: email, token, role: 'user'});
@@ -167,7 +176,18 @@ export const verifyAndCreateUser = async (req, res, next) => {
 
     //extract user details from token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const { email, name, phoneNo, password, role } = decoded;
+
+    //TODO: fetch (email, name, role) from jwt, (phoneNo, password) from redis
+    const { redisKey, role } = decoded;
+
+    //fetch user details from redis
+    const stored = await redis.get(redisKey);
+    // if not found in redis, return error
+    if (!stored) return res.status(400).json({ message: 'Expired or invalid link' });
+    //extract details
+    const { email, name, phoneNo, password } = JSON.parse(stored); 
+    //remove from redis after use
+    await redis.del(redisKey); 
 
     //check that account has not already been verified
     if (await isEmailTakenOrThrow(email)) {
