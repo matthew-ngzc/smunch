@@ -16,6 +16,7 @@ const app = express();
 
 // Enable CORS
 app.use(cors())
+app.set('trust proxy', true); // Trust proxy for rate limiting and IP extraction
 
 // Swagger documentation setup
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
