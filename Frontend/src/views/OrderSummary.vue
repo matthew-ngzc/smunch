@@ -7,7 +7,7 @@ import ordertimeline from '../components/ordertimeline.vue'
 
    // progress timeline
     const data = {
-      steps: [ 'order details', 'select delivery location', 'order confirmation', 'payment'],
+      steps: [ 'order details', 'delivery location', 'order confirmation', 'payment'],
       currentStep: 3,
       activeColor: 'rgb(0, 0, 0)',
       passiveColor: 'grey',
@@ -33,41 +33,56 @@ const next = () => {
 
      <ordertimeline :data="data" :routes="routes" />
     
-    <!-- Main Summary Box -->
+    <!-- box -->
     <div class="summary-box">
+
       <h2>order summary</h2>
 
-      <div class="summary-section">
-        <h4>items</h4>
+      <!-- content inside box -->
+      <div class="summary-contents">
+
         <div class="summary-items">
           <div class="item-row header">
-            <div>item</div>
-            <div>quantity</div>
-            <div>price</div>
+            <div>item</div> 
+            <div class="right">
+              <div>quantity</div> 
+              <div>price</div>
+            </div>
+            
           </div>
+          <!--  loop through each item in cart and present info -->
           <div v-for="item in cart.items" :key="item.id" class="item-row">
-            <div>{{ item.name }}</div>
-            <div>{{ item.quantity }}</div>
-            <div>${{ (item.quantity * item.price).toFixed(2) }}</div>
+            <div class="name">{{ item.name }}</div>
+            <div class="right-text"> 
+              <div class="qty">{{ item.quantity }}</div>
+              <div class="price">${{ (item.quantity * item.price).toFixed(2) }}</div>
+            </div>
+            
           </div>
         </div>
 
-        <hr />
+        
 
         <div class="summary-totals">
           <div class="total-row">
-            <span>delivery fee</span>
+            <span>Delivery fee</span>
             <span>$1.00</span>
           </div>
           <div class="total-row bold">
-            <span>total</span>
+            <span>Total</span>
             <span>${{ total.toFixed(2) }}</span>
+            
           </div>
+           <hr />
         </div>
+
       </div>
 
+      
+
       <div class="summary-section">
-        <h4>delivery details</h4>
+        <h2>delivery details</h2>
+
         <div class="delivery-details">
           <p><strong>location</strong><br />{{ delivery.building }} {{ delivery.floor }} - {{ delivery.facilityType }}</p>
           <p><strong>date</strong><br />{{ delivery.date }}</p>
@@ -81,6 +96,17 @@ const next = () => {
 </template>
 
 <style scoped>
+
+.summary-box {
+  max-width: none !important;
+  width: 100%;
+}
+
+.summary-box h2 {
+  font-size: 30px;
+}
+
+
 .summary-page {
   font-family: 'Inter', sans-serif;
   padding: 32px;
@@ -117,7 +143,7 @@ const next = () => {
   max-width: 600px;
 }
 
-.summary-section {
+.summary-contents {
   margin-top: 24px;
 }
 
@@ -125,25 +151,64 @@ const next = () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  font-size: 18px;
 }
 
 .item-row {
   display: flex;
   justify-content: space-between;
-}
-.item-row.header {
-  font-weight: bold;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 8px;
+  
 }
 
-.summary-totals {
-  margin-top: 16px;
+.item-row.header {
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 8px;
+  font-size: 25px;
+  font-weight: bold;
+  
 }
+
+.right {
+  display: flex;
+  gap: 30px; /* space between quantity and price */
+}
+
+
+.right-text {
+  display: flex;
+  gap: 30px; /* space between quantity and price */
+}
+
+.qty {
+   /* to prevent the RHS cost from shifting the menu control */
+  display: inline-block;
+  width: 5ch;
+}
+
+
+.price {
+   /* to prevent the RHS cost from shifting the menu control */
+  display: inline-block;
+  width: 5ch;
+}
+
+
+.summary-totals {
+  margin-top: 70px;
+  margin-bottom: 50px;
+   font-size: 18px;
+}
+
+.summary-section h2 {
+  font-size: 30px;
+  margin-bottom: 30px;
+}
+
 .total-row {
   display: flex;
   justify-content: space-between;
   margin: 4px 0;
+  
 }
 .total-row.bold {
   font-weight: bold;
@@ -151,17 +216,21 @@ const next = () => {
 
 .delivery-details p {
   margin-bottom: 12px;
+   font-size: 19px;
 }
-
 .next-btn {
-  margin-top: 24px;
-  width: 100%;
-  padding: 12px;
+  display: block;
+  margin: 24px auto 0;
+  padding: 12px 24px;
   background-color: #007a3d;
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 20px;
   font-size: 16px;
   cursor: pointer;
+}
+
+.next-btn:hover {
+   background-color: #036232;
 }
 </style>

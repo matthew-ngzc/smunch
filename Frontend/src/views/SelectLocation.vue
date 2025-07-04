@@ -4,7 +4,7 @@ import ordertimeline from '../components/ordertimeline.vue'
 
    // progress timeline
     const data = {
-      steps: [ 'order details', 'select delivery location', 'order confirmation', 'payment'],
+      steps: [ 'order details', 'delivery location', 'order confirmation', 'payment'],
       currentStep: 2,
       activeColor: 'rgb(0, 0, 0)',
       passiveColor: 'grey',
@@ -18,7 +18,15 @@ import ordertimeline from '../components/ordertimeline.vue'
   <div class="select-location-page">
 
      <ordertimeline :data="data" :routes="routes" />
-
     <Filter />
   </div>
 </template>
+
+
+<style scoped>
+
+
+
+
+
+</style>

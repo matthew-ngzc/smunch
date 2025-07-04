@@ -43,6 +43,7 @@ const cssStyle = computed(() => ({
 
 <style scoped>
 .steps-container {
+  margin-top: 100px;
   width: 100%;
   margin: 20px auto;
 }
