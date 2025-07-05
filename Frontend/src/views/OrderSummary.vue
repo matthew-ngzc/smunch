@@ -13,8 +13,6 @@ import ordertimeline from '../components/ordertimeline.vue'
       passiveColor: 'grey',
     };
 
-
-
 const router = useRouter() 
 const delivery = useDeliveryStore()
 const cart = useCartStore()
@@ -36,17 +34,17 @@ const next = () => {
     <!-- box -->
     <div class="summary-box">
 
-      <h2>order summary</h2>
+      <h2>Order summary</h2>
 
       <!-- content inside box -->
       <div class="summary-contents">
 
         <div class="summary-items">
           <div class="item-row header">
-            <div>item</div> 
+            <div>Item</div> 
             <div class="right">
-              <div>quantity</div> 
-              <div>price</div>
+              <div>Quantity</div> 
+              <div>Price</div>
             </div>
             
           </div>
@@ -57,12 +55,9 @@ const next = () => {
               <div class="qty">{{ item.quantity }}</div>
               <div class="price">${{ (item.quantity * item.price).toFixed(2) }}</div>
             </div>
-            
           </div>
         </div>
-
-        
-
+      
         <div class="summary-totals">
           <div class="total-row">
             <span>Delivery fee</span>
@@ -81,7 +76,7 @@ const next = () => {
       
 
       <div class="summary-section">
-        <h2>delivery details</h2>
+        <h2>Delivery details</h2>
 
         <div class="delivery-details">
           <p><strong>location</strong><br />{{ delivery.building }} {{ delivery.floor }} - {{ delivery.facilityType }}</p>
@@ -228,6 +223,7 @@ const next = () => {
   border-radius: 20px;
   font-size: 16px;
   cursor: pointer;
+  font-weight: bold;
 }
 
 .next-btn:hover {

@@ -109,7 +109,7 @@ function goToSummary() {
 /* the white card box for the form */
 .delivery-form-box {
   max-width: 900px;                        /* limits width so it doesn't stretch too far */
-  max-height: 800px;
+  max-height: 700px;
   margin: 100px auto;                        /* vertical spacing + center horizontally */
   background-color: white !important;
   color: black;                                    
@@ -119,6 +119,8 @@ function goToSummary() {
   font-family: 'Inter', sans-serif; /* use inter font */
   text-align: left;       
   margin-top: 29px;      
+  display: flex;
+  flex-direction: column;
 }
 
 /* form title heading */
@@ -166,8 +168,6 @@ function goToSummary() {
 
 
 .next-btn {
-  display: block;
-  margin: 24px auto 0;
   padding: 12px 24px;
   background-color: #007a3d;
   color: white;
@@ -175,10 +175,13 @@ function goToSummary() {
   border-radius: 20px;
   font-size: 16px;
   cursor: pointer;
+  font-weight: bold;
+  align-self: center;  /* to prevent button from stretching w parent */
 }
 
 /* hover effect for next button */
 .next-btn:hover {
    background-color: #036232;
 }
+
 </style>

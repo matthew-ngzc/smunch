@@ -97,7 +97,7 @@ const cssStyle = computed(() => ({
 .step-line {
   position: absolute;
   top: 18%;
-  left: 95px;
+  left: 102px;
   width: 140%;
   height: 4px;
   transform: translateY(-50%);

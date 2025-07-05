@@ -36,8 +36,6 @@ export default defineComponent({
     }
   }
 
-
-
     // progress timeline
     const data = {
       steps: [ 'order details', 'delivery location', 'order confirmation', 'payment'],
@@ -64,10 +62,7 @@ export default defineComponent({
      { name: 'payment' }
    ]
 
-
-    
-
-   // calcaulates total price of items in cart 
+   // calculates total price of items in cart 
     const total = computed(() => {
       return cart.items.reduce((sum, item) => sum + item.quantity * item.price, 0)
     })
@@ -100,17 +95,15 @@ export default defineComponent({
     <hr class="divider" />
 
     <!-- starts a block that ONLY shows if the cart is not empty -->
-    <div v-if="cart.items.length > 0">
+    <div class="cart-content" v-if="cart.items.length > 0">
       <!-- loops through every item in cart.items, creates div for each item  --> <!-- :key="item.id" is needed to track items  -->
       <div v-for="item in cart.items" :key="item.id" class="cart-item">
 
         <!-- item image -->
         <img :src="item.image_url" alt="item image" class="item-image" />
-
         <div class="item-row"> 
             <!-- item name -->
           <div class="item-name"><strong>{{ item.name }}</strong></div>
-
           <div class="item-right">  
               <div class="menu-controls">
                 <button @click="decrease(item.id)">-</button>
@@ -121,32 +114,30 @@ export default defineComponent({
                <!-- total cost of a particular item , toFixed(2)ensures it always shows 2 decimal places-->
             <div class="item-cost">${{ (item.quantity * item.price).toFixed(2) }}</div> 
           </div>
-          
-
-        
-
-
         </div>
       </div>
-
-      <hr class="divider" />
-
-
-      <div class="cost-wrapper"> 
-        <!--  total cost of items in cart, from script using computed -->
-        <h3 class="total-cost">Total (Excl. delivery fee): </h3>
-        <h3 class="cost"> ${{ total.toFixed(2) }} </h3>
-
       </div>
 
-      <div class="wrapper"> 
-        <button class="next" @click="next">next</button>
-      </div>
-
-      </div>
+      
 
       <div v-else>
         <p>Your cart is empty.</p>
+      </div>
+
+      <div class="bottom"> 
+        
+        <hr class="divider" />
+
+        <div class="cost-wrapper"> 
+          <!--  total cost of items in cart, from script using computed -->
+          <h3 class="total-cost">Total (Excl. delivery fee): </h3>
+          <h3 class="cost"> ${{ total.toFixed(2) }} </h3>
+        </div>
+
+        <div class="wrapper"> 
+          <button class="next" @click="next">next</button>
+        </div>
+
       </div>
 
 
@@ -162,20 +153,28 @@ export default defineComponent({
 .cart {
   margin-top: 30px;
   border-radius: 50px;
-   border-radius: 12px;
+  border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 
   /* make box appear bigger than its contents */
   padding: 24px;           /* adds space inside the box */
-  min-height: 120px;       /* ensures it's taller */
+  min-height: 700px;       /* regardless of # of items in cart, box has to occupy entire height */
   width: 100%;             /* stretches full width of parent */
 
+  display: flex;
+  flex-direction: column;
 }
 
 .cart h2 {
   margin-top: 10px;
   margin-bottom: 20px;
 }
+
+/* take up all the remaining vertical space in container cart, but let anything after sit at the bottom */
+.cart-content {
+  flex-grow: 1;
+}
+
 
 .cart-item {
   display: flex;
@@ -266,6 +265,10 @@ export default defineComponent({
   
 }
 
+.bottom {
+  margin-top: auto;
+}
+
 .divider {
   border: none;
   height: 1px;
@@ -282,12 +285,14 @@ export default defineComponent({
 .cost {
   display: inline-block;
   text-align: right;
+  font-size: 21px;
+  margin-right: 25px;
+  font-weight: bold;
 }
 
 .wrapper {
   display: flex;
   justify-content: center;
-  
 }
 
 
@@ -301,6 +306,7 @@ export default defineComponent({
   border-radius: 20px;
   font-size: 16px;
   cursor: pointer;
+  font-weight: bold;
 }
 
 .next-btn:hover {
