@@ -96,6 +96,8 @@ export const confirmPaymentAndSendReceipt = async (req, res, next) => {
  *     description: |
  *       Returns a fresh PayNow QR code, reference and paynow number for the specified order. 
  * 
+ *       QR code is a base64 encoded PNG image, expiring 10 minutes after generation. The one that is pink with the paynow word inside works with non DBS banks as well
+ * 
  *       Reference is in the format `SMUNCH{orderId}`.
  *     tags: [Payments]
  *     parameters:
