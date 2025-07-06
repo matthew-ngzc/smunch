@@ -235,5 +235,6 @@ export default defineComponent({
   border-radius: 20px;
   font-size: 16px;
   cursor: pointer;
+  font-weight: bold;
 }
 </style>
