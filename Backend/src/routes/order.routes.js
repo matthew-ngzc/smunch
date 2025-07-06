@@ -41,7 +41,8 @@ router.post('/:orderId/payment/confirm', confirmPaymentAndSendReceipt);
 
 // Get payment instructions (regenerate QR code, reference number, paynowNumber.)
 // GET /api/orders/:orderId/payment
-// Must be logged in as user
+// Must be logged in as the user with the corresponding order
+//TODO: add role check and correct user check?
 router.get('/:orderId/payment', authenticateToken, getPaymentInstructions);
 
 export default router;

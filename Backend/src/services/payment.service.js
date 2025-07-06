@@ -1,19 +1,94 @@
 import QRCode from 'qrcode';
-import {paynowGenerator} from 'paynow-generator';
 import { CRC } from 'crc-full';
 import dotenv from "dotenv";
-import path from 'path';
-import { fileURLToPath } from 'url';
+import axios from 'axios';
+//import {paynowGenerator} from 'paynow-generator';
+//import path from 'path';
+//import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 
 dotenv.config();
 
 const PAYNOW_PROXYTYPE = "mobile";
-const REFERENCE_PREFIX = "SMUNCH-";
+const REFERENCE_PREFIX = "SMUNCH";
 const MERCHANT_NAME = "SMUNCH";
+const SGQR_API_URL = 'https://www.sgqrcode.com/paynow';
+
+/**
+ * Generates a unique payment reference for an order.
+ *
+ * @param {string} orderId - The ID of the order
+ * @returns {Promise<string>} - A unique payment reference in the format "SMUNCH{orderId}"
+ */
+export async function generatePaymentReference(orderId){
+  // Ensure orderId and customerId are strings
+  const orderIdStr = String(orderId);
+
+  // Generate a unique reference using the order ID
+  return `${REFERENCE_PREFIX}${orderIdStr}`;
+}
+
+export async function generatePayNowQRCodeUsingSGQR({amount, orderId}){
+  const paynowNumber = process.env.PAYNOW_NUMBER;
+  const reference = await generatePaymentReference(orderId);
+  try {
+    // Format expiry: 2025/07/07 23:00
+    const now = new Date();
+    const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins from now
+
+    // Convert to Singapore time (GMT+8)
+    const sgTime = new Date(expiry.toLocaleString('en-US', { timeZone: 'Asia/Singapore' }));
+
+    // Format as YYYY/MM/DD HH:MM
+    const yyyy = sgTime.getFullYear();
+    const mm = String(sgTime.getMonth() + 1).padStart(2, '0');
+    const dd = String(sgTime.getDate()).padStart(2, '0');
+    const hh = String(sgTime.getHours()).padStart(2, '0');
+    const min = String(sgTime.getMinutes()).padStart(2, '0');
+
+    const expiryStr = `${yyyy}/${mm}/${dd} ${hh}:${min}`;
+
+
+    // Make external QR request
+    const response = await axios.get(SGQR_API_URL, {
+      responseType: 'arraybuffer',
+      params: {
+        mobile: paynowNumber,
+        uen: '',
+        editable: 0, //0 for not editable, 1 for editable
+        amount,
+        expiry: expiryStr,
+        ref_id: reference,
+        company: ''
+      },
+      headers: {
+        Accept: 'image/png,image/*,*/*;q=0.8',
+      }
+    });
+
+    // convert image to base64 to send to frontend
+    const base64Image = Buffer.from(response.data).toString('base64');
+    const qrCodeDataURL = `data:image/png;base64,${base64Image}`;
+
+    return {
+      qrCodeDataURL,
+      paymentReference: reference,
+      paynowNumber
+    };
+
+  } catch (error) {
+    console.error('[QR Fallback Error, using default QR code generator]', error.message);
+    return generatePayNowQRCode({amount, orderId});
+  }
+}
+
+
+//--------------------------------------------------------------------------------------------
+// * use the generatePayNowQRCode function and generatePayNowPayload to create the paynow QR code that only works with DBS. Fall back to this if the API from sgqrcode stops working
 
 /**
  * Generates a PayNow QR code image as a Data URI using fixed proxy settings.
@@ -34,7 +109,7 @@ const MERCHANT_NAME = "SMUNCH";
  *   A Base64 QR code image, the payment reference used, and the PayNow number used
  */
 
-export async function generatePayNowQRCode({amount, orderId, customerId,}) {
+export async function generatePayNowQRCode({amount, orderId}) {
   try {
     /*
      * PayNow QR Code Parameters:
@@ -48,7 +123,7 @@ export async function generatePayNowQRCode({amount, orderId, customerId,}) {
      * Output : 
      * - EMVCo-compliant string payload to be encoded as a QR code
      */
-    const reference = await generatePaymentReference(orderId, customerId);
+    const reference = await generatePaymentReference(orderId);
     // const payload = paynowGenerator(
     //   PAYNOW_PROXYTYPE, //"mobile"
     //   process.env.PAYNOW_NUMBER, // PayNow-registered phone number from .env
@@ -88,25 +163,6 @@ export async function generatePayNowQRCode({amount, orderId, customerId,}) {
   }
 }
 
-/**
- * Generates a unique payment reference for an order.
- *
- * @param {string} orderId - The ID of the order
- * @param {string} customerId - The ID of the customer
- * @returns {Promise<string>} - A unique payment reference in the format "SMUNCH-{orderId}-{customerId}"
- */
-export async function generatePaymentReference(orderId, customerId){
-  // Ensure orderId and customerId are strings
-  const orderIdStr = String(orderId);
-  const customerIdStr = String(customerId);
-
-  // Generate a unique reference using the order ID and customer ID
-  return `${REFERENCE_PREFIX}${orderIdStr}-${customerIdStr}`;
-}
-
-/*
-
-*/
 export function generatePayNowPayload(
   proxyType = 'mobile',     // 'mobile' or 'UEN'
   proxyValue,               // e.g. '91234567' or '202312345A'
@@ -152,8 +208,12 @@ export function generatePayNowPayload(
 
   return joined + '6304' + checksum;
 }
-import fs from 'fs';
+
+//-----------------------------------------------------------------------------------------------------------
+
+//import fs from 'fs';
 /**
+ ** CODE IS NOT IN USE. THIS WAS MY ATTEMPT TO BUILD MY OWN STYLED QR CODE
  * Generates a styled PayNow QR with:
  * - purple theme
  * - embedded PAYNOW logo in the center
@@ -163,87 +223,88 @@ import fs from 'fs';
  * @param {object} options - Optional parameters: { logoPath, expiryText }
  * @returns {Promise<string>} - Base64-encoded PNG (e.g. data:image/png;base64,...)
  */
-export async function generateStyledPayNowQRCode(payload, options = {}) {
-  const {
-    logoPath = '../../logos/paynow-logo.png',
-    expiryText = null
-  } = options;
+// export async function generateStyledPayNowQRCode(payload, options = {}) {
+//   const {
+//     logoPath = '../../logos/paynow-logo.png',
+//     expiryText = null
+//   } = options;
 
-  const jimpModule = await import('jimp');
-  const Jimp = jimpModule.Jimp; // ✅ fallback if default missing
-  const MIME_PNG = 'image/png';
+//   const jimpModule = await import('jimp');
+//   const Jimp = jimpModule.Jimp; // ✅ fallback if default missing
+//   const MIME_PNG = 'image/png';
 
 
-  console.log('[DEBUG Jimp]', Object.keys(jimpModule));
+//   console.log('[DEBUG Jimp]', Object.keys(jimpModule));
   
 
-  const absoluteLogoPath = path.resolve(__dirname, logoPath);
-  console.log(fs.existsSync(absoluteLogoPath)); // should print true
+//   const absoluteLogoPath = path.resolve(__dirname, logoPath);
+//   console.log(fs.existsSync(absoluteLogoPath)); // should print true
 
 
-  // 1. Generate QR code buffer
-  const qrBuffer = await QRCode.toBuffer(payload, {
-    errorCorrectionLevel: 'H',
-    type: 'png',
-    width: 500,
-    margin: 2,
-    color: {
-      dark: '#800080',  // PayNow purple
-      light: '#FFFFFF'
-    }
-  });
+//   // 1. Generate QR code buffer
+//   const qrBuffer = await QRCode.toBuffer(payload, {
+//     errorCorrectionLevel: 'H',
+//     type: 'png',
+//     width: 500,
+//     margin: 2,
+//     color: {
+//       dark: '#800080',  // PayNow purple
+//       light: '#FFFFFF'
+//     }
+//   });
 
-  // 2. Read QR and logo
-  const qrImage = await Jimp.read(qrBuffer);
-  //const logo = await Jimp.read(absoluteLogoPath);
+//   // 2. Read QR and logo
+//   const qrImage = await Jimp.read(qrBuffer);
+//   //const logo = await Jimp.read(absoluteLogoPath);
 
-  // 3. Resize and composite logo
-  // const logoWidth = Math.floor(qrImage.bitmap.width / 4);
-  // const scaleFactor = logoWidth / logo.bitmap.width;
-  // const logoHeight = Math.floor(logo.bitmap.height * scaleFactor);
+//   // 3. Resize and composite logo
+//   // const logoWidth = Math.floor(qrImage.bitmap.width / 4);
+//   // const scaleFactor = logoWidth / logo.bitmap.width;
+//   // const logoHeight = Math.floor(logo.bitmap.height * scaleFactor);
 
-  // logo.resize({ w: logoWidth, h: logoHeight }); // ✅ correct for your version
-
-
-
-  // const x = (qrImage.bitmap.width - logo.bitmap.width) / 2;
-  // const y = (qrImage.bitmap.height - logo.bitmap.height) / 2;
-  // qrImage.composite(logo, x, y);
-
-  // 4. Add expiry text if present
-  // if (expiryText) {
-  //   const font = await Jimp.Jimp.loadFont(Jimp.Jimp.FONT_SANS_16_PURPLE);
-
-  //   qrImage.print(
-  //     font,
-  //     0,
-  //     qrImage.bitmap.height - 30,
-  //     {
-  //       text: expiryText,
-  //       alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
-  //       alignmentY: Jimp.VERTICAL_ALIGN_BOTTOM
-  //     },
-  //     qrImage.bitmap.width,
-  //     30
-  //   );
-  // }
-
-  // 5. Return Base64-encoded PNG string
-  const base64 = await getBase64Safely(qrImage, 'image/png');
+//   // logo.resize({ w: logoWidth, h: logoHeight }); // ✅ correct for your version
 
 
-  return base64; // e.g. "data:image/png;base64,iVBORw0KGgo..."
-}
 
-function getBase64Safely(image, mime, timeoutMs = 3000) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('Timeout: getBuffer never returned')), timeoutMs);
-    image.getBuffer(mime, (err, buffer) => {
-      clearTimeout(timer);
-      if (err) return reject(err);
-      resolve(`data:${mime};base64,${buffer.toString('base64')}`);
-    });
-  });
-}
+//   // const x = (qrImage.bitmap.width - logo.bitmap.width) / 2;
+//   // const y = (qrImage.bitmap.height - logo.bitmap.height) / 2;
+//   // qrImage.composite(logo, x, y);
+
+//   // 4. Add expiry text if present
+//   // if (expiryText) {
+//   //   const font = await Jimp.Jimp.loadFont(Jimp.Jimp.FONT_SANS_16_PURPLE);
+
+//   //   qrImage.print(
+//   //     font,
+//   //     0,
+//   //     qrImage.bitmap.height - 30,
+//   //     {
+//   //       text: expiryText,
+//   //       alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
+//   //       alignmentY: Jimp.VERTICAL_ALIGN_BOTTOM
+//   //     },
+//   //     qrImage.bitmap.width,
+//   //     30
+//   //   );
+//   // }
+
+//   // 5. Return Base64-encoded PNG string
+//   const base64 = await getBase64Safely(qrImage, 'image/png');
+
+
+//   return base64; // e.g. "data:image/png;base64,iVBORw0KGgo..."
+// }
+
+//not in use
+// function getBase64Safely(image, mime, timeoutMs = 3000) {
+//   return new Promise((resolve, reject) => {
+//     const timer = setTimeout(() => reject(new Error('Timeout: getBuffer never returned')), timeoutMs);
+//     image.getBuffer(mime, (err, buffer) => {
+//       clearTimeout(timer);
+//       if (err) return reject(err);
+//       resolve(`data:${mime};base64,${buffer.toString('base64')}`);
+//     });
+//   });
+// }
 
 

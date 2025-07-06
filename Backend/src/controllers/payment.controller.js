@@ -4,7 +4,7 @@ import { generateReceiptHtml} from '../services/receipt.service.js';
 import { sendReceiptEmail } from '../utils/mailer.js';
 import {
     generatePaymentReference,
-    generatePayNowQRCode
+    generatePayNowQRCodeUsingSGQR
 } from '../services/payment.service.js';
 
 
@@ -59,7 +59,7 @@ export const confirmPaymentAndSendReceipt = async (req, res, next) => {
 
 
     // Attach payment reference dynamically
-    order.payment_reference = await generatePaymentReference(order.order_id, order.customer_id);
+    order.payment_reference = await generatePaymentReference(order.order_id);
 
     // Verify payment
     const total = (order.total_amount_cents / 100).toFixed(2);
@@ -94,7 +94,9 @@ export const confirmPaymentAndSendReceipt = async (req, res, next) => {
  *   get:
  *     summary: Get payment instructions
  *     description: |
- *       Returns a fresh PayNow QR code, reference and paynow number for the specified order.
+ *       Returns a fresh PayNow QR code, reference and paynow number for the specified order. 
+ * 
+ *       Reference is in the format `SMUNCH{orderId}`.
  *     tags: [Payments]
  *     parameters:
  *       - in: path
@@ -110,7 +112,7 @@ export const confirmPaymentAndSendReceipt = async (req, res, next) => {
  *           application/json:
  *             example:
  *               qrCode: data:image/png;base64,iVBORw0KGgoAAAAN...
- *               payment_reference: SMUNCH-14-1
+ *               payment_reference: SMUNCH14
  *               paynow_number: 96773374
  *       404:
  *         description: Order not found
@@ -135,7 +137,7 @@ export async function getPaymentInstructions(req, res, next) {
     }
 
     const amount = (order.total_amount_cents / 100).toFixed(2);
-    const { qrCodeDataURL, paymentReference, paynowNumber } = await generatePayNowQRCode({
+    const { qrCodeDataURL, paymentReference, paynowNumber } = await generatePayNowQRCodeUsingSGQR({
       amount: amount,
       orderId: order.order_id,
       customerId: order.customer_id,

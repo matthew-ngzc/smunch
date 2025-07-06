@@ -95,7 +95,7 @@ export async function createOrderOrThrow(payload) {
   }));
 
   // Step 4: Set Payment Reference
-  const payment_reference = await generatePaymentReference(order.order_id, customer_id);
+  const payment_reference = await generatePaymentReference(order.order_id);
   const { error: updateError } = await supabase
   .from('orders')
   .update({ payment_reference })
