@@ -106,15 +106,23 @@ export default defineComponent({
 .divider {
   border: none;             
   height: 1px;               
-  background-color: #eee;   
+  background-color: #524f4f;   
   margin: 40px 0 16px;        /* space above/below the line */
 }
 
 .merchant-list {
   display: flex;
   flex-wrap: nowrap;
-  gap: 20px;
+  gap: 40px;
   margin-top: 20px;
+  overflow-x: auto;  /*enable scrolling*/
+  overflow-y: hidden;
+  max-width: 1200px;
+
+}
+
+.merchant-list::-webkit-scrollbar {
+  display: none;
 }
 
 .merchant-card {
@@ -122,13 +130,14 @@ export default defineComponent({
   border: 1px solid #eee;
   border-radius: 12px;
   padding: 20px;
-  width: 180px;
+  min-width: 150px;
   height: 220px;
   text-align: center;
-  box-shadow: 0px 6px 5px rgba(5, 5, 5, 0.1);
+  box-shadow: 0 0 10px rgba(174, 172, 172, 0.2);
   display: flex;
   flex-direction: column;
-  gap:20px;
+  gap:10px;
+
 }
 
 .logo-wrapper {

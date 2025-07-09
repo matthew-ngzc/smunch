@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 
-// reactive to user 
+// handling dropdown closure 
 const isOpen = ref(false)
 
 const toggleMenu = (e) => {
@@ -34,6 +34,8 @@ const logout = () => {
   console.log('Logging out...')
   
 }
+
+
 </script>
 
 
@@ -85,16 +87,15 @@ const logout = () => {
           <div class="close" @click.stop="closeMenu">X</div>
         </div>
 
-        <hr />
+      <hr />
 
-        <ul>
-          <li @click="logout">log out</li>
-          <li>view past orders</li>
-          <li>view active orders</li>
-          <li>help</li>
-        </ul>
+      <ul>
+        <li @click="logout">  Log out</li>
+        <li> <router-link to="/activeOrders">Active orders</router-link> </li>
+        <li> <router-link to="/pastOrders">Past orders</router-link> </li>
+        <li> <router-link to="/help">Help</router-link> </li>
+      </ul>
       </div>
-          
 
   </nav>
 </template>
@@ -168,12 +169,10 @@ const logout = () => {
   background: transparent;
 }
 
-
 .navbar-center a:hover {
   text-shadow: 4px 4px 5px#a9b5cd;                  /* grey on hover */
 }
 
-/* 🎒 right side: profile */
 .navbar-right {
   display: flex;
   align-items: center;
@@ -192,6 +191,7 @@ const logout = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  
 }
 
 .profile-wrapper svg {
@@ -218,29 +218,12 @@ const logout = () => {
   right: 0;
   top: 50px;
   background: white;
-  color: black;
-  padding: 1rem;
+  color: rgb(60, 58, 58);
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  width: 180px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  width: 220px;
   z-index: 100;
-}
-
-.profile-menu .close {
-  text-align: right;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.profile-menu ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.profile-menu li {
-  margin: 10px 0;
-  cursor: pointer;
+  padding: 12px 16px; /* ✅ uniform internal spacing */
 }
 
 .menu-header {
@@ -260,8 +243,43 @@ const logout = () => {
 }
 
 .dropdown-icon-circle svg {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
+}
+
+.profile-menu hr {
+  margin: 12px 0;
+  border: none;
+  border-top: 1px solid #ccc;
+}
+
+.profile-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.profile-menu li {
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+  padding: 4px 0; /* ✅ vertical padding only */
+}
+
+.profile-menu li:hover {
+  background-color: #f2f2f2;
+}
+
+.profile-menu li a {
+  all: unset;
+  display: block;
+  padding-left: 4px; /* ✅ light indent */
+  width: 100%;
+  color: black;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
 }
 
 .profile-menu hr {
