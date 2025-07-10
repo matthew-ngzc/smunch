@@ -9,6 +9,7 @@
 
 
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
 function determineBaseURL(environment) {
   if (environment === 'deployed') {
@@ -32,7 +33,8 @@ const axiosInstance = axios.create({
 // Attach token from sessionStorage (if exists)
 axiosInstance.interceptors.request.use(
   config => {
-    const token = sessionStorage.getItem('token')
+    const authStore = useAuthStore()
+    const token = authStore.token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
