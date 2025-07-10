@@ -60,6 +60,9 @@
 
 
 <script>
+import { useAuthStore } from '@/stores/auth'
+import axiosInstance from '@/utility/axiosInstance'
+
 export default {
   data() {
     return {
@@ -69,7 +72,7 @@ export default {
     };
   },
   methods: {
-    handleLogin() {
+    async handleLogin() {
       if (!this.email.includes('@smu.edu.sg')) {
         this.emailError = "Please enter a valid smu email address.";
         return;
@@ -77,6 +80,21 @@ export default {
 
       this.emailError = '';
       // continue login logic...
+      try {
+        const response = await axiosInstance.post('/api/auth/login', {
+        email: this.email,
+        password: this.password
+      })
+
+      const token = response.data.token
+      const authStore = useAuthStore()
+      authStore.login(token)
+
+      this.$router.push('/home') // After successful login, you redirect the user to another page
+    } catch (error) {
+        console.error('Login failed:', error)
+        alert('Invalid login. Please try again.')
+      }
     }
   }
 };

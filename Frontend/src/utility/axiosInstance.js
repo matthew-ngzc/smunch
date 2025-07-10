@@ -9,6 +9,7 @@
 
 
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
 function determineBaseURL(environment) {
   if (environment === 'deployed') {
@@ -32,9 +33,8 @@ const axiosInstance = axios.create({
 // Attach token from sessionStorage (if exists)
 axiosInstance.interceptors.request.use(
   config => {
-    // HARD CODED MY TOKEN HERE 
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzUyMTY2NTgzLCJleHAiOjE3NTIyNTI5ODN9.CZZ3s8Bc9E5xNBzu2C1pluLdaf2-bcmfglpBvZ4zC3o'
-    // const token = sessionStorage.getItem('token')
+    const authStore = useAuthStore()
+    const token = authStore.token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }

@@ -1,7 +1,7 @@
 <template>
-  <div class="login-container">
+  <div class="signup-container">
     <!-- Left: White -->
-    <div class="login-left">
+    <div class="signup-left">
       <div class="left-content">
         <h2 class="welcome">sign up now!</h2>
         <p class="tagline">
@@ -16,12 +16,12 @@
     </div>
 
     <!-- Right: Green -->
-    <div class="login-right">
+    <div class="signup-right">
       <div class="right-content">
         <h1 class="logo">SMUNCH</h1>
         <h2 class="subheading">Sign Up with your SMU email!</h2>
 
-        <form @submit.prevent="handleLogin" class="form-fields">
+        <form @submit.prevent="handleSignup" class="form-fields">
           <label for="email">Email</label>
           <input
             id="email"
@@ -33,6 +33,13 @@
           />
           <span :class="['error-msg', { show: emailError }]">{{ emailError }}</span>
 
+          <label for="name">Name</label>
+          <input id="name" v-model="name" type="text" placeholder="Enter your name" required />
+
+          <label for="phone">Phone Number</label>
+          <input id="phone" v-model="phoneNo" type="text" placeholder="Enter your phone number" required />
+
+
           <label for="password">Password</label>
           <input
             id="password"
@@ -41,17 +48,6 @@
             placeholder="Enter your password"
             required
           />
-
-          <label for="confirm-password">Confirm Password</label>
-          <input
-            id="confirm-password"
-            v-model="confirmPassword"
-            type="password"
-            placeholder="Confirm your password"
-            required
-          />
-          <span :class="['error-msg', { show: passwordError }]">{{ passwordError }}</span>
-
           <button type="submit">sign up</button>
         </form>
 
@@ -64,18 +60,19 @@
 </template>
 
 <script>
+import axiosInstance from '@/utility/axiosInstance'
+
 export default {
   data() {
     return {
       email: '',
-      password: '',
-      confirmPassword: '',
-      emailError: '',
-      passwordError: ''
+      name: '',
+      phoneNo: '',
+      password: ''
     };
   },
   methods: {
-    handleLogin() {
+    async handleSignup() {
       if (!this.email.includes('@smu.edu.sg')) {
         this.emailError = 'Please enter a valid smu email address.';
         return;
@@ -83,14 +80,22 @@ export default {
         this.emailError = '';
       }
 
-      if (this.password !== this.confirmPassword) {
-        this.passwordError = 'Passwords do not match.';
-        return;
-      } else {
-        this.passwordError = '';
-      }
+      try {
+        const response = await axiosInstance.post('/api/auth/signup', {
+          email: this.email,
+          name: this.name,
+          phoneNo: this.phoneNo,
+          password: this.password
+        })
 
-      console.log('Sign up successful!');
+        console.log('Sign up successful!');
+        alert('Sign up successful! Verify using your email and log in.')
+        this.$router.push('/login')
+
+      } catch (error) {
+        console.error('Signup failed:', error)
+        alert('Signup failed. Please check your input or try again later.')
+      }
     }
   }
 };
@@ -105,14 +110,14 @@ html, body {
   font-family: inter, sans-serif;
 }
 
-.login-container {
+.signup-container {
   display: flex;
   width: 100vw;
   height: 100vh;
 }
 
 /* LEFT: white half */
-.login-left {
+.signup-left {
   flex: 1;
   background-color: white;
   display: flex;
@@ -144,7 +149,7 @@ html, body {
 }
 
 /* RIGHT: green half */
-.login-right {
+.signup-right {
   flex: 1;
   background-color: #0d3d31;
   display: flex;
