@@ -28,12 +28,17 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     login(token, user = null) {
       this.token = token
+    //   this.user = user
       sessionStorage.setItem('token', token)
     },
     logout() {
       this.token = null
       this.user = null
       sessionStorage.removeItem('token')
+      sessionStorage.removeItem('user')
+    },
+    isAuthenticated() {
+      return !!this.token
     }
   }
 })
