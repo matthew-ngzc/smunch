@@ -4,61 +4,66 @@
     <div class="delivery-form-box">
       <h2>📍 where should your food be delivered?</h2>
 
-      <!-- filter dropdowns -->
-      <div class="filters">
-        <label>building</label>
-        <select v-model="building">
-          <option value="" disabled selected hidden>select</option>
-          <option value="business">school of business</option>
-          <option value="law">school of law</option>
-          <option value="economics">school of economics</option>
-          <option value="accounting">school of accounting</option>
-          <option value="scis1">school of computing and information systems 1</option>
-          <option value="scis2">school of computing and information systems 2</option>
-        </select>
-      </div>
+      <div class="contents"> 
 
-      <!-- floor dropdown -->
-      <div class="filters">
-        <label>floor</label>
-        <select v-model="floor">
-          <option value="" disabled selected hidden>select</option>
-          <option value="level2">2</option>
-          <option value="level3">3</option>
-          <option value="level4">4</option>
-        </select>
-      </div>
+          <!-- filter dropdowns -->
+        <div class="filters">
+          <label>building</label>
+          <select v-model="building">
+            <option value="" disabled selected hidden>select</option>
+            <option value="business">school of business</option>
+            <option value="law">school of law</option>
+            <option value="economics">school of economics</option>
+            <option value="accounting">school of accounting</option>
+            <option value="scis1">school of computing and information systems 1</option>
+            <option value="scis2">school of computing and information systems 2</option>
+          </select>
+        </div>
 
-      <!-- facility type dropdown -->
-      <div class="filters">
-        <label>facility type</label>
-        <select v-model="facilityType">
-          <option value="" disabled selected hidden>select</option>
-          <option value="classroom">classroom</option>
-          <option value="gsr">group study room</option>
-          <option value="meeting-pod">meeting pod</option>
-          <option value="sr">seminar room</option>
-        </select>
-      </div>
+        <!-- floor dropdown -->
+        <div class="filters">
+          <label>floor</label>
+          <select v-model="floor">
+            <option value="" disabled selected hidden>select</option>
+            <option value="level2">2</option>
+            <option value="level3">3</option>
+            <option value="level4">4</option>
+          </select>
+        </div>
 
-      <!-- date input -->
-      <div class="filters">
-        <label>date</label>
-        <input type="date" v-model="date" />
-      </div>
+        <!-- facility type dropdown -->
+        <div class="filters">
+          <label>facility type</label>
+          <select v-model="facilityType">
+            <option value="" disabled selected hidden>select</option>
+            <option value="classroom">classroom</option>
+            <option value="gsr">group study room</option>
+            <option value="meeting-pod">meeting pod</option>
+            <option value="sr">seminar room</option>
+          </select>
+        </div>
 
-      <!-- time input -->
-       <div class="filters">
-        <label>time</label>
-        <select  v-model="time">
-          <option value="" disabled selected hidden>select</option>
-          <option value="afternoon-slot">12:00 PM</option>
-        </select>
+        <!-- date input -->
+        <div class="filters">
+          <label>date</label>
+          <input type="date" v-model="date" />
+        </div>
+
+        <!-- time input -->
+        <div class="filters">
+          <label>time</label>
+          <select  v-model="time">
+            <option value="" disabled selected hidden>select</option>
+            <option value="afternoon-slot">12:00 PM</option>
+          </select>
+        </div>
+        <!-- <div class="filters">
+          <label>time</label>
+          <input type="time" />
+        </div> -->
+
       </div>
-      <!-- <div class="filters">
-        <label>time</label>
-        <input type="time" />
-      </div> -->
+     
 
       <!-- next button -->
     <button class="next-btn" @click="goToSummary">next</button>
@@ -104,15 +109,18 @@ function goToSummary() {
 /* the white card box for the form */
 .delivery-form-box {
   max-width: 900px;                        /* limits width so it doesn't stretch too far */
-  max-height: 800px;
+  max-height: 700px;
   margin: 100px auto;                        /* vertical spacing + center horizontally */
   background-color: white !important;
   color: black;                                    
-  padding: 40px;                                     
+  padding: 89px;                                     
   border-radius: 16px;                                   /* rounded corners */
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);        /* soft drop shadow */
   font-family: 'Inter', sans-serif; /* use inter font */
-  text-align: left;              
+  text-align: left;       
+  margin-top: 29px;      
+  display: flex;
+  flex-direction: column;
 }
 
 /* form title heading */
@@ -120,22 +128,23 @@ function goToSummary() {
   text-align: center;            /* center the heading */
   font-size: 2.2rem;             /* slightly large font */
   margin-bottom: 0.5rem;         /* spacing below heading */
+  font-size: 36px;
+  margin-top: -30px;
+  margin-bottom: 11px;
 }
 
-/* subtitle */
-.subtext {
-  text-align: center;         
-  font-size: 1.1rem;            
-  margin-bottom: 2rem;           /* space before first field */
+
+.contents{
+  padding: 35px;
 }
+
 
 /* each filter block */
 .filters {
   display: flex;                
   flex-direction: column;
-  margin-bottom: 24px;           /* space between each block */
+  margin-bottom: 7px;           /* space between each block */
   padding: 5px;                 /* spacing inside the box */
-
 }
 
 /* 🏷️ filter labels */
@@ -158,22 +167,21 @@ function goToSummary() {
 }
 
 
-
-/* "next" button styling */
 .next-btn {
-  width: 100%; 
-  padding: 12px; 
-  background-color: #077a6e; 
-  color: white; 
-  font-weight: bold;
-  border: none; 
-  border-radius: 12px;
+  padding: 12px 24px;
+  background-color: #007a3d;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 16px;
   cursor: pointer;
-  transition: 0.2s ease; 
+  font-weight: bold;
+  align-self: center;  /* to prevent button from stretching w parent */
 }
 
 /* hover effect for next button */
 .next-btn:hover {
-  background-color: #055f57; /* slightly darker green on hover */
+   background-color: #036232;
 }
+
 </style>

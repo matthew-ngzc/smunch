@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient.js';
 import bcrypt from 'bcryptjs';
+import { NotFoundError } from '../utils/error.utils.js';
 
 /**
  * Retrieves a user by email and throws if not found.
@@ -17,13 +18,35 @@ export async function getUserByEmailOrThrow(email) {
 
   if (error) throw error;
   if (!data) {
-    const err = new Error('User with this email does not exist');
+    const err = new NotFoundError('User', 'email', email);
     err.status = 404;
     throw err;
   }
 
   return data;
 }
+
+/**
+ * Fetches a user by ID and throws if not found.
+ *
+ * @param {number} userId - User ID
+ * @param {string} fields - Comma-separated fields to select (default: 'user_id')
+ * @returns {Promise<object>} - The user object
+ * @throws {Error} - If user is not found or query fails
+ */
+export async function getUserByIdOrThrow(userId, fields = 'user_id') {
+  const { data, error } = await supabase
+    .from('users')
+    .select(fields)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) throw NotFoundError('User', "ID", userId);
+
+  return data;
+}
+
 
 /**
  * Checks whether an email is already registered.
@@ -51,7 +74,7 @@ export async function isEmailTakenOrThrow(email) {
  * @throws {Error} - If creation fails
  */
 export async function createUserOrThrow(payload) {
-  const { email, name, phoneNo, password } = payload;
+  const { email, name, phoneNo, password, role } = payload;
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const { data, error } = await supabase
@@ -60,7 +83,8 @@ export async function createUserOrThrow(payload) {
       email,
       name,
       phone: phoneNo,
-      hashed_password: hashedPassword
+      hashed_password: hashedPassword,
+      role
     }])
     .select()
     .single();

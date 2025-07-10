@@ -18,6 +18,9 @@ import CartPage from '../views/CartPage.vue'
 import SelectLocation from '../views/SelectLocation.vue'
 import OrderSummary from '../views/OrderSummary.vue'
 import Payment from '../views/Payment.vue'
+import Help from '../views/Help.vue'
+import PastOrders from '../views/PastOrders.vue'
+import ActiveOrders from '../views/ActiveOrders.vue'
 
 // REIWEN : this is a routes array and each route object has 3 properties
   const routes = [
@@ -30,18 +33,12 @@ import Payment from '../views/Payment.vue'
   { path: '/order/:id', name: 'orderMerchant', component: OrderMerchant },
   { path: '/summary', name: 'orderSummary', component: OrderSummary },
   { path: '/payment', name: 'payment', component: Payment },
-  
-  {
-  path: '/cart',
-  name: "cartPage",
-  component: CartPage
-  },
-  {
-    path: '/location',
-    name: "selectLocation",
-    component: SelectLocation
-  },
-  { path: '/:catchAll(.*)', name: "pageNotFound", component: PageNotFound} // redirect user to this page if path is not a valid one 
+  { path: '/cart', name: 'cartPage', component: CartPage },
+  { path: '/location', name: 'selectLocation', component: SelectLocation },
+  { path: '/:catchAll(.*)', name: "pageNotFound", component: PageNotFound}, // redirect user to this page if path is not a valid one 
+  { path: '/activeorders', name: 'activeorders', component: ActiveOrders },
+  { path: '/pastorders', name: 'pastorders', component: PastOrders },
+  { path: '/help', name: 'help', component: Help }
 ]
 
 

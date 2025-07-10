@@ -1,19 +1,44 @@
-<script lang="js">
-import { defineComponent } from 'vue'
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
-import bellIcon from '@/assets/bell.png'
 
+// handling dropdown closure 
+const isOpen = ref(false)
 
-export default defineComponent({
-  components: {
-    RouterLink
-  },
-  setup() {
-    // No reactive state or methods needed for now
-    return {bellIcon}
+const toggleMenu = (e) => {
+  e.stopPropagation()
+  isOpen.value = !isOpen.value
+}
+
+const closeMenu = () => {
+  isOpen.value = false
+}
+
+// define what happens when user clicks out 
+const handleClickOutside = (e) => {
+  if (!e.target.closest('.profile-wrapper')) {
+    closeMenu()
   }
+}
+
+// to check user 
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
 })
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+const logout = () => {
+  console.log('Logging out...')
+  
+}
+
+
 </script>
+
+
 
 <template>
 
@@ -23,11 +48,6 @@ export default defineComponent({
       <router-link to="/" class = "smunch"> smunch</router-link>
     </div>
 
-    <div class="navbar-right">
-        <!-- bell icon -->
-        <img :src="bellIcon" class="bell" alt="bell" />
-    </div>
-
  
     <!-- nav links that switch between pages -->
     <div class="navbar-center">
@@ -35,6 +55,47 @@ export default defineComponent({
       <router-link to="/order">order</router-link> 
       <router-link to="/run">run</router-link>
     </div>
+
+    <div class="navbar-right">
+        <!-- bell icon -->
+        <!-- <img :src="bellIcon" class="bell" alt="bell" /> -->
+
+         <div class="profile-wrapper" @click="toggleMenu">
+          <div class="icon-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="23px" height="23px" viewBox="0 0 24 24">
+              <g fill="none" stroke="#0d3d31" stroke-linecap="round" stroke-width="2">
+                <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1"> </path>
+                <path d="M12 11c-2.21 0 -4 -1.79 -4 -4c0 -2.21 1.79 -4 4 -4c2.21 0 4 1.79 4 4c0 2.21 -1.79 4 -4 4Z"> </path>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+    </div>
+
+    <!-- dropdown -->
+      <div v-if="isOpen" class="profile-menu" ref="dropdown">
+        <div class="menu-header">
+          <div class="dropdown-icon-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <g fill="none" stroke="#0d3d31" stroke-linecap="round" stroke-width="2">
+                <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1"/>
+                <path d="M12 11c-2.21 0 -4 -1.79 -4 -4c0 -2.21 1.79 -4 4 -4c2.21 0 4 1.79 4 4c0 2.21 -1.79 4 -4 4Z"/>
+              </g>
+            </svg>
+          </div>
+          <div class="close" @click.stop="closeMenu">X</div>
+        </div>
+
+      <hr />
+
+      <ul>
+        <li @click="logout">  Log out</li>
+        <li> <router-link to="/activeOrders">Active orders</router-link> </li>
+        <li> <router-link to="/pastOrders">Past orders</router-link> </li>
+        <li> <router-link to="/help">Help</router-link> </li>
+      </ul>
+      </div>
 
   </nav>
 </template>
@@ -59,6 +120,7 @@ export default defineComponent({
   left: 0;
   width: 100%;
   z-index: 1000;
+  
 }
 
 
@@ -107,16 +169,15 @@ export default defineComponent({
   background: transparent;
 }
 
-
 .navbar-center a:hover {
   text-shadow: 4px 4px 5px#a9b5cd;                  /* grey on hover */
 }
 
-/* 🎒 right side: profile */
 .navbar-right {
   display: flex;
   align-items: center;
   gap: 20px;
+  
 }
 
 /* bell icon */
@@ -124,6 +185,109 @@ export default defineComponent({
   width: 3rem;
   height: 3rem;
 }
+
+.profile-wrapper {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+}
+
+.profile-wrapper svg {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;      /* keeps aspect ratio */
+}
+
+.icon-circle {
+  width: 37px;
+  height: 37px;
+  background-color: white; /* or any color */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* optional shadow or border */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+}
+
+.profile-menu {
+  position: absolute;
+  right: 0;
+  top: 50px;
+  background: white;
+  color: rgb(60, 58, 58);
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  width: 220px;
+  z-index: 100;
+  padding: 12px 16px; /* ✅ uniform internal spacing */
+}
+
+.menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dropdown-icon-circle {
+  width: 36px;
+  height: 36px;
+  background-color: #e0e0e0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropdown-icon-circle svg {
+  width: 24px;
+  height: 24px;
+}
+
+.profile-menu hr {
+  margin: 12px 0;
+  border: none;
+  border-top: 1px solid #ccc;
+}
+
+.profile-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.profile-menu li {
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+  padding: 4px 0; /* ✅ vertical padding only */
+}
+
+.profile-menu li:hover {
+  background-color: #f2f2f2;
+}
+
+.profile-menu li a {
+  all: unset;
+  display: block;
+  padding-left: 4px; /* ✅ light indent */
+  width: 100%;
+  color: black;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.profile-menu hr {
+  margin: 10px 0;
+  border: none;
+  border-top: 1px solid #888;
+}
+
 
 </style>
 

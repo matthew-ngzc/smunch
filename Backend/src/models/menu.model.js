@@ -1,4 +1,8 @@
 import { supabase } from '../lib/supabaseClient.js';
+import {
+  DuplicateError,
+  NotFoundError
+} from '../utils/error.utils.js';
 
 /**
  * Retrieves all menu items for a given merchant.
@@ -40,7 +44,8 @@ export async function createMenuItemOrThrow(payload) {
     description,
     price_cents,
     image_url,
-    is_available = true
+    is_available = true,
+    type
   } = payload;
 
   // Check for identical item
@@ -59,13 +64,7 @@ export async function createMenuItemOrThrow(payload) {
     .maybeSingle();
 
   if (checkError) throw checkError;
-
-  if (existing) {
-    const err = new Error(`Identical menu item already exists with ID ${existing.menu_item_id}`);
-    err.status = 409;
-    err.existingMenuItemId = existing.menu_item_id;
-    throw err;
-  }
+  if (existing) throw DuplicateError("MenU Item", existing.menu_item_id);
 
   // Insert if no identical found
   const { data, error } = await supabase
@@ -93,10 +92,7 @@ export async function getMenuItemByIdOrThrow(menuItemId) {
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) {
-    const err = new Error('Menu item not found');
-    err.status = 404;
-    throw err;
+  if (!data) {throw NotFoundError("Menu Item", menuItemId);
   }
 
   return data;
@@ -118,6 +114,11 @@ export async function updateMenuItemByIdOrThrow(menuItemId, updates) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    if (error.message.includes('multiple (or no) rows returned')) {
+      return next(NotFoundError('Menu Item', menuItemId));
+    }
+    throw error;
+  }
   return data;
 }

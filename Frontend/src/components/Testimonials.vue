@@ -32,7 +32,7 @@ const testimonials = ref([
 
 onMounted(() => {
     new Carousel(carouselElement.value, {
-        interval: 5000,
+        interval: 9000,
         touch: true,
     });
 });
@@ -68,105 +68,126 @@ onMounted(() => {
 
 <style scoped>
 .testimonial-carousel {
-    max-width: 800px;
-    margin: 0 auto;
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+  height: 380px; /* consistent height to avoid arrow vertical shift */
 }
 
 .carousel-inner {
-    min-height: 300px;
+  height: 100%;
+  position: relative;
+}
+
+.carousel-item {
+  height: 100%;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .testimonial-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem;
-    text-align: center;
+  max-width: 600px;
+  width: 100%; /* make width consistent */
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .testimonial-image img {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border: 4px solid #4a4a4a;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border: 4px solid #4a4a4a;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .testimonial-image img:hover {
-    transform: scale(1.05) rotate(3deg);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  transform: scale(1.05) rotate(3deg);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
 }
 
 .quote {
-    font-size: 1.25rem;
-    font-weight: 300;
-    line-height: 1.6;
-    color: #000;
-    font-style: italic;
+  font-size: 1.25rem;
+  font-weight: 300;
+  line-height: 1.6;
+  color: #000;
+  font-style: italic;
+  min-height: 80px;
+  margin-top: 1rem;
 }
 
-.testimonial-author h4 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #000;
-    margin-bottom: 0.25rem;
+.testimonial-author h4,
+.testimonial-author h6 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #000;
+  margin-top: 1rem;
 }
 
-.testimonial-author p {
-    font-size: 1rem;
-    color: #555;
-    font-weight: 500;
-}
-
+/* Arrows */
 .carousel-control-prev,
 .carousel-control-next {
-    width: 30px; 
-    height: 30px; 
-    background-color: rgba(0, 0, 0, 1);
-    border-radius: 50%;
-    opacity: 0.8;
-    transition: all 0.3s ease;
-    top: 80px;
-    z-index: 10;
+  width: 30px;
+  height: 30px;
+  background-color: rgba(0, 0, 0, 1);
+  border-radius: 50%;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
 }
 
 .carousel-control-prev {
-    left: 50px; 
+  left: 20px; /* consistent horizontal distance from edge */
 }
 
 .carousel-control-next {
-    right: 50px; 
+  right: 20px;
 }
 
 .carousel-control-prev:hover,
 .carousel-control-next:hover {
-    background-color: rgba(0, 0, 0, 0.7);
-    opacity: 1;
+  background-color: rgba(0, 0, 0, 0.7);
+  opacity: 1;
 }
 
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
-    width: 16px; 
-    height: 16px;
+  width: 16px;
+  height: 16px;
 }
 
-/* Responsive Styles */
+/* Responsive */
 @media (max-width: 768px) {
-    .testimonial-content {
-        padding: 1rem;
-    }
+  .testimonial-content {
+    padding: 1rem;
+  }
 
-    .quote {
-        font-size: 1rem;
-    }
+  .quote {
+    font-size: 1rem;
+  }
 
-    .testimonial-author h4 {
-        font-size: 1.25rem;
-    }
+  .testimonial-author h4,
+  .testimonial-author h6 {
+    font-size: 1rem;
+  }
 
-    .testimonial-author p {
-        font-size: 0.9rem;
-    }
+  .carousel-control-prev,
+  .carousel-control-next {
+    left: 10px;
+    right: 10px;
+  }
 }
+
+.carousel-item:not(.active) {
+  display: none !important;
+}
+
 </style>

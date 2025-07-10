@@ -71,10 +71,21 @@ export default defineComponent({
   }
 })
 </script>
+
+
 <template>
   <div class="merchant-page">
     <div class="merchant-header">
-      <img :src="merchantInfo.image_url" alt="Merchant Logo" class="merchant-logo" />
+
+      <div class="logo"> 
+        <img :src="merchantInfo.image_url" alt="Merchant Logo" class="merchant-logo" />
+      </div>
+
+      <div class="texts">
+        <p class="merchant-name"> {{ merchantInfo.name }} </p>
+        <p class="location"> {{ merchantInfo.location }} </p>
+      </div>
+    
     </div>
 
     <hr />
@@ -83,7 +94,7 @@ export default defineComponent({
       <img :src="item.image_url" class="menu-image" />
       <div class="menu-info">
         <h3>{{ item.name.toLowerCase() }}</h3>
-        <p class="desc">signature {{ item.type.includes('drink') ? 'coffee' : 'juice' }} with no added preservatives</p>
+        <p class="desc"> {{ item.description }} </p>
         <div class="menu-controls">
           <button @click="decrease(item.menu_item_id)">-</button>
           <span>{{ quantities[item.menu_item_id] }}</span>
@@ -102,26 +113,40 @@ export default defineComponent({
 .merchant-page {
   padding: 20px;
   font-family: 'Inter', sans-serif;
+  margin-top: 25px;
 }
 
 .merchant-header {
   display: flex;
+  flex-direction: row;
   align-items: center;
   background: #fff;
   border-radius: 12px;
   padding: 20px;
+  height: 9rem;
   margin-bottom: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  gap: 12px;
 }
+
 
 .merchant-logo {
-  height: 60px;
+  height: 100px;
   margin-right: 20px;
+  margin-left: 10px;
+  width: 120px;
 }
 
-.address {
-  font-weight: 500;
+.texts {
+  display: flex;
+  flex-direction: column;
 }
+
+.merchant-name {
+  font-weight: bold;
+  font-size: 27px;
+}
+
 
 .rating {
   color: #555;
@@ -161,21 +186,37 @@ export default defineComponent({
 }
 
 .menu-controls {
-  margin-top: 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 20px;
 }
 
 .menu-controls button {
-  background-color: #e0e0e0;
+  background-color: #30895f;
+  display:flex;
+  justify-content: center;
+  align-items: center;
   border: none;
-  border-radius: 4px;
-  width: 28px;
-  height: 28px;
-  font-size: 18px;
+  border-radius: 30px;
+  width: 20px;
+  height: 20px;
+  font-size: 16px;
   cursor: pointer;
+  color: white;
 }
+
+.menu-controls button:hover {
+  box-shadow: 1px 1px 2px #848383;
+
+}
+
+.menu-controls span { /* to prevent the number from moving the buttons */
+  display: inline-block;
+  width: 2.5ch;       /* enough for 2–3 digits */
+  text-align: center;
+  flex: 0 0 auto;
+}
+
 
 .menu-price {
   font-weight: bold;
@@ -191,8 +232,9 @@ export default defineComponent({
   background-color: #007a3d;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 20px;
   font-size: 16px;
   cursor: pointer;
+  font-weight: bold;
 }
 </style>

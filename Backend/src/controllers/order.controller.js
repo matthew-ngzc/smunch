@@ -1,13 +1,151 @@
 import {
   createOrderOrThrow,
   updateOrderStatusOrThrow,
+  updatePaymentStatusOrThrow,
   getOrdersByCustomerIdOrThrow
 } from '../models/order.model.js';
 import { generatePayNowQRCode } from '../services/payment.service.js';
 
+
+/** SWAGGER DOCS
+ * @swagger
+ * /api/orders:
+ *   post:
+ *     summary: Create a new order and generate payment instructions
+ *     description: |
+ *       Creates a new order and returns:
+ *       - the full order object (including items),
+ *       - a Base64-encoded PayNow QR code,
+ *       - a payment reference string (e.g., SMUNCH-84-1),
+ *       - and the PayNow mobile number.
+ *     tags: [Orders]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [customer_id, merchant_id, delivery_fee_cents, building, room_type, room_number, delivery_time, order_items]
+ *             properties:
+ *               customer_id:
+ *                 type: integer
+ *               merchant_id:
+ *                 type: integer
+ *               delivery_fee_cents:
+ *                 type: integer
+ *               building:
+ *                 type: string
+ *               room_type:
+ *                 type: string
+ *               room_number:
+ *                 type: string
+ *               delivery_time:
+ *                 type: string
+ *                 format: date-time
+ *               order_items:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required: [menu_item_id, quantity]
+ *                   properties:
+ *                     menu_item_id:
+ *                       type: integer
+ *                     quantity:
+ *                       type: integer
+ *                     customisations:
+ *                       type: object
+ *                     notes:
+ *                       type: string
+ *           example:
+ *             customer_id: 1
+ *             merchant_id: 5
+ *             delivery_fee_cents: 100
+ *             order_items:
+ *               - menu_item_id: 25
+ *                 quantity: 2
+ *                 customisations: { "noodle": "yellow" }
+ *                 notes: hello
+ *               - menu_item_id: 26
+ *                 quantity: 1
+ *             building: sob
+ *             room_type: Seminar Room
+ *             room_number: 2-7
+ *             delivery_time: "2025-06-05T12:00:00Z"
+ *     responses:
+ *       201:
+ *         description: Order created and payment details returned
+ *         content:
+ *           application/json:
+ *             example:
+ *               order:
+ *                 order_id: 84
+ *                 customer_id: 1
+ *                 total_amount_cents: 520
+ *                 food_amount_cents: 420
+ *                 delivery_fee_cents: 100
+ *                 payment_reference: SMUNCH-84-1
+ *                 payment_status: awaiting_payment
+ *                 order_status: created
+ *                 customer_confirmed: false
+ *                 customer_confirmed_at: null
+ *                 created_at: "2025-06-19T16:25:12.357568"
+ *                 building: sob
+ *                 room_type: Seminar Room
+ *                 room_number: 2-7
+ *                 delivery_time: "2025-06-05T12:00:00"
+ *                 merchant_id: 5
+ *                 items:
+ *                   - order_item_id: 23
+ *                     order_id: 84
+ *                     menu_item_id: 25
+ *                     quantity: 2
+ *                     price_cents: 160
+ *                     notes: hello
+ *                     customisations:
+ *                       noodle: yellow
+ *                     created_at: "2025-06-19T16:25:12.476407"
+ *                   - order_item_id: 24
+ *                     order_id: 84
+ *                     menu_item_id: 26
+ *                     quantity: 1
+ *                     price_cents: 100
+ *                     notes: null
+ *                     customisations: null
+ *                     created_at: "2025-06-19T16:25:12.476407"
+ *               qrCode: "data:image/png;base64,..."
+ *               payment_reference: SMUNCH-84-1
+ *               paynow_number: "96773374"
+ */
 /**
  * POST /api/orders
- * Creates a new order.
+ *
+ * Creates a new order and returns:
+ * - the created order object
+ * - a dynamically generated PayNow QR code as a Base64 Data URI
+ * - a unique payment reference (e.g., SMUNCH-{orderId}-{customerId})
+ * - the PayNow mobile number used for payment
+ *
+ * 📥 Expected `req.body`:
+ * {
+ *   customer_id: number,
+ *   merchant_id: number,
+ *   delivery_fee_cents: number,
+ *   building: string,
+ *   room_type: string,
+ *   room_number: string,
+ *   delivery_time: string (ISO timestamp),
+ *   order_items: [
+ *     { menu_item_id: number, quantity: number, price_cents: number, customisations?: object }
+ *   ]
+ * }
+ *
+ * 📤 Response `res.status(201)`:
+ * {
+ *   order: { ... },              // full order row (excluding items)
+ *   qrCode: string,              // Base64-encoded PayNow QR code
+ *   payment_reference: string,   // e.g., SMUNCH-42-1
+ *   paynow_number: string        // e.g., '91234567'
+ * }
  */
 export const createOrder = async (req, res, next) => {
   try {
@@ -23,7 +161,7 @@ export const createOrder = async (req, res, next) => {
     const amountDollars = (Number(total_amount_cents) / 100).toFixed(2);
 
     //generate the PayNow QR code
-    const qrCodeDataURL = await generatePayNowQRCode({
+    const {qrCodeDataURL, paymentReference, paynowNumber} = await generatePayNowQRCode({
       amount: amountDollars,
       orderId: order_id,
       customerId: customer_id
@@ -36,7 +174,9 @@ export const createOrder = async (req, res, next) => {
     //output order and qr code
     res.status(201).json({
       order: newOrder,
-      qrCode: qrCodeDataURL
+      qrCode: qrCodeDataURL,
+      payment_reference: paymentReference,
+      paynow_number: paynowNumber
     });
   } catch (err) {
     // Handle foreign key violations for customer_id, merchant_id, or menu_item_id
@@ -56,9 +196,111 @@ export const createOrder = async (req, res, next) => {
   }
 };
 
+
 /**
- * PUT /api/orders/:orderId/status
- * Updates the status of an existing order.
+ * @swagger
+ * /api/orders/{orderId}/order-status:
+ *   put:
+ *     summary: Update order status
+ *     description: |
+ *       Updates the status of a specific order.
+ *       Acceptable values:
+ *       - created
+ *       - payment_verified
+ *       - preparing
+ *       - collected_by_runner
+ *       - delivered
+ *       - completed
+ *       - cancelled
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the order
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 example: delivered
+ *                 enum: [
+ *                    'created',
+ *                    'payment_verified',
+ *                    'preparing',
+ *                    'collected_by_runner',
+ *                    'delivered',
+ *                    'completed',
+ *                    'cancelled'
+ *                  ]
+ *     responses:
+ *       200:
+ *         description: Order status updated
+ *         content:
+ *           application/json:
+ *             example:
+ *               order:
+ *                 order_id: 84
+ *                 customer_id: 1
+ *                 total_amount_cents: 520
+ *                 food_amount_cents: 420
+ *                 delivery_fee_cents: 100
+ *                 payment_reference: SMUNCH-84-1
+ *                 payment_status: awaiting_payment
+ *                 order_status: delivered
+ *                 customer_confirmed: false
+ *                 customer_confirmed_at: null
+ *                 created_at: "2025-06-19T16:25:12.357568"
+ *                 building: sob
+ *                 room_type: Seminar Room
+ *                 room_number: 2-7
+ *                 delivery_time: "2025-06-05T12:00:00"
+ *                 merchant_id: 5
+ *       400:
+ *         description: Invalid status value
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Invalid order_status: 'lolol'. Allowed values: created, payment_verified, preparing, collected_by_runner, delivered, completed, cancelled"
+ *       404:
+ *         description: Order not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Order with ID 84 does not exist"
+ *               code: "NOT_FOUND_ORDER"
+ */
+/**
+ * PUT /api/orders/:orderId/order-status
+ *
+ * Updates the status of a specific order.
+ * Only accepts predefined status strings
+ * - 'created'
+ * - 'payment_verified'
+ * - 'preparing'
+ * - 'collected_by_runner'
+ * - 'delivered'
+ * - 'completed'
+ * - 'cancelled'
+ *
+ * 📥 Expected `req.body`:
+ * {
+ *   status: string
+ * }
+ *
+ * 📤 Response:
+ * {
+ *   order: { ... }  // updated order object
+ * }
+ * 
+ * @throws {Error} - If status is invalid or order not found
  */
 export const updateOrderStatus = async (req, res, next) => {
   try {
@@ -72,6 +314,182 @@ export const updateOrderStatus = async (req, res, next) => {
 };
 
 /**
+ * @swagger
+ * /api/orders/{orderId}/payment-status:
+ *   put:
+ *     summary: Update payment status of an order
+ *     description: |
+ *       Updates the payment status of a specific order.
+ *       Acceptable values:
+ *       - awaiting_payment
+ *       - awaiting_verification
+ *       - payment_confirmed
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the order
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 example: payment_confirmed
+ *                 enum: [
+ *                  awaiting_payment, 
+ *                  awaiting_verification, 
+ *                  payment_confirmed
+ *                 ]
+ *     responses:
+ *       200:
+ *         description: Payment status updated
+ *         content:
+ *           application/json:
+ *             example:
+ *               order:
+ *                 order_id: 84
+ *                 customer_id: 1
+ *                 total_amount_cents: 520
+ *                 food_amount_cents: 420
+ *                 delivery_fee_cents: 100
+ *                 payment_reference: SMUNCH-84-1
+ *                 payment_status: payment_confirmed
+ *                 order_status: created
+ *                 customer_confirmed: false
+ *                 customer_confirmed_at: null
+ *                 created_at: "2025-06-19T16:25:12.357568"
+ *                 building: sob
+ *                 room_type: Seminar Room
+ *                 room_number: 2-7
+ *                 delivery_time: "2025-06-05T12:00:00"
+ *                 merchant_id: 5
+ *       400:
+ *         description: Invalid status value
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Invalid payment_status: 'lolol'. Allowed values: awaiting_payment, awaiting_verification, payment_confirmed"
+ *       404:
+ *         description: Order not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Order with ID 84 does not exist"
+ *               code: "NOT_FOUND_ORDER"
+ */
+/**
+ * PUT /api/orders/:orderId/payment-status
+ *
+ * Updates the payment status of a specific order.
+ * Only accepts predefined status strings:
+ * - 'awaiting_payment'
+ * - 'awaiting_verification'
+ * - 'payment_confirmed'
+ *
+ * 📥 Expected `req.body`:
+ * {
+ *   status: string
+ * }
+ *
+ * 📤 Response:
+ * {
+ *   order: { ... }  // updated order object
+ * }
+ *
+ * @throws {Error} - If status is invalid or order not found
+ */
+export const updatePaymentStatus = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    const updatedOrder = await updatePaymentStatusOrThrow(orderId, status);
+    res.json({ order: updatedOrder });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/** SWAGGER DOCS
+ * @swagger
+ * /api/orders/user/{userId}:
+ *   get:
+ *     summary: Get orders for a user by type
+ *     description: |
+ *       Retrieves orders for a specific user, filtered by optional `type` query:
+ *       
+ *       - `active`: returns in-progress orders (created, preparing, delivered, etc.)
+ *       - `history`: returns past orders (completed or cancelled)
+ *       
+ *       If `type` is not provided, returns all orders.
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the user
+ *       - in: query
+ *         name: type
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [active, history]
+ *         description: Filter orders by type
+ *     responses:
+ *       200:
+ *         description: List of orders
+ *         content:
+ *           application/json:
+ *             examples:
+ *               active:
+ *                 summary: With orders
+ *                 value:
+ *                   orders:
+ *                     - order_id: 76
+ *                       customer_id: 2
+ *                       total_amount_cents: 790
+ *                       food_amount_cents: 690
+ *                       delivery_fee_cents: 100
+ *                       payment_reference: REF123
+ *                       payment_status: awaiting_payment
+ *                       order_status: created
+ *                       customer_confirmed: false
+ *                       customer_confirmed_at: null
+ *                       created_at: "2025-06-07T09:13:09.953362"
+ *                       building: sob
+ *                       room_type: Seminar Room
+ *                       room_number: "2-7"
+ *                       delivery_time: "2025-06-05T12:00:00"
+ *                       merchant_id: 5
+ *               history:
+ *                 summary: No orders
+ *                 value:
+ *                   orders: []
+ *       400:
+ *         description: Invalid query parameter
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Invalid type: 'lolol'. Allowed values: active, history"
+ *               code: "INVALID_QUERY_PARAM"
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "User with ID 2 does not exist"
+ *               code: "NOT_FOUND_USER"
+ */
+/**
  * GET /api/orders/user/:userId?type=active|history
  * Retrieves orders for a specific user.
  */
@@ -81,10 +499,25 @@ export const getUserOrders = async (req, res, next) => {
     const { type } = req.query;
     let statuses;
     if (type === 'active') {
-      statuses = ['pending', 'in_progress'];
+      statuses = [
+        'created',               // order placed, awaiting payment
+        'payment_verified',      // payment confirmed
+        'preparing',             // merchant preparing order (optional, future dev)
+        'collected_by_runner',   // in transit
+        'delivered'              // food delivered, not yet confirmed by user
+      ];
     } else if (type === 'history') {
-      statuses = ['completed', 'cancelled'];
+      statuses = [
+        'completed',             // user confirmed receipt
+        'cancelled'              // user or system cancelled
+      ];
+    } else {
+        return res.status(400).json({
+          error: `Invalid type: '${type}'. Allowed values: active, history`,
+          code: 'INVALID_QUERY_PARAM'
+      });
     }
+
     const orders = await getOrdersByCustomerIdOrThrow(userId, statuses);
     res.json({ orders });
   } catch (err) {
