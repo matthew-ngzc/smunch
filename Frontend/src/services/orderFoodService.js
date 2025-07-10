@@ -27,3 +27,10 @@ export async function getMenuById(id) {
 export async function getMerchantInfoById(id) {
   return axiosInstance.get(`/api/merchants/${id}`)
 }
+
+/**
+ * Create an order (POST)
+ */
+export async function createOrder(payload) {
+  return axiosInstance.post('/api/orders', payload)
+}
