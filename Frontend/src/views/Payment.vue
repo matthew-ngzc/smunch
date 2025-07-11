@@ -3,6 +3,18 @@ import { computed } from 'vue'
 import { useCartStore } from '@/stores/cart'
 import qrCode from '@/assets/qrcode.jpg' 
 import { useRouter } from 'vue-router' 
+// importing the timeline
+import ordertimeline from '../components/ordertimeline.vue'
+
+
+// progress timeline
+  const data = {
+    steps: [ 'order details', 'delivery location', 'order confirmation', 'payment'],
+    currentStep: 4,
+    activeColor: 'rgb(0, 0, 0)',
+    passiveColor: 'grey',
+  };
+
 
 const router = useRouter() 
 const cart = useCartStore()
@@ -17,7 +29,12 @@ const done = () => {
 </script>
 
 <template>
+  <div class="payment-page">
+     <!-- pass both data and routes -->
+    <ordertimeline :data="data" :routes="routes" />
+  
   <div class="payment-container">
+
     <h2 class="title">Follow the steps below to proceed with payment.</h2><br />
 
     <div class="content">
@@ -42,10 +59,11 @@ const done = () => {
     </div>
 
     <p class="note">
-      You will receive a confirmation from Smunch Admin in 1–2 days.
+      You will receive a confirmation from Smunch Admin within 1–2 days.
     </p>
 
     <button class="done-btn" @click="done">done</button>
+  </div>
   </div>
 </template>
 
@@ -53,8 +71,8 @@ const done = () => {
 .payment-container {
   max-width: 1500px;
   width: 900px;
-  margin: 40px auto;
-  padding: 32px;
+  margin: 30px auto;
+  padding: 40px;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
@@ -63,9 +81,10 @@ const done = () => {
 }
 
 .title {
-  font-size: 1.4rem;
+  font-size: 1.8rem;
   font-weight: bold;
   margin-bottom: 32px;
+  margin-top: 20px;
 }
 
 .content {
@@ -77,7 +96,7 @@ const done = () => {
 
 .steps {
   flex: 1;
-  font-size: 1rem;
+  font-size: 18px;
 }
 
 .steps p {
@@ -94,26 +113,30 @@ const done = () => {
 .qr-image {
   width: 100%;
   margin-bottom: 8px;
+  margin-left: 24px;
 }
 
 .qr-caption {
   font-size: 0.9rem;
+  margin-left: 48px;
 }
 
 .note {
   margin-top: 5px;
-  font-size: 0.95rem;
+  font-size: 19px;
   color: #333;
 }
 
 .done-btn {
-  margin-top: 20px;
+  display: block;
+  margin: 24px auto 0;
   padding: 12px 24px;
   background-color: #007a3d;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 20px;
   font-size: 16px;
   cursor: pointer;
+  font-weight: bold;
 }
 </style>

@@ -1,63 +1,64 @@
 <template>
-    <!-- parent -->
-    <div class="login-container">
-      <!-- child 1 -->
-      <div class="login-left">
-          <h2 class="welcome"> welcome back!</h2>
-          <p class="tagline">
-           lazy to walk to your favourite store? <br />
-           —dont worry we gotchu.
-           <br /><br /> 
-           skip the walk and ditch the queue. <br />
-           we'll bring your meal right to you. <br />
-           here at smunch, that's what we do. <br />   
-             <br /><br />
-             <br /><br />
-             <br /><br />
-             </p>
-          <p class="tagline-continued"> 
-             by students, for students.
-          </p>
-        </div>
-
-
-      <!-- child 2 -->
-      <div class="login-right">
-        <div class="right-headers"> 
-        <h1 class="logo"> SMUNCH </h1>
-        <h2 class="subheading">Login with your SMU email!</h2>
-
-        </div>
-
-        <form @submit.prevent="handleLogin" class="form-fields">
-            <label for="email">Email</label>
-            <input 
-                id="email" 
-                v-model="email" 
-                type="text" 
-                :class="{ 'input-error': emailError }"
-                placeholder="Enter your smu email" required />
-
-            <span v-if="emailError" class="error-msg">{{ emailError }}</span>
-
-            <label for="password">Password</label>
-            <input 
-                id="password" 
-                v-model="password" 
-                type="password" 
-                placeholder="Enter your password" required />
-            
-
-            <button type="submit">log in</button>
-        </form>
-        <p class="signup-prompt">
-          don't have an account? 
-          <router-link to="/signup">sign up</router-link> now! 
+  <div class="login-container">
+    <!-- Left: White with background image -->
+    <div class="login-left">
+      <div class="left-content">
+        <h2 class="welcome">Welcome back!</h2>
+        <p class="tagline">
+          Lazy to walk to your favourite store?<br />
+          —Don't worry, we gotchu.<br /><br />
+          Skip the walk and ditch the queue.<br />
+          We'll bring your meal right to you.<br />
+          Here at SMUNCH, that's what we do.<br /><br />
+          <span class="tagline-continued">By students, for students.</span>
         </p>
       </div>
-      </div>
-</template>
+    </div>
 
+    <!-- Right: Green -->
+    <div class="login-right">
+      <div class="right-content">
+        <h1 class="logo">SMUNCH</h1>
+        <h2 class="subheading">Login with your SMU email!</h2>
+
+        <form @submit.prevent="handleLogin" class="form-fields">
+          <div class="input-group">
+            <label for="email">Email</label>
+            <input 
+              id="email" 
+              v-model="email" 
+              type="text" 
+              :class="{ 'input-error': emailError }"
+              placeholder="Enter your SMU email" 
+              required 
+            />
+            <span v-if="emailError" class="error-msg">{{ emailError }}</span>
+          </div>
+
+          <div class="input-group">
+            <label for="password">Password</label>
+            <input 
+              id="password" 
+              v-model="password" 
+              type="password" 
+              placeholder="Enter your password" 
+              required 
+            />
+          </div>
+
+          <button type="submit" class="login-btn">
+            <span>Log In</span>
+          </button>
+        </form>
+
+        <p class="signup-prompt">
+          Don't have an account? 
+          <router-link to="/signup">Sign up</router-link> now! 
+        </p>
+      </div>
+    </div>
+  </div>
+</template>
 
 <script>
 import { useAuthStore } from '@/stores/auth'
@@ -74,24 +75,24 @@ export default {
   methods: {
     async handleLogin() {
       if (!this.email.includes('@smu.edu.sg')) {
-        this.emailError = "Please enter a valid smu email address.";
+        this.emailError = "Please enter a valid SMU email address.";
         return;
       }
 
       this.emailError = '';
-      // continue login logic...
+      
       try {
         const response = await axiosInstance.post('/api/auth/login', {
-        email: this.email,
-        password: this.password
-      })
+          email: this.email,
+          password: this.password
+        })
 
-      const token = response.data.token
-      const authStore = useAuthStore()
-      authStore.login(token)
+        const token = response.data.token
+        const authStore = useAuthStore()
+        authStore.login(token)
 
-      this.$router.push('/home') // After successful login, you redirect the user to another page
-    } catch (error) {
+        this.$router.push('/home')
+      } catch (error) {
         console.error('Login failed:', error)
         alert('Invalid login. Please try again.')
       }
@@ -100,184 +101,340 @@ export default {
 };
 </script>
 
-
-
-
 <style scoped>
-
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 .login-container {
   height: 100vh;
-  width: 100vw;
-  font-family: inter;
+  width: 100%;
   display: flex;
   flex-direction: row;
-  /* not needed because children occupy full width justify-content: center; */
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-top: 62px;
 }
 
-
 .login-left {
-  background-color: white;
-  /* background-image: url('/bird.jpg'); */
-  background-image: url('/dinoburger2.jpg');
-  background-repeat: no-repeat;       /* stops it from repeating */
-  /* background-size: cover;             /* stretches to cover entire area */
-  background-position:  30px 630px;     /* 30px from left, 50px from top */
-  background-size: 1000px auto;  /* 150px wide, height auto-adjusts */
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  padding-top: 300px;
-}
-
-
-
-.login-right {
-  background-color: #0d3d31;
-  flex: 1.5;
-  display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: white;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
 }
 
+.login-left::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/dinoburger2.jpg') no-repeat;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.15;
+  z-index: 0;
+}
 
-.logo {
-  color: white;
-  font-size: 3.5rem;
-  font-weight: bold;
-  margin-top: -180px;
-  margin-bottom: 230px;
-  margin-left: 240px;
+.left-content {
+  text-align: center;
+  padding: 2rem;
+  max-width: 500px;
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp 0.8s ease-out;
 }
 
 .welcome {
-    color: #0d3d31;
-    font-size: 3.2rem;
-    font-weight: bold;
-    margin-top: -130px;
-    margin-right: 200px;
-    margin-left: 120px;
-    justify-content: center;
-    align-items: center;
-    
+  color: #0d3d31;
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 .tagline {
-  font-size: 2.3rem;
-  color: #0d3d31;
-  line-height: 1.5;
-  justify-content: center;
-  align-items: center;
-  margin-top: 80px;
-  margin-right: 160px;
+  font-size: 1.2rem;
+  color: #374151;
+  line-height: 1.6;
+  font-weight: 400;
+  margin-bottom: 1rem;
 }
 
 .tagline-continued {
-  font-size: 2.3rem;
-  color: black;
-  line-height: 1.5;
+  font-size: 1.2rem;
+  color: #0d3d31;
+  line-height: 1.6;
+  font-weight: 600;
+  display: block;
+  margin-top: 1rem;
+}
+
+.login-right {
+  background: linear-gradient(135deg, #0d3d31 0%, #0f5132 100%);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-top: 80px;
-  margin-left: 450px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
 }
 
+.login-right::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.3;
+}
 
+.right-content {
+  width: 100%;
+  max-width: 450px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.logo {
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin-bottom: 0.8rem;
+  letter-spacing: 0.1em;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 
 .subheading {
-  font-size: 2.5rem;
+  font-size: 1.1rem;
   text-align: center;
-  justify-content: center;
-  width: 100%;
-  font-family: inter;
-  margin-bottom: 790px;
-  margin-top: -176px;
-  margin-left: 90px;
-  
+  margin-bottom: 2rem;
+  font-weight: 400;
+  opacity: 0.9;
 }
 
-/* edits for the fields */
 .form-fields {
   display: flex;
   flex-direction: column;
-  gap: 29px; /* controls space btwn the fields */
-  margin-top: -690px; /* move form upwards */
-  width: 600px;
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .form-fields label {
-  font-size: 26px;
-  color: white;
-  margin-bottom: -15px;
-  margin-left: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-left: 0.5rem;
 }
 
 .form-fields input {
-  padding: 24px;
-  border-radius: 40px;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
   outline: none;
-  font-size: 25px;
-  border: none;
-  box-shadow: 9px 9px 10px rgba(40, 47, 46, 0.5);
-  width: 760px;
+  font-size: 0.9rem;
+  border: 2px solid transparent;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
 }
 
-/* on a click, enter your xx appears */
-input::placeholder {
-  color: transparent;
+.form-fields input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
   transition: color 0.3s ease;
-  border: none;
-  font-size: 25px;
 }
 
-input:focus::placeholder {
-  color: #645d5d; 
-  border: none;
+.form-fields input:focus {
+  outline: none;
+  border-color: #148b53;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(20, 139, 83, 0.2);
 }
 
-
-input:hover {
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); /* white glow */
+.form-fields input:focus::placeholder {
+  color: rgba(255, 255, 255, 0.8);
 }
 
-button {
-  margin-top: 59px;
-  padding: 4px;
-  background-color: #148b53;
+.form-fields input.input-error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.login-btn {
+  margin-top: 0.8rem;
+  padding: 0.8rem 1.5rem;
+  background: linear-gradient(135deg, #148b53 0%, #16a34a 100%);
   color: white;
   border: none;
-  border-radius: 23px;
-  height: 82px;
-  width: 760px;;
-  font-size:30px;
-  font-weight: bold;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-button:hover {
-    box-shadow: 9px 9px 10px rgba(40, 47, 46, 0.5);
+.login-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
 }
 
+.login-btn:hover::before {
+  left: 100%;
+}
 
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(20, 139, 83, 0.4);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
 
 .signup-prompt {
   margin-top: 1.5rem;
-  font-size: 1.7rem;
+  font-size: 0.9rem;
   text-align: center;
-  margin-left: 170px;
+  opacity: 0.8;
 }
 
 .signup-prompt a {
-  color: #c4f0e5;
+  color: #4ade80;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.signup-prompt a:hover {
+  color: #22c55e;
   text-decoration: underline;
 }
 
 .error-msg {
-    margin-left: 270px;
-    color: rgb(220, 61, 61);
+  color: #fca5a5;
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.error-msg.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+  
+  .login-left, .login-right {
+    flex: none;
+    height: 50%;
+  }
+  
+  .welcome {
+    font-size: 2rem;
+  }
+  
+  .tagline {
+    font-size: 1rem;
+  }
+  
+  .logo {
+    font-size: 2rem;
+  }
+  
+  .right-content {
+    padding: 1.5rem;
+  }
+  
+  .left-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome {
+    font-size: 1.8rem;
+  }
+  
+  .tagline {
+    font-size: 0.9rem;
+  }
+  
+  .logo {
+    font-size: 1.8rem;
+  }
+  
+  .subheading {
+    font-size: 1rem;
+  }
+  
+  .form-fields input {
+    padding: 0.7rem 0.8rem;
+    font-size: 0.85rem;
+  }
+  
+  .login-btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+  }
 }
 </style>
 

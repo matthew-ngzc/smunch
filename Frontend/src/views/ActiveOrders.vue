@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getActiveOrders } from '@/services/checkOrdersService'
+import { getActiveOrders } from '@/services/orderFoodService'
 
 const activeOrders = ref([])
 const userId = '12345' // need login info -> replace with actual userid when user logs in

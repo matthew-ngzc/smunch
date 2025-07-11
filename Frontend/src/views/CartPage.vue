@@ -157,7 +157,7 @@ export default defineComponent({
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 
   /* make box appear bigger than its contents */
-  padding: 24px;           /* adds space inside the box */
+  padding: 40px;           /* adds space inside the box */
   min-height: 700px;       /* regardless of # of items in cart, box has to occupy entire height */
   width: 100%;             /* stretches full width of parent */
 
@@ -168,6 +168,7 @@ export default defineComponent({
 .cart h2 {
   margin-top: 10px;
   margin-bottom: 20px;
+  font-weight: bold;
 }
 
 /* take up all the remaining vertical space in container cart, but let anything after sit at the bottom */
@@ -273,7 +274,7 @@ export default defineComponent({
   border: none;
   height: 1px;
   background-color: #5c5959; /* very light grey */
-  margin: 16px 0;
+  margin-top:-2px;
 }
 
 
