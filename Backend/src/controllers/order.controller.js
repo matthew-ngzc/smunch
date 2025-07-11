@@ -1,10 +1,13 @@
+import { PAYMENT_STATUSES } from '../constants/enums.constants.js';
 import {
   createOrderOrThrow,
   updateOrderStatusOrThrow,
   updatePaymentStatusOrThrow,
-  getOrdersByCustomerIdOrThrow
+  getOrdersByCustomerIdOrThrow,
+  getOrderByIdOrThrow
 } from '../models/order.model.js';
 import { generatePayNowQRCode } from '../services/payment.service.js';
+import { canUpdatePaymentStatus } from '../utils/auth.utils.js';
 
 
 /** SWAGGER DOCS
@@ -320,10 +323,15 @@ export const updateOrderStatus = async (req, res, next) => {
  *     summary: Update payment status of an order
  *     description: |
  *       Updates the payment status of a specific order.
- *       Acceptable values:
- *       - awaiting_payment
- *       - awaiting_verification
- *       - payment_confirmed
+ *       
+ *       **Access Rules**:
+ *         - Admins can change payment status to any valid value.
+ *         - Users can only change from `awaiting_payment` to `awaiting_verification` on their own orders.
+ *       
+ *       **Allowed values for `status`**:
+ *         - `awaiting_payment`
+ *         - `awaiting_verification`
+ *         - `payment_confirmed`
  *     tags: [Orders]
  *     parameters:
  *       - in: path
@@ -331,7 +339,7 @@ export const updateOrderStatus = async (req, res, next) => {
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID of the order
+ *         description: ID of the order to update
  *     requestBody:
  *       required: true
  *       content:
@@ -342,12 +350,8 @@ export const updateOrderStatus = async (req, res, next) => {
  *             properties:
  *               status:
  *                 type: string
- *                 example: payment_confirmed
- *                 enum: [
- *                  awaiting_payment, 
- *                  awaiting_verification, 
- *                  payment_confirmed
- *                 ]
+ *                 enum: [awaiting_payment, awaiting_verification, payment_confirmed]
+ *                 example: awaiting_verification
  *     responses:
  *       200:
  *         description: Payment status updated
@@ -356,27 +360,21 @@ export const updateOrderStatus = async (req, res, next) => {
  *             example:
  *               order:
  *                 order_id: 84
- *                 customer_id: 1
- *                 total_amount_cents: 520
- *                 food_amount_cents: 420
- *                 delivery_fee_cents: 100
- *                 payment_reference: SMUNCH-84-1
- *                 payment_status: payment_confirmed
+ *                 payment_status: awaiting_verification
  *                 order_status: created
- *                 customer_confirmed: false
- *                 customer_confirmed_at: null
- *                 created_at: "2025-06-19T16:25:12.357568"
- *                 building: sob
- *                 room_type: Seminar Room
- *                 room_number: 2-7
- *                 delivery_time: "2025-06-05T12:00:00"
- *                 merchant_id: 5
+ *                 ... other fields ...
  *       400:
  *         description: Invalid status value
  *         content:
  *           application/json:
  *             example:
- *               error: "Invalid payment_status: 'lolol'. Allowed values: awaiting_payment, awaiting_verification, payment_confirmed"
+ *               error: "Invalid payment status: 'foo'. Allowed values: awaiting_payment, awaiting_verification, payment_confirmed"
+ *       403:
+ *         description: Forbidden — user not allowed to perform this update
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "You can only update your own orders."
  *       404:
  *         description: Order not found
  *         content:
@@ -410,6 +408,28 @@ export const updatePaymentStatus = async (req, res, next) => {
   try {
     const { orderId } = req.params;
     const { status } = req.body;
+
+    // Check if status is valid
+    if (!PAYMENT_STATUSES.includes(status)){
+      return res.status(400).json({
+        error: `Invalid payment status: '${status}'. Allow values: ${PAYMENT_STATUSES.join(', ')}`,
+      });
+    }
+
+    // Check if user is allowed to update payment status
+    const order = await getOrderByIdOrThrow(orderId);
+    const { allowed, reason } = canUpdatePaymentStatus({
+      role: req.user.role,
+      userId: req.user.id,
+      order,
+      newStatus: status
+    });
+
+    if (!allowed) {
+      return res.status(403).json({ error: reason });
+    }
+
+    // Update status
     const updatedOrder = await updatePaymentStatusOrThrow(orderId, status);
     res.json({ order: updatedOrder });
   } catch (err) {

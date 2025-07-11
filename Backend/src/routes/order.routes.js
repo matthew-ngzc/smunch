@@ -27,12 +27,13 @@ router.put('/:orderId/order-status', authenticateToken, requireRole('admin'), up
 // Update payment status of an order
 // PUT /api/orders/:orderId/status
 // Must be logged in as admin
-router.put('/:orderId/payment-status', authenticateToken, requireRole('admin'), updatePaymentStatus);
+router.put('/:orderId/payment-status', authenticateToken, requireRole('user','admin'), updatePaymentStatus);
 
 // View orders for a user (active or history via query param `type`)
 // GET /api/orders/user/:userId?type=active|history
-// Must be logged in as user
-router.get('/user/:userId', authenticateToken, getUserOrders);
+// Must be logged in as user or admin (cannot be merchant)
+// TODO: add check that if user, only that user can view
+router.get('/user/:userId', authenticateToken, requireRole('user', 'admin'), getUserOrders);
 
 // Confirm payment and send receipt
 // POST /api/orders/:orderId/payment/confirm
