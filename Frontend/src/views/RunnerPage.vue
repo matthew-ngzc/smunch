@@ -12,30 +12,24 @@ export default defineComponent({
 
 <template>
   <div class="page">
-    <h2>coming soon!</h2>
-
+    <h2 class="coming-soon">coming soon!</h2>
   </div>
 </template>
 
-
-
 <style scoped>
+
 .page {
   display: flex;
-  width: 100vw;
+  justify-content: center;
+  align-items: center;
   height: 100vh;
-  overflow: hidden;
-  color: black;
-  margin-top: 300px; /* pushes it down by 20px */
-  margin-left: 460px;
-
 }
 
-
-.page h2 {
-    font-size: 70px;
+.coming-soon {
+  font-size: 5rem;
+  font-weight: bold;
+  transform: translateX(50px); 
+  color: #0d3d31;
 }
-
-
 
 </style>
