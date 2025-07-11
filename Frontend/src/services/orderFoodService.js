@@ -27,8 +27,6 @@ export async function getMenuById(id) {
 export async function getMerchantInfoById(id) {
   return axiosInstance.get(`/api/merchants/${id}`)
 }
-
-
 // get user's active orders
 export async function getActiveOrders(userId) {
   return axiosInstance.get(`/api/orders/user/${userId}?type=active`)
@@ -37,4 +35,10 @@ export async function getActiveOrders(userId) {
 // get user's past orders
 export async function getPastOrders(userId) {
   return axiosInstance.get(`/api/orders/user/${userId}?type=history`)
+}
+/**
+ * Create an order (POST)
+ */
+export async function createOrder(payload) {
+  return axiosInstance.post('/api/orders', payload)
 }

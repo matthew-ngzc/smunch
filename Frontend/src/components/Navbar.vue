@@ -1,6 +1,11 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
+
+const auth = useAuthStore()
+const router = useRouter()
 
 // handling dropdown closure 
 const isOpen = ref(false)
@@ -32,7 +37,9 @@ onBeforeUnmount(() => {
 
 const logout = () => {
   console.log('Logging out...')
-  
+  auth.logout()           
+  closeMenu() // close the dropdown
+  router.push('/')    
 }
 
 
@@ -50,13 +57,13 @@ const logout = () => {
 
  
     <!-- nav links that switch between pages -->
-    <div class="navbar-center">
+    <div class="navbar-center" v-if="auth.token">
       <router-link to="/home">home</router-link>
       <router-link to="/order">order</router-link> 
       <router-link to="/run">run</router-link>
     </div>
 
-    <div class="navbar-right">
+    <div class="navbar-right" v-if="auth.token">
         <!-- bell icon -->
         <!-- <img :src="bellIcon" class="bell" alt="bell" /> -->
 
@@ -71,6 +78,11 @@ const logout = () => {
           </div>
         </div>
 
+    </div>
+
+    <div class="navbar-right" v-else>
+      <router-link to="/login" class="auth-link">Login</router-link>
+      <router-link to="/signup" class="auth-link">Sign Up</router-link>
     </div>
 
     <!-- dropdown -->
@@ -288,6 +300,17 @@ const logout = () => {
   border-top: 1px solid #888;
 }
 
+.auth-link {
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  font-size: 16px;
+  background: transparent;
+}
+
+.auth-link:hover {
+  text-shadow: 4px 4px 5px #a9b5cd;
+}
 
 </style>
 

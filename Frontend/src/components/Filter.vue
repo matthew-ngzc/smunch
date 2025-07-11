@@ -25,9 +25,9 @@
           <label>floor</label>
           <select v-model="floor">
             <option value="" disabled selected hidden>select</option>
-            <option value="level2">2</option>
-            <option value="level3">3</option>
-            <option value="level4">4</option>
+            <option value="level 2">2</option>
+            <option value="level 3">3</option>
+            <option value="level 4">4</option>
           </select>
         </div>
 
@@ -37,9 +37,9 @@
           <select v-model="facilityType">
             <option value="" disabled selected hidden>select</option>
             <option value="classroom">classroom</option>
-            <option value="gsr">group study room</option>
-            <option value="meeting-pod">meeting pod</option>
-            <option value="sr">seminar room</option>
+            <option value="group study room">group study room</option>
+            <option value="meeting pod">meeting pod</option>
+            <option value="seminar room">seminar room</option>
           </select>
         </div>
 
@@ -54,14 +54,9 @@
           <label>time</label>
           <select  v-model="time">
             <option value="" disabled selected hidden>select</option>
-            <option value="afternoon-slot">12:00 PM</option>
+            <option value="12:00 PM">12:00 PM</option>
           </select>
         </div>
-        <!-- <div class="filters">
-          <label>time</label>
-          <input type="time" />
-        </div> -->
-
       </div>
      
 
@@ -78,10 +73,13 @@
 
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { createOrder } from '@/services/orderFoodService' 
 import { useDeliveryStore } from '@/stores/delivery'
+import { useCartStore } from '@/stores/cart'
 
 const router = useRouter()
 const deliveryStore = useDeliveryStore()
+const cartStore = useCartStore()
 
 const building = ref('')
 const floor = ref('')
@@ -91,7 +89,7 @@ const time = ref('')
 
 
 
-function goToSummary() {
+async function goToSummary() {
   deliveryStore.setDeliveryInfo({
     building: building.value,
     floor: floor.value,
@@ -99,8 +97,55 @@ function goToSummary() {
     date: date.value,
     time: time.value
   })
-  router.push('/summary')
+  
+  const deliveryDateTime = new Date(`${date.value}T${convertTo24Hr(time.value)}:00Z`).toISOString()
+
+  const order_items = cartStore.items.map(item => ({
+    menu_item_id: item.id,
+    quantity: item.quantity,
+    customisations: item.customisations || {},
+    notes: item.notes || ''
+  }))
+
+  const payload = {
+    customer_id: 1,         // Replace dynamically if needed
+    merchant_id: 5,         // Replace dynamically if needed
+    delivery_fee_cents: 100,
+    order_items,
+    building: building.value,
+    room_type: facilityType.value,
+    room_number: floor.value,
+    delivery_time: deliveryDateTime
+  }
+
+  try {
+    //TEST
+    console.log('Cart Items:', cartStore.items)
+    console.log('Full Payload:', payload)
+    console.log('Order Items Payload:', order_items)
+
+    await createOrder(payload)
+    router.push('/summary') 
+  } catch (error) {
+    console.error('Order submission failed:', error)
+    alert('Failed to submit order. Please try again.')
+  }
 }
+
+// helper method
+function convertTo24Hr(timeStr) {
+  const [time, modifier] = timeStr.split(' ')
+  let [hours, minutes] = time.split(':')
+
+  if (modifier === 'PM' && hours !== '12') {
+    hours = String(parseInt(hours) + 12)
+  } else if (modifier === 'AM' && hours === '12') {
+    hours = '00'
+  }
+
+  return `${hours}:${minutes}`
+}
+
 </script>
 
 
