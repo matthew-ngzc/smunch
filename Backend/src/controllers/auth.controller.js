@@ -470,7 +470,11 @@ export const completeMerchantSignup = async (req, res, next) => {
  * /api/auth/login:
  *   post:
  *     summary: Login with email and password
- *     description: Authenticates a user and returns a signed JWT
+ *     description: |
+ *       Authenticates a user and returns a signed JWT along with basic user info.
+ *       
+ *       No authentication header is required.
+ *       Returns a JWT that can be used in `Authorization: Bearer <token>` headers for protected routes.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -494,7 +498,9 @@ export const completeMerchantSignup = async (req, res, next) => {
  *         content:
  *           application/json:
  *             example:
- *               token: eyJhbGciOiJIUzI1NiIsInR...
+ *               jwt_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *               user_id: 1
+ *               name: Alice Tan
  *       400:
  *         description: Missing credentials
  *         content:
