@@ -362,7 +362,7 @@ export const updateOrderStatus = async (req, res, next) => {
  *                 order_id: 84
  *                 payment_status: awaiting_verification
  *                 order_status: created
- *                 ... other fields ...
+ *                 other fields: ...
  *       400:
  *         description: Invalid status value
  *         content:
@@ -382,27 +382,6 @@ export const updateOrderStatus = async (req, res, next) => {
  *             example:
  *               error: "Order with ID 84 does not exist"
  *               code: "NOT_FOUND_ORDER"
- */
-/**
- * PUT /api/orders/:orderId/payment-status
- *
- * Updates the payment status of a specific order.
- * Only accepts predefined status strings:
- * - 'awaiting_payment'
- * - 'awaiting_verification'
- * - 'payment_confirmed'
- *
- * 📥 Expected `req.body`:
- * {
- *   status: string
- * }
- *
- * 📤 Response:
- * {
- *   order: { ... }  // updated order object
- * }
- *
- * @throws {Error} - If status is invalid or order not found
  */
 export const updatePaymentStatus = async (req, res, next) => {
   try {
