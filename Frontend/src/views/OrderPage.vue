@@ -1,10 +1,16 @@
 <script lang="js">
 import { defineComponent, onMounted, ref } from 'vue'
-import { fetchAllMerchants } from '@/services/orderFoodService' 
+import { fetchAllMerchants } from '@/services/orderFoodService'
+import { useOrderStore } from '@/stores/order'
+import { useRouter } from 'vue-router'
+
 
 export default defineComponent({
   setup() {
     const merchants = ref([])
+    const orderStore = useOrderStore()
+    const router = useRouter()
+
 
     onMounted(async () => {
       try {
@@ -17,7 +23,13 @@ export default defineComponent({
       }
     })
 
-    return { merchants }
+    const goToMerchant = (merchantId) => {
+      orderStore.setMerchantId(merchantId)
+      router.push({ name: 'orderMerchant', params: { id: merchantId } })
+    }
+
+
+    return { merchants, goToMerchant }
   }
 })
 </script>
@@ -34,34 +46,24 @@ export default defineComponent({
     <hr class="divider" />
 
     <h2>order from</h2>
-
-    <div class="merchant-list" v-if="merchants.length">
-      <router-link
-        v-for="merchant in merchants" :key="merchant.id" :to="{ name: 'orderMerchant', params: { id: merchant.merchant_id } }" class="merchant-card" >
-        
+    <div class="merchant-list">
+      <div
+        v-for="merchant in merchants"
+        :key="merchant.id"
+        class="merchant-card"
+        @click="goToMerchant(merchant.merchant_id)"
+      >
         <div class="logo-wrapper">
           <img :src="merchant.image_url" alt="merchant logo" class="merchant-logo" />
         </div>
-        
-        <div class="text" >
+        <div class="text">
           <h3>{{ merchant.name }}</h3>
           <p>$1.00 delivery fee</p>
         </div>
-        
-      </router-link>
-    </div>
+      </div>
+    </div> 
 
-
-    <div v-else>
-      <p>Loading all merchants available...</p>
-    </div>
-
-    <!-- <div class="order-history">
-      <h2>past orders</h2>
-    </div> -->
-
-  </div>
-
+  </div> 
 </template>
 
 

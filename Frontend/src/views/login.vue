@@ -86,25 +86,11 @@ export default {
           email: this.email,
           password: this.password
         })
-//
-        console.log('Full response:', response)
-        console.log('Response data:', response.data)
 
         const { jwt_token, user_id, name } = response.data
-//
-        console.log('jwt_token:', jwt_token)
-        console.log('user_id:', user_id)
-        console.log('name:', name)
 
         const authStore = useAuthStore()
         authStore.login(jwt_token, { user_id, name } )  
-//
-        console.log('Auth store after login:', {
-          token: authStore.token,
-          userId: authStore.userId,
-          userName: authStore.userName
-        })
-
 
         this.$router.push('/home')
       } catch (error) {
