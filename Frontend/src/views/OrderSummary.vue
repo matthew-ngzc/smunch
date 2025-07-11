@@ -29,8 +29,10 @@ const next = () => {
 <template>
   <div class="summary-page">
 
-     <ordertimeline :data="data" :routes="routes" />
-    
+    <div class="timeline-wrapper">
+      <ordertimeline :data="data" />
+    </div>
+
     <!-- box -->
     <div class="summary-box">
 
@@ -79,9 +81,9 @@ const next = () => {
         <h2>Delivery details</h2>
 
         <div class="delivery-details">
-          <p><strong>location</strong><br />{{ delivery.building }} {{ delivery.floor }} - {{ delivery.facilityType }}</p>
-          <p><strong>date</strong><br />{{ delivery.date }}</p>
-          <p><strong>time</strong><br />{{ delivery.time }}</p>
+          <p><strong>Location</strong><br />{{ delivery.building }} {{ delivery.floor }} - {{ delivery.facilityType }}</p>
+          <p><strong>Date</strong><br />{{ delivery.date }}</p>
+          <p><strong>Time</strong><br />{{ delivery.time }}</p>
         </div>
       </div>
 
@@ -92,54 +94,35 @@ const next = () => {
 
 <style scoped>
 
+.timeline-wrapper {
+  width: 100%;
+  align-self: stretch !important; /* forces it to ignore align-items: center */
+}
+
+
 .summary-box {
   max-width: none !important;
-  width: 100%;
+  margin-top: 30px;
 }
 
 .summary-box h2 {
   font-size: 30px;
-}
-
-
-.summary-page {
-  font-family: 'Inter', sans-serif;
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.steps {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 32px;
-  gap: 32px;
-}
-
-.step {
-  text-align: center;
-  color: #999;
   font-weight: bold;
 }
-.step.active {
-  color: black;
-}
-.step span {
-  font-size: 0.8rem;
-}
+
+
+
 
 .summary-box {
   background: #fff;
   border-radius: 16px;
-  padding: 32px;
+  padding: 50px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   width: 100%;
-  max-width: 600px;
 }
 
 .summary-contents {
-  margin-top: 24px;
+  margin-top: 29px;
 }
 
 .summary-items {

@@ -27,6 +27,4 @@ import ordertimeline from '../components/ordertimeline.vue'
 
 
 
-
-
 </style>

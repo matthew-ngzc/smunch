@@ -155,17 +155,20 @@ function convertTo24Hr(timeStr) {
 .delivery-form-box {
   max-width: 900px;                        /* limits width so it doesn't stretch too far */
   max-height: 700px;
-  margin: 100px auto;                        /* vertical spacing + center horizontally */
   background-color: white !important;
   color: black;                                    
-  padding: 89px;                                     
+  padding: 40px;                                     
   border-radius: 16px;                                   /* rounded corners */
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);        /* soft drop shadow */
   font-family: 'Inter', sans-serif; /* use inter font */
-  text-align: left;       
-  margin-top: 29px;      
+  text-align: left;             
   display: flex;
   flex-direction: column;
+  margin-top: 30px;
+  margin-bottom: 40px;
+  margin-left: auto;
+  margin-right: auto;
+
 }
 
 /* form title heading */
@@ -174,8 +177,9 @@ function convertTo24Hr(timeStr) {
   font-size: 2.2rem;             /* slightly large font */
   margin-bottom: 0.5rem;         /* spacing below heading */
   font-size: 36px;
-  margin-top: -30px;
+  margin-top: 19px;
   margin-bottom: 11px;
+  font-weight: bold;
 }
 
 

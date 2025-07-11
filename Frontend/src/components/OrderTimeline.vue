@@ -43,10 +43,13 @@ const cssStyle = computed(() => ({
 
 <style scoped>
 .steps-container {
-  margin-top: 100px;
+  margin-top: 40px;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
   width: 100%;
-  margin: 20px auto;
 }
+
 
 .steps-list {
   display: flex;
