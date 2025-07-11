@@ -1,8 +1,10 @@
 <script setup>
-import { computed } from 'vue'
-import { useCartStore } from '@/stores/cart'
-import qrCode from '@/assets/qrcode.jpg' 
+import { ref, computed, onMounted } from 'vue'
+import { useCartStore } from '@/stores/cart' 
 import { useRouter } from 'vue-router' 
+import { getPaymentQRCode, updatePaymentStatus } from '@/services/orderFoodService' 
+import { useOrderStore } from '@/stores/order'
+
 // importing the timeline
 import ordertimeline from '../components/ordertimeline.vue'
 
@@ -15,14 +17,41 @@ import ordertimeline from '../components/ordertimeline.vue'
     passiveColor: 'grey',
   };
 
-
+const qrCode = ref(null)
+const paymentReference = ref('')
+const paynowNumber = ref('')
 const router = useRouter() 
 const cart = useCartStore()
+const orderStore = useOrderStore()
+const orderId = orderStore.orderId
+
+
+onMounted(async () => {
+  try {
+    const response = await getPaymentQRCode(orderId) 
+    qrCode.value = response.data.qrCode
+
+    paymentReference.value = response.data.payment_reference
+    paynowNumber.value = response.data.paynow_number
+
+  } catch (err) {
+    console.error('Error loading QR code:', err)
+  }
+})
+
 const total = computed(() =>
   cart.items.reduce((sum, item) => sum + item.quantity * item.price, 0) + 1 // +$1 delivery
 )
 
-const done = () => {
+const done = async () => {
+  try {
+    await updatePaymentStatus(orderId) // WAIT FOR MATT TO GIVE ME THE ENDPOINT
+    router.push({ name: 'Home' })
+  } catch (err) {
+    console.error('Failed to update payment status:', err)
+    alert('Something went wrong while confirming payment. Please try again.')
+  }
+
   router.push({ name: 'Home' })
 }
 
@@ -41,8 +70,8 @@ const done = () => {
       <!-- Steps -->
       <div class="steps">
         <p><strong>STEP 1:</strong><br />
-        Scan the PayNow QR to pay <strong>${{ total.toFixed(2) }}</strong>.<br />
-        Add transaction no. in PayNow notes: <strong>01234567</strong>.</p><br />
+        PayNow <strong>${{ total.toFixed(2) }}</strong> via QR or Mobile to <strong>{{ paynowNumber }} </strong>.<br />
+        Add transaction number in PayNow notes: <strong>{{ paymentReference }}</strong>.</p><br />
 
         <p><strong>STEP 2:</strong><br />
         Send your payment screenshot to <strong>@smunchAdmin</strong> via telegram.</p><br />

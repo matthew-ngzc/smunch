@@ -76,10 +76,14 @@ import { useRouter } from 'vue-router'
 import { createOrder } from '@/services/orderFoodService' 
 import { useDeliveryStore } from '@/stores/delivery'
 import { useCartStore } from '@/stores/cart'
+import { useOrderStore } from '@/stores/order'
+
 
 const router = useRouter()
 const deliveryStore = useDeliveryStore()
 const cartStore = useCartStore()
+const orderStore = useOrderStore()
+
 
 const building = ref('')
 const floor = ref('')
@@ -124,7 +128,10 @@ async function goToSummary() {
     console.log('Full Payload:', payload)
     console.log('Order Items Payload:', order_items)
 
-    await createOrder(payload)
+    const response = await createOrder(payload)
+    const newOrderId = response.data.order.order_id
+    orderStore.setOrderId(newOrderId)
+
     router.push('/summary') 
   } catch (error) {
     console.error('Order submission failed:', error)

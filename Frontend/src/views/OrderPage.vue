@@ -44,7 +44,7 @@ export default defineComponent({
         </div>
         
         <div class="text" >
-          <h3>SMU {{ merchant.name }}</h3>
+          <h3>{{ merchant.name }}</h3>
           <p>$1.00 delivery fee</p>
         </div>
         
@@ -56,11 +56,9 @@ export default defineComponent({
       <p>Loading all merchants available...</p>
     </div>
 
-    <div class="order-history">
+    <!-- <div class="order-history">
       <h2>past orders</h2>
-
-      <!-- !  to add cards of previous orders  -->
-    </div>
+    </div> -->
 
   </div>
 

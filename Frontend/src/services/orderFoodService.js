@@ -42,3 +42,21 @@ export async function getPastOrders(userId) {
 export async function createOrder(payload) {
   return axiosInstance.post('/api/orders', payload)
 }
+
+/**
+ * GET the payment QR Code
+ */
+export async function getPaymentQRCode(id) { 
+  return axiosInstance.get(`/api/orders/${id}/payment `)
+}
+
+/**
+ * (PUT) Update payment status
+ */
+export async function updatePaymentStatus(orderId) {
+  return axiosInstance.put(`/api/orders/${orderId}/payment-status`, { // WAIT FOR MATT TO GIVE ME THE ENDPOINT
+    status: 'awaitingConfirmation',
+  })
+}
+
+

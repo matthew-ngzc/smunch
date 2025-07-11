@@ -3,12 +3,15 @@ import { defineComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import OrderIcon from '@/assets/order-icon.png'
 import RunIcon from '@/assets/run-icon.png'
+import { useAuthStore } from '@/stores/auth'
 
 export default defineComponent({
   name: 'Home',
   setup() {
     const router = useRouter()
-    const userName = 'sexy' // change it to be dynamic 
+    const auth = useAuthStore()
+
+    const userName = auth.userName 
 
     const goToOrder = () => {
       router.push('/order')
@@ -26,7 +29,7 @@ export default defineComponent({
 
 <template>
   <div class="home">
-    <h1>hi {{ userName }}, what would you like to do today?</h1>
+    <h1>hi {{ userName || 'sexy' }}, what would you like to do today?</h1>
     <div class="options">
       <div class="card order" @click="goToOrder">
         <img :src="OrderIcon" alt="order icon" class="icon" />
