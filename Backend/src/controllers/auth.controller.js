@@ -10,6 +10,7 @@ import {
   verifyPassword,
 } from '../models/user.model.js';
 import { getMerchantByEmailOrThrow, updateMerchantByIdOrThrow } from '../models/merchant.model.js';
+import { supabase } from '../lib/supabaseClient.js';
 
 
 
@@ -91,10 +92,22 @@ import { getMerchantByEmailOrThrow, updateMerchantByIdOrThrow } from '../models/
 export const signup = async (req, res, next) => {
   try {
     const { email, name, phoneNo, password } = req.body;
+    // TODO: if using captcha replace above line with this
+    //const { email, name, phoneNo, password, captcha_token } = req.body;
     //check if all fields are provided
-    if (!email || !name || !phoneNo || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
+    // if (!email || !name || !phoneNo || !password) {
+    //   return res.status(400).json({ message: 'All fields are required' });
+    // }
+
+    // if (!captcha_token) {
+    //   return res.status(400).json({ message: 'Missing CAPTCHA token' });
+    // }
+
+    // const isValidCaptcha = await verifyTurnstileToken(captcha_token, req.ip);
+    // if (!isValidCaptcha) {
+    //   return res.status(400).json({ message: 'CAPTCHA verification failed' });
+    // }
+    
     //only allow SMU emails
     if (!email.endsWith('smu.edu.sg')) {
       return res.status(400).json({ message: 'Only SMU emails allowed' });
@@ -122,6 +135,14 @@ export const signup = async (req, res, next) => {
     next(err);
   }
 };
+// export async function signup(req, res, next) {
+//   const { email, password } = req.body;
+//   const { data, error } = await supabase.auth.signUp({
+//     email: email,
+//     password: password,
+//   })
+//   res.status(200).json({ message: 'Verification email sent. Please check your inbox.' });
+// }
 
 
 /** SWAGGER DOCS

@@ -1,4 +1,8 @@
 import { PAYMENT_STATUSES } from "../constants/enums.constants.js";
+import axios from 'axios';
+import dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * Checks whether a user (or admin) is authorized to view or modify a given order.
@@ -84,4 +88,19 @@ export function canUpdatePaymentStatus({ role, userId, order, newStatus }) {
   }
 
   return { allowed: true };
+}
+
+
+// * Verifies a Turnstile CAPTCHA token.
+export async function verifyTurnstileToken(token, remoteip = '') {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  const res = await axios.post('https://challenges.cloudflare.com/turnstile/v0/siteverify', null, {
+    params: {
+      secret,
+      response: token,
+      remoteip
+    }
+  });
+
+  return res.data.success;
 }
