@@ -23,19 +23,28 @@ import { defineStore } from 'pinia'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: sessionStorage.getItem('token') || null,
-    user: null, // Optional: store user info like id/email
+    userId: sessionStorage.getItem('userId') || null,
+    userName: sessionStorage.getItem('userName') || null,
   }),
   actions: {
-    login(token, user = null) {
+    login(token, userInfo) {
       this.token = token
-    //   this.user = user
+      this.userId = userInfo?.user_id || null
+      this.userName = userInfo?.name || null
+
       sessionStorage.setItem('token', token)
+      sessionStorage.setItem('userId', this.userId)
+      sessionStorage.setItem('userName', this.userName)
+
     },
     logout() {
       this.token = null
-      this.user = null
+      this.userId = null
+      this.userName = null
+
       sessionStorage.removeItem('token')
-      sessionStorage.removeItem('user')
+      sessionStorage.removeItem('userId')
+      sessionStorage.removeItem('userName')
     },
     isAuthenticated() {
       return !!this.token

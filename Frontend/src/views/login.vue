@@ -87,9 +87,10 @@ export default {
           password: this.password
         })
 
-        const token = response.data.token
+        const { jwt_token, user_id, name } = response.data
+
         const authStore = useAuthStore()
-        authStore.login(token)
+        authStore.login(jwt_token, { user_id, name } )  
 
         this.$router.push('/home')
       } catch (error) {

@@ -76,10 +76,15 @@ import { useRouter } from 'vue-router'
 import { createOrder } from '@/services/orderFoodService' 
 import { useDeliveryStore } from '@/stores/delivery'
 import { useCartStore } from '@/stores/cart'
+import { useOrderStore } from '@/stores/order'
+import { useAuthStore } from '@/stores/auth'
+
 
 const router = useRouter()
 const deliveryStore = useDeliveryStore()
 const cartStore = useCartStore()
+const orderStore = useOrderStore()
+const authStore = useAuthStore() 
 
 const building = ref('')
 const floor = ref('')
@@ -90,6 +95,9 @@ const time = ref('')
 
 
 async function goToSummary() {
+  const merchantId = orderStore.selectedMerchantId
+  const customerId = authStore.userId
+
   deliveryStore.setDeliveryInfo({
     building: building.value,
     floor: floor.value,
@@ -108,8 +116,8 @@ async function goToSummary() {
   }))
 
   const payload = {
-    customer_id: 1,         // Replace dynamically if needed
-    merchant_id: 5,         // Replace dynamically if needed
+    customer_id: customerId, 
+    merchant_id: merchantId,      
     delivery_fee_cents: 100,
     order_items,
     building: building.value,
@@ -124,7 +132,12 @@ async function goToSummary() {
     console.log('Full Payload:', payload)
     console.log('Order Items Payload:', order_items)
 
-    await createOrder(payload)
+    const response = await createOrder(payload)
+    const newOrderId = response.data.order.order_id
+    orderStore.setOrderId(newOrderId)
+    orderStore.setMerchantId(null)  // Reset merchant ID
+
+
     router.push('/summary') 
   } catch (error) {
     console.error('Order submission failed:', error)

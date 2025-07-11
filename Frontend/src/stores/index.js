@@ -14,7 +14,8 @@ export default createStore({
   modules: {
     auth,
     cart,
-    delivery
+    delivery,
+    order
     // more to be added 
   }
 })
