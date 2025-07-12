@@ -5,11 +5,20 @@
       <div class="left-content">
         <h2 class="welcome">Sign up now!</h2>
         <p class="tagline">
-          Lazy to walk to your favourite store?<br />
-          —Don't worry, we gotchu.<br /><br />
+          <!-- Lazy to walk to your favourite store?<br />
+          — Don't worry, we gotchu.<br /><br />
           Skip the walk and ditch the queue.<br />
           We'll bring your meal right to you.<br />
-          Here at SMUNCH, that's what we do.<br /><br />
+          Here at SMUNCH, that's what we do.<br /><br /> -->
+          Too lazy to walk? Your cravings can wait —<br />
+          We’ll fetch your meal, you just hydrate.<br /><br />
+
+          Skip the queue, avoid the heat,<br />
+          Get your favourite bites without leaving your seat.<br /><br />
+
+          No fuss, no rush, no lunchtime race —
+          SMUNCH brings your food, straight to your place.
+
           <span class="tagline-continued">By students, for students.</span>
         </p>
       </div>

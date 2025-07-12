@@ -21,6 +21,7 @@ import Payment from '../views/Payment.vue'
 import Help from '../views/Help.vue'
 import PastOrders from '../views/PastOrders.vue'
 import ActiveOrders from '../views/ActiveOrders.vue'
+import Profile from '../views/Profile.vue'
 
 // REIWEN : this is a routes array and each route object has 3 properties
   const routes = [
@@ -38,7 +39,8 @@ import ActiveOrders from '../views/ActiveOrders.vue'
   { path: '/:catchAll(.*)', name: "pageNotFound", component: PageNotFound}, // redirect user to this page if path is not a valid one 
   { path: '/activeorders', name: 'activeorders', component: ActiveOrders },
   { path: '/pastorders', name: 'pastorders', component: PastOrders },
-  { path: '/help', name: 'help', component: Help }
+  { path: '/help', name: 'help', component: Help },
+  { path: '/profile', name: 'profile', component: Profile }
 ]
 
 

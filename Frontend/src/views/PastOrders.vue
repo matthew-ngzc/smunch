@@ -16,7 +16,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="orders-page">
+  <div class="orders-page no-scroll">
     <h2>Past Orders</h2>
     <ul>
       <li v-for="order in pastOrders" :key="order.id">
@@ -27,12 +27,27 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.orders-page {
-  padding: 20px;
+.orders-page.no-scroll {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
-
-.orders-page ul {
+.orders-page.no-scroll h2 {
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+}
+.orders-page.no-scroll ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 </style>

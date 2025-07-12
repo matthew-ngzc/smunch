@@ -5,11 +5,6 @@
       <div class="left-content">
         <h2 class="welcome">Welcome back!</h2>
         <p class="tagline">
-          Lazy to walk to your favourite store?<br />
-          —Don't worry, we gotchu.<br /><br />
-          Skip the walk and ditch the queue.<br />
-          We'll bring your meal right to you.<br />
-          Here at SMUNCH, that's what we do.<br /><br />
           <span class="tagline-continued">By students, for students.</span>
         </p>
       </div>
@@ -107,6 +102,35 @@ export default {
       return true;
     },
 
+    handleLoginError(errorMessage, statusCode) {
+      // Enhanced error handling based on server response and client-side validation
+      if (errorMessage === 'Invalid email or password') {
+        // Since server returns same message for both cases, we'll provide helpful feedback
+        // by checking if the user input meets basic requirements
+        
+        const emailValid = this.email.trim() && this.email.includes('@smu.edu.sg');
+        const passwordValid = this.password && this.password.length >= 8;
+        
+        if (!emailValid) {
+          this.emailError = 'Please check your email address.';
+        } else if (!passwordValid) {
+          this.passwordError = 'Please check your password.';
+        } else {
+          // Both fields look valid format-wise, so it's likely a credential issue
+          // We'll show error on password field as it's more common
+          this.passwordError = 'Incorrect password. Please try again.';
+        }
+      } else if (errorMessage === 'Email and password are required') {
+        if (!this.email.trim()) this.emailError = 'Email is required.';
+        if (!this.password) this.passwordError = 'Password is required.';
+      } else if (errorMessage.toLowerCase().includes('verify') || errorMessage.toLowerCase().includes('confirmation')) {
+        this.emailError = 'Please verify your email address before logging in.';
+      } else {
+        // Display other server errors as alerts
+        alert(errorMessage);
+      }
+    },
+
     async handleLogin() {
       // Clear all previous errors
       this.emailError = '';
@@ -139,17 +163,10 @@ export default {
         // Handle specific server errors
         if (error.response && error.response.data && error.response.data.message) {
           const errorMessage = error.response.data.message;
+          const statusCode = error.response.status;
           
-          // Map server errors to specific fields
-          if (errorMessage.toLowerCase().includes('email') || errorMessage.toLowerCase().includes('user not found')) {
-            this.emailError = 'No account found with this email address.';
-          } else if (errorMessage.toLowerCase().includes('password') || errorMessage.toLowerCase().includes('invalid credentials')) {
-            this.passwordError = 'Incorrect password. Please try again.';
-          } else if (errorMessage.toLowerCase().includes('verify') || errorMessage.toLowerCase().includes('confirmation')) {
-            this.emailError = 'Please verify your email address before logging in.';
-          } else {
-            alert(errorMessage);
-          }
+          // Use enhanced error handling method
+          this.handleLoginError(errorMessage, statusCode);
         } else {
           alert('Login failed. Please check your credentials and try again.')
         }

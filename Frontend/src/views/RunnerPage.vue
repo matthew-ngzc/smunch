@@ -1,5 +1,5 @@
 <template>
-  <div class="page">
+  <div class="page no-scroll">
     <h2 class="coming-soon">coming soon!</h2>
   </div>
 </template>
@@ -16,20 +16,24 @@ export default defineComponent({
 })
 </script>
 
-
 <style scoped>
-.page {
+.page.no-scroll {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
-
 .coming-soon {
   font-size: 5rem;
   font-weight: bold;
-  transform: translateX(50px); 
   color: #0d3d31;
+  transform: none;
 }
-
 </style>

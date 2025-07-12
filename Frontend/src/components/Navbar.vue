@@ -102,6 +102,7 @@ const logout = () => {
       <hr />
 
       <ul>
+        <li><router-link to="/profile">View Profile</router-link></li>
         <li @click="logout">  Log out</li>
         <li> <router-link to="/activeOrders">Active orders</router-link> </li>
         <li> <router-link to="/pastOrders">Past orders</router-link> </li>
