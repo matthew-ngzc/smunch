@@ -85,7 +85,7 @@ import { supabase } from '../lib/supabaseClient.js';
  * TODO: password strength validation
  * TODO: email format validation
  * TODO: phone number format validation
- * TODO: rate limit signup attempts
+ * DONE: rate limit signup attempts
  * TODO: add reCAPTCHA to prevent spam
  * TODO: prevent sql injection in email/password
  */
@@ -103,11 +103,12 @@ export const signup = async (req, res, next) => {
     //   return res.status(400).json({ message: 'Missing CAPTCHA token' });
     // }
 
-    // const isValidCaptcha = await verifyTurnstileToken(captcha_token, req.ip);
+    //const userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
+    // const isValidCaptcha = await verifyTurnstileToken(captcha_token, userIp);
     // if (!isValidCaptcha) {
     //   return res.status(400).json({ message: 'CAPTCHA verification failed' });
     // }
-    
+
     //only allow SMU emails
     if (!email.endsWith('smu.edu.sg')) {
       return res.status(400).json({ message: 'Only SMU emails allowed' });
