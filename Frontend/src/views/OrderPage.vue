@@ -67,7 +67,7 @@ export default defineComponent({
 </template>
 
 
- <style scoped>
+<style scoped>
 .order-page {
   padding: 30px;
   font-family: 'Inter', sans-serif;
