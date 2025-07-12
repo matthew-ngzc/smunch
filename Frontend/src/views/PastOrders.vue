@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { getPastOrders, getMerchantInfoById } from '@/services/orderFoodService'
 import { useAuthStore } from '@/stores/auth'
+import { formatDateTime, formatStatusBadge } from '@/utility/orderHelpers'
 
 const authStore = useAuthStore()
 const pastOrders = ref([])
@@ -30,25 +31,6 @@ function getItemCount(order) {
   return order.items?.length || 1
 }
 
-function formatDateTime(datetime) {
-  const date = new Date(datetime)
-  return date.toLocaleDateString('en-GB') + ', ' + date.toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  })
-}
-
-function formatStatusBadge(status) {
-  switch (status) {
-    case 'completed':
-      return { text: 'Completed', class: 'status-green', msg: 'Order successfully delivered.' }
-    case 'cancelled':
-      return { text: 'Cancelled', class: 'status-red', msg: 'You cancelled this order.' }
-    default:
-      return { text: status, class: 'status-grey', msg: 'Status unknown.' }
-  }
-}
 </script>
 
 <template>

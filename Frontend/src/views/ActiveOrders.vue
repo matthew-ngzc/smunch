@@ -1,16 +1,16 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { getActiveOrders, getMerchantInfoById } from '@/services/orderFoodService'
 import { useAuthStore } from '@/stores/auth'
+import OrderReceipt from '@/components/OrderReceipt.vue'
+import { formatDateTime, formatLocation, formatStatusClass, formatStatus } from '@/utility/orderHelpers' // format location not used 
 
 const authStore = useAuthStore()
 const activeOrders = ref([])
-const merchant = ref()
-// const merchantMap = ref({}) 
-// const userId = '12345' // shayln: need login info -> replace with actual userid when user logs in
+const selectedOrder = ref(null)
 
 onMounted(async () => {
-  const userId = authStore.userId  // reiwen: dynamically give the userId 
+  const userId = authStore.userId   
   try {
     const res = await getActiveOrders(userId)
     const orders = res.data.orders
@@ -40,35 +40,11 @@ function getItemCount(order) {
   return order.items?.length || 1
 }
 
-
-function formatDateTime(datetime) {
-  const date = new Date(datetime)
-  return date.toLocaleDateString('en-GB') + ', ' + date.toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  })
+function openReceipt(order) {
+  selectedOrder.value = order
 }
-
-function formatLocation(order) {
-  return `${order.building.toUpperCase()}, ${order.room_type} ${order.room_number}`
-}
-
-function formatStatus(status) {
-  switch (status) {
-    case 'awaiting_payment': return 'Awaiting Payment'
-    case 'payment_confirmed': return 'Payment Confirmed'
-    case 'awaiting_verification': return 'Awaiting Verification'
-    default: return status
-  }
-}
-
-function getStatusClass(status) {
-  return {
-    'awaiting_payment': 'status-grey',
-    'payment_confirmed': 'status-green',
-    'awaiting_verification': 'status-yellow'
-  }[status]
+function closeReceipt() {
+  selectedOrder.value = null
 }
 
 function getStatusMessage(status) {
@@ -80,13 +56,16 @@ function getStatusMessage(status) {
   }
 }
 
+watch(selectedOrder, (newVal) => {
+  document.body.style.overflow = newVal ? 'hidden' : 'auto'
+})
 
 </script>
 <template>
   <div class="orders-page">
     <h2>Active Orders</h2>
     <ul class="orders-list">
-      <li v-for="order in activeOrders" :key="order.order_id" class="order-card">
+      <li v-for="order in activeOrders" :key="order.order_id" class="order-card" @click="openReceipt(order)" style="cursor: pointer">
         <!-- merchant logo -->
         <img :src="order.merchant.image_url" alt="merchant logo" class="merchant-logo" />
 
@@ -115,7 +94,7 @@ function getStatusMessage(status) {
             <p class="payment-message">{{ getStatusMessage(order.payment_status) }}</p>
             <span
               class="status-badge"
-              :class="getStatusClass(order.payment_status)"
+              :class="formatStatusClass(order.payment_status)"
             >
               {{ formatStatus(order.payment_status) }}
             </span>
@@ -124,6 +103,7 @@ function getStatusMessage(status) {
       </li>
     </ul>
   </div>
+  <OrderReceipt v-if="selectedOrder" :order="selectedOrder" :onClose="closeReceipt" />
 </template>
 
 
