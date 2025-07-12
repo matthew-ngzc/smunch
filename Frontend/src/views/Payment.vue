@@ -52,7 +52,7 @@ const done = async () => {
     alert('Something went wrong while confirming payment. Please try again.')
   }
 
-  router.push({ name: 'Home' })
+  router.push({ name: 'activeorders' })
 }
 
 </script>
