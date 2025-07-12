@@ -23,6 +23,7 @@ export default defineComponent({
   left: 0;
   width: 100vw;
   height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
   display: flex;
   justify-content: center;
   align-items: center;

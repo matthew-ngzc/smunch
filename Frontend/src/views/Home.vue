@@ -1,5 +1,5 @@
 <script lang="js">
-import { defineComponent } from 'vue'
+import { defineComponent, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import OrderIcon from '@/assets/order-icon.png'
 import RunIcon from '@/assets/run-icon.png'
@@ -10,16 +10,50 @@ export default defineComponent({
   setup() {
     const router = useRouter()
     const auth = useAuthStore()
-    const userName = auth.userName 
+    const userName = auth.userName
+    const showWelcomeMessage = ref(false)
+    
     const goToOrder = () => { router.push('/order') }
     const goToRun = () => { router.push('/run') }
-    return { userName, OrderIcon, RunIcon, goToOrder, goToRun }
+    
+    onMounted(() => {
+      // Show welcome message if user just logged in
+      const justLoggedIn = sessionStorage.getItem('justLoggedIn')
+      if (justLoggedIn === 'true') {
+        showWelcomeMessage.value = true
+        sessionStorage.removeItem('justLoggedIn')
+        
+        // Hide the message after 3 seconds
+        setTimeout(() => {
+          showWelcomeMessage.value = false
+        }, 3000)
+      }
+    })
+    
+    return { 
+      userName, 
+      OrderIcon, 
+      RunIcon, 
+      goToOrder, 
+      goToRun,
+      showWelcomeMessage
+    }
   }
 })
 </script>
 
 <template>
   <div class="home no-scroll">
+    <!-- Welcome Message -->
+    <div v-if="showWelcomeMessage" class="welcome-message">
+      <div class="welcome-content">
+        <svg class="success-icon" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <span>Welcome back, {{ userName }}! You've successfully logged in.</span>
+      </div>
+    </div>
+    
     <div class="home-content">
       <h1 class="greeting">Hi {{ userName || 'sexy' }}, what would you like to do today?</h1>
       <div class="options">
@@ -60,6 +94,45 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
   min-height: 100%;
+}
+
+.welcome-message {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+  animation: slideDown 0.5s ease-out;
+}
+
+.welcome-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.success-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 .greeting {
   font-size: 2.6rem;

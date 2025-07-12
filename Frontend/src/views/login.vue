@@ -32,14 +32,31 @@
 
           <div class="input-group">
             <label for="password">Password</label>
-            <input 
-              id="password" 
-              v-model="password" 
-              type="password" 
-              :class="{ 'input-error': passwordError }"
-              placeholder="Enter your password" 
-              required 
-            />
+            <div class="password-input-container">
+              <input 
+                id="password" 
+                v-model="password" 
+                :type="showPassword ? 'text' : 'password'"
+                :class="{ 'input-error': passwordError }"
+                placeholder="Enter your password" 
+                required 
+              />
+              <button 
+                type="button" 
+                class="password-toggle"
+                @click="togglePassword"
+                :title="showPassword ? 'Hide password' : 'Show password'"
+              >
+                <svg v-if="showPassword" class="eye-icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                </svg>
+                <svg v-else class="eye-icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd"/>
+                  <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z"/>
+                </svg>
+              </button>
+            </div>
             <span :class="['error-msg', { show: passwordError }]">{{ passwordError }}</span>
           </div>
 
@@ -52,6 +69,16 @@
           Don't have an account? 
           <router-link to="/signup">Sign up</router-link> now! 
         </p>
+        
+        <!-- Email Verification Success Message -->
+        <div v-if="showVerificationSuccess" class="verification-success">
+          <div class="verification-content">
+            <svg class="verification-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span>Email verified successfully! You can now log in.</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -67,8 +94,13 @@ export default {
       email: '',
       password: '',
       emailError: '',
-      passwordError: ''
+      passwordError: '',
+      showPassword: false,
+      showVerificationSuccess: false
     };
+  },
+  mounted() {
+    this.checkForVerificationSuccess();
   },
   methods: {
     validateEmail() {
@@ -100,6 +132,22 @@ export default {
       }
       this.passwordError = '';
       return true;
+    },
+
+    togglePassword() {
+      this.showPassword = !this.showPassword;
+    },
+
+    checkForVerificationSuccess() {
+      // Check if user came from email verification
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('verified') === 'true') {
+        this.showVerificationSuccess = true;
+        // Hide after 5 seconds
+        setTimeout(() => {
+          this.showVerificationSuccess = false;
+        }, 5000);
+      }
     },
 
     handleLoginError(errorMessage, statusCode) {
@@ -156,6 +204,9 @@ export default {
         const authStore = useAuthStore()
         authStore.login(jwt_token, { user_id, name } )  
 
+        // Set flag to show welcome message
+        sessionStorage.setItem('justLoggedIn', 'true')
+        
         this.$router.push('/home')
       } catch (error) {
         console.error('Login failed:', error)
@@ -371,6 +422,73 @@ export default {
 .form-fields input.input-error {
   border-color: #ef4444;
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.password-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.eye-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.verification-success {
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.verification-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.verification-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .login-btn {

@@ -1,5 +1,23 @@
 <template>
   <div class="signup-container">
+    <!-- Success Notification -->
+    <div v-if="showSuccessNotification" class="success-notification">
+      <div class="notification-content">
+        <svg class="success-icon" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <div class="notification-text">
+          <h4>Account Created Successfully!</h4>
+          <p>Please check your email and verify your account before logging in.</p>
+        </div>
+        <button @click="hideNotification" class="close-btn">
+          <svg fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
     <!-- Left: White -->
     <div class="signup-left">
       <div class="left-content">
@@ -72,14 +90,31 @@
 
           <div class="input-group">
             <label for="password">Password</label>
-            <input
-              id="password"
-              v-model="password"
-              type="password"
-              :class="{ 'input-error': passwordError }"
-              placeholder="Enter your password"
-              required
-            />
+            <div class="password-input-container">
+              <input
+                id="password"
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                :class="{ 'input-error': passwordError }"
+                placeholder="Enter your password"
+                required
+              />
+              <button 
+                type="button" 
+                class="password-toggle"
+                @click="togglePassword"
+                :title="showPassword ? 'Hide password' : 'Show password'"
+              >
+                <svg v-if="showPassword" class="eye-icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                </svg>
+                <svg v-else class="eye-icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd"/>
+                  <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z"/>
+                </svg>
+              </button>
+            </div>
             <span :class="['error-msg', { show: passwordError }]">{{ passwordError }}</span>
           </div>
           
@@ -109,7 +144,9 @@ export default {
       emailError: '',
       nameError: '',
       phoneError: '',
-      passwordError: ''
+      passwordError: '',
+      showPassword: false,
+      showSuccessNotification: false
     };
   },
   methods: {
@@ -204,6 +241,22 @@ export default {
       return true;
     },
 
+    togglePassword() {
+      this.showPassword = !this.showPassword;
+    },
+
+    showNotification() {
+      this.showSuccessNotification = true;
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        this.hideNotification();
+      }, 5000);
+    },
+
+    hideNotification() {
+      this.showSuccessNotification = false;
+    },
+
     async handleSignup() {
       // Clear all previous errors
       this.emailError = '';
@@ -231,8 +284,11 @@ export default {
         })
 
         console.log('Sign up successful!');
-        alert('Sign up successful! Verify using your email and log in.')
-        this.$router.push('/login')
+        this.showNotification();
+        // Navigate to login after a short delay to show the notification
+        setTimeout(() => {
+          this.$router.push('/login');
+        }, 2000);
 
       } catch (error) {
         console.error('Signup failed:', error)
@@ -453,6 +509,118 @@ export default {
 .form-fields input.input-error {
   border-color: #ef4444;
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.password-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.eye-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.success-notification {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+  animation: slideDown 0.5s ease-out;
+  max-width: 500px;
+  width: 90%;
+}
+
+.notification-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.success-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.notification-text {
+  flex: 1;
+}
+
+.notification-text h4 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.notification-text p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.close-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .signup-btn {
