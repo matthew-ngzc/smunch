@@ -2,7 +2,7 @@
   <div>
     <section class="hero-image-row">
       <div class="hero-image-left">
-        <img class="full-img" :src="deliveryManIcon" alt="deliveryMan" />
+        <img class="full-img" :src="dinoSmunchIcon" alt="dinoSmunch" />
       </div>
       <div class="hero-text-right">
         <h1 class="hero-title">smunch</h1>
@@ -24,21 +24,21 @@
         </div>
         <div class="row text-center justify-content-center">
           <div class="col-md-4 benefit">
-            <img src="/src/assets/deliveryMan.png" alt="Save Time" class="benefit-icon" />
+            <img src="/public/dinoTime.png" alt="Save Time" class="benefit-icon" />
             <h5 class="benefit-title">Save Time</h5>
             <p class="benefit-text">
               No need to leave class or study spots. Get food delivered during short breaks.
             </p>
           </div>
           <div class="col-md-4 benefit">
-            <img src="/src/assets/deliveryMan.png" alt="Earn Money" class="benefit-icon" />
+            <img src="/public/richDino.png" alt="Earn Money" class="benefit-icon" />
             <h5 class="benefit-title">Earn Money</h5>
             <p class="benefit-text">
               Turn free time between classes into an earning opportunity by delivering food.
             </p>
           </div>
           <div class="col-md-4 benefit">
-            <img src="/src/assets/deliveryMan.png" alt="Connect with Peers" class="benefit-icon" />
+            <img src="/public/dinoandfriends.png" alt="Connect with Peers" class="benefit-icon" />
             <h5 class="benefit-title">Connect with Peers</h5>
             <p class="benefit-text">
               Build community by helping fellow students and making new connections.
@@ -75,7 +75,7 @@
             <div class="col-md-4 mb-3">
               <h5>Quick Links</h5>
               <ul class="list-unstyled footer-links">
-                <li><router-link to="/">Home</router-link></li>
+                <li><a href="#" @click.prevent="handleHomeClick">Home</a></li>
                 <li><router-link to="/about">About Us</router-link></li>
                 <li><router-link to="/faq">FAQs</router-link></li>
                 <li><router-link to="/contact">Contact</router-link></li>
@@ -98,14 +98,30 @@
 
 <script lang="js">
 import { defineComponent } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
 import Testimonials from '@/components/Testimonials.vue'
-import deliveryManIcon from '@/assets/deliveryMan.png'
+import dinoSmunchIcon from '/public/dinoSMUNCHING.png'
 
 export default defineComponent({
   name: 'LandingPage',
   components: { Testimonials },
   setup() {
-    return { deliveryManIcon }
+    const router = useRouter()
+    const authStore = useAuthStore()
+
+    const handleHomeClick = () => {
+      if (authStore.isAuthenticated()) {
+        router.push('/home')
+      } else {
+        router.push('/signup')
+      }
+    }
+
+    return { 
+      dinoSmunchIcon,
+      handleHomeClick
+    }
   },
 })
 </script>
@@ -168,9 +184,9 @@ export default defineComponent({
   background-color: #0b2e26;
 }
 
-/* Delivery Man Image Size*/
+/* Dino Smunch Image Size*/
 .full-img {
-  max-width: 60%;
+  max-width: 100%;
   height: auto;
   display: block;
 }
@@ -202,8 +218,8 @@ export default defineComponent({
 }
 
 .benefit-icon {
-  width: 100px;
-  height: 150px;
+  width: 200px;
+  height: 200px;
   margin-bottom: 1rem;
 }
 
