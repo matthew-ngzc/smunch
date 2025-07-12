@@ -3,10 +3,10 @@ import {
   getAllMerchants,
   getMerchant,
   getMenu,
-  addMerchant,
   updateMerchant,
   addMenuItem,
   updateMenuItem,
+  getHiddenMenu,
 } from '../controllers/merchant.controller.js';
 import { requireRole } from '../middlewares/role.middleware.js';
 import { authenticateToken } from '../middlewares/auth.middleware.js';
@@ -42,6 +42,14 @@ router.get('/:id/menu', getMenu);
  * Must be logged in as merchant or admin
  */
 router.put('/:id', authenticateToken, requireRole('merchant', 'admin'), updateMerchant);
+
+
+/**
+ * Get full menu for the authenticated merchant (including unavailable items)
+ * GET /api/merchants/{id}/hiddenMenu
+ * 🔒 Requires authentication as a merchant
+ */
+router.get('/:id/hiddenMenu', authenticateToken, requireRole('merchant', 'admin'), getHiddenMenu);
 
 /**
  * Add a menu item for a specific merchant

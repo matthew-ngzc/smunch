@@ -167,6 +167,71 @@ export const getMenu = async (req, res, next) => {
 
 /** SWAGGER DOCS
  * @swagger
+ * /api/merchants/{id}/hiddenMenu:
+ *   get:
+ *     summary: Get full menu for a specific merchant (including unavailable)
+ *     description: |
+ *       Returns all menu items for a given merchant, including `out of stock` and `removed`.
+
+ *       🔒 **Access**:
+ *       - ✅ Admins may view any merchant's menu
+ *       - ✅ Merchants may only view their **own** merchant account
+
+ *     tags: [Merchants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Merchant ID
+ *     responses:
+ *       200:
+ *         description: Full menu returned
+ *         content:
+ *           application/json:
+ *             example:
+ *               menu:
+ *                 - menu_item_id: 21
+ *                   name: Iced Milo
+ *                   availability_status: out of stock
+ *                   type: drink
+ *       403:
+ *         description: Forbidden — not your account
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "You do not have permission to view this merchant's menu"
+ *       404:
+ *         description: Merchant not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Merchant with ID 3 does not exist"
+ */
+export const getHiddenMenu = async (req, res, next) => {
+  try{
+    const { user_id, role } = req.user;
+    const merchantId = Number(req.params.id);
+
+    // validate authorisation
+    const merchant = await getMerchantByIdOrThrow(merchantId, 'merchant_id, user_id');
+    if (role !== 'admin' && merchant.user_id !== user_id) {
+      return res.status(403).json({ message: 'You do not have permission to view this merchant\'s FULL menu' });
+    }
+
+    // fetch menu
+    const menu = await getMenuItemsByMerchantIdOrThrow(merchantId, true);
+    res.json({menu});
+  } catch (err){
+    next(err);
+  }
+}
+
+/** SWAGGER DOCS
+ * @swagger
  * /api/merchants:
  *   post:
  *     summary: Add a new merchant
@@ -568,10 +633,8 @@ export const updateMenuItem = async (req, res, next) => {
     }
 
     //checks that the menu item belongs to the specified merchant
-    if (userRole !== 'admin'){
-      if (String(menuItem.merchant_id) !== String(merchantId)) {
-        return res.status(403).json({ message: 'This menu item does not belong to the specified merchant' });
-      }
+    if (String(menuItem.merchant_id) !== String(merchantId)) {
+      return res.status(403).json({ message: 'This menu item does not belong to the specified merchant' });
     }
 
     // update item
