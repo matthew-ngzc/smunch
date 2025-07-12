@@ -14,6 +14,7 @@ dotenv.config();
 
 const app = express();
 
+const isDev = process.env.NODE_ENV === 'development';
 
 // Enable CORS
 app.use(cors())
