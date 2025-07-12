@@ -5,36 +5,29 @@ import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 const pastOrders = ref([])
-const merchantMap = ref({})
 
 onMounted(async () => {
   const userId = authStore.userId
-
   try {
     const res = await getPastOrders(userId)
-    pastOrders.value = res.data.orders
+    const orders = res.data.orders
 
-    const uniqueMerchantIds = [...new Set(pastOrders.value.map(order => order.merchant_id))]
+    const ordersWithMerchant = await Promise.all(
+      orders.map(async (order) => {
+        const merchantRes = await getMerchantInfoById(order.merchant_id)
+        order.merchant = merchantRes.data
+        return order
+      })
+    )
 
-    await Promise.all(uniqueMerchantIds.map(async (id) => {
-      try {
-        const merchantRes = await getMerchantInfoById(id)
-        merchantMap.value[id] = merchantRes.data.merchant
-      } catch (err) {
-        console.error(`Failed to load merchant ${id}:`, err)
-      }
-    }))
+    pastOrders.value = ordersWithMerchant
   } catch (error) {
     console.error('Failed to load past orders:', error)
   }
 })
 
-function getMerchantName(merchantId) {
-  return merchantMap.value[merchantId]?.name || 'Merchant'
-}
-
-function getMerchantLogo(merchantId) {
-  return merchantMap.value[merchantId]?.image_url || '/default-logo.png'
+function getItemCount(order) {
+  return order.items?.length || 1
 }
 
 function formatDateTime(datetime) {
@@ -44,10 +37,6 @@ function formatDateTime(datetime) {
     minute: '2-digit',
     hour12: true
   })
-}
-
-function formatLocation(order) {
-  return `${order.building.toUpperCase()}, ${order.room_type} ${order.room_number}`
 }
 
 function formatStatusBadge(status) {
@@ -61,95 +50,128 @@ function formatStatusBadge(status) {
   }
 }
 </script>
+
 <template>
-  <div class="orders-page no-scroll">
+  <div class="orders-page">
     <h2>Order History</h2>
+    <ul class="orders-list">
+      <li v-for="order in pastOrders" :key="order.order_id" class="order-card">
+        <img :src="order.merchant.image_url" alt="merchant logo" class="merchant-logo" />
 
-    <div class="order-card" v-for="order in pastOrders" :key="order.order_id">
-      <div class="order-header">
-        <img :src="getMerchantLogo(order.merchant_id)" alt="Merchant Logo" class="merchant-logo" />
         <div class="order-info">
-          <div class="order-id">Order {{ order.order_id }}</div>
-          <div class="location">{{ formatLocation(order) }}</div>
-          <div class="merchant-name">{{ getMerchantName(order.merchant_id) }}</div>
-          <div class="pickup-time">Pick up time: {{ formatDateTime(order.delivery_time) }}</div>
-        </div>
-        <div class="order-summary">
-          <div class="item-count">{{ order.item_count || 1 }} item{{ (order.item_count || 1) > 1 ? 's' : '' }}</div>
-          <div class="order-price">${{ (order.total_amount_cents / 100).toFixed(2) }}</div>
-        </div>
-      </div>
+          <div class="order-header">
+            <h3>Order #{{ order.order_id }}</h3>
+            <div class="order-price-section">
+              <span>{{ getItemCount(order) }} item<span v-if="getItemCount(order) > 1">s</span></span>
+              <span class="order-price">${{ (order.total_amount_cents / 100).toFixed(2) }}</span>
+            </div>
+          </div>
 
-      <div class="order-footer">
-        <span>{{ formatStatusBadge(order.order_status).msg }}</span>
-        <span :class="['status-badge', formatStatusBadge(order.order_status).class]">
-          {{ formatStatusBadge(order.order_status).text }}
-        </span>
-      </div>
-    </div>
+          <div class="order-details">
+            <p>{{ order.pickup_location }}</p>
+            <p>{{ order.merchant.name }}</p>
+            <p class="pickup-time">Pick up time: {{ formatDateTime(order.delivery_time) }}</p>
+          </div>
+
+          <div class="order-footer">
+            <p class="status-msg">{{ formatStatusBadge(order.order_status).msg }}</p>
+            <span class="status-badge" :class="formatStatusBadge(order.order_status).class">
+              {{ formatStatusBadge(order.order_status).text }}
+            </span>
+          </div>
+        </div>
+      </li>
+    </ul>
   </div>
 </template>
 
-
 <style scoped>
-.orders-page.no-scroll {
-  padding: 2rem;
+.orders-page {
+  padding: 20px;
+}
+
+.orders-page h2 {
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.orders-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .order-card {
+  display: flex;
   border: 1px solid #ccc;
-  border-radius: 12px;
-  padding: 1.2rem;
-  margin-bottom: 1rem;
-  background-color: #fff;
-  width: 100%;
-  max-width: 700px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+  align-items: flex-start;
+  gap: 16px;
+  background-color: white;
+}
+
+.merchant-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.order-info {
+  flex: 1;
 }
 
 .order-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.merchant-logo {
-  height: 60px;
-  margin-right: 1rem;
-}
-
-.order-info {
-  flex-grow: 1;
-}
-
-.order-id {
   font-weight: bold;
-  font-size: 1.2rem;
+  margin-bottom: 6px;
 }
 
-.location,
-.merchant-name,
-.pickup-time {
-  font-size: 0.95rem;
+.order-price-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
 }
 
-.order-summary {
-  text-align: right;
-}
-
-.item-count,
 .order-price {
-  font-size: 0.95rem;
+  font-size: 16px;
   font-weight: bold;
+}
+
+.order-details p {
+  margin: 2px 0;
+  color: #444;
+}
+
+.pickup-time {
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.order-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.status-msg {
+  font-size: 14px;
+  color: #333;
 }
 
 .status-badge {
   padding: 4px 10px;
   border-radius: 12px;
-  font-size: 0.85rem;
-  display: inline-block;
-  margin-left: 1rem;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 80px;
+  text-align: center;
 }
 
 .status-green {
@@ -165,14 +187,5 @@ function formatStatusBadge(status) {
 .status-grey {
   background-color: #777;
   color: white;
-}
-
-.order-footer {
-  margin-top: 12px;
-  font-size: 0.9rem;
-  color: #666;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 </style>
