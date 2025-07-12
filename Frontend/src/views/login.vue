@@ -32,7 +32,7 @@
               placeholder="Enter your SMU email" 
               required 
             />
-            <span v-if="emailError" class="error-msg">{{ emailError }}</span>
+            <span :class="['error-msg', { show: emailError }]">{{ emailError }}</span>
           </div>
 
           <div class="input-group">
@@ -41,9 +41,11 @@
               id="password" 
               v-model="password" 
               type="password" 
+              :class="{ 'input-error': passwordError }"
               placeholder="Enter your password" 
               required 
             />
+            <span :class="['error-msg', { show: passwordError }]">{{ passwordError }}</span>
           </div>
 
           <button type="submit" class="login-btn">
@@ -69,21 +71,59 @@ export default {
     return {
       email: '',
       password: '',
-      emailError: ''
+      emailError: '',
+      passwordError: ''
     };
   },
   methods: {
-    async handleLogin() {
+    validateEmail() {
+      if (!this.email.trim()) {
+        this.emailError = 'Email is required.';
+        return false;
+      }
       if (!this.email.includes('@smu.edu.sg')) {
-        this.emailError = "Please enter a valid SMU email address.";
+        this.emailError = 'Please enter a valid SMU email address.';
+        return false;
+      }
+      const emailRegex = /^[^\s@]+@smu\.edu\.sg$/;
+      if (!emailRegex.test(this.email)) {
+        this.emailError = 'Please enter a valid SMU email format.';
+        return false;
+      }
+      this.emailError = '';
+      return true;
+    },
+
+    validatePassword() {
+      if (!this.password) {
+        this.passwordError = 'Password is required.';
+        return false;
+      }
+      if (this.password.length < 8) {
+        this.passwordError = 'Password must be at least 8 characters long.';
+        return false;
+      }
+      this.passwordError = '';
+      return true;
+    },
+
+    async handleLogin() {
+      // Clear all previous errors
+      this.emailError = '';
+      this.passwordError = '';
+
+      // Validate all fields
+      const isEmailValid = this.validateEmail();
+      const isPasswordValid = this.validatePassword();
+
+      // If any validation fails, stop here
+      if (!isEmailValid || !isPasswordValid) {
         return;
       }
-
-      this.emailError = '';
       
       try {
         const response = await axiosInstance.post('/api/auth/login', {
-          email: this.email,
+          email: this.email.trim(),
           password: this.password
         })
 
@@ -95,7 +135,24 @@ export default {
         this.$router.push('/home')
       } catch (error) {
         console.error('Login failed:', error)
-        alert('Invalid login. Please try again.')
+        
+        // Handle specific server errors
+        if (error.response && error.response.data && error.response.data.message) {
+          const errorMessage = error.response.data.message;
+          
+          // Map server errors to specific fields
+          if (errorMessage.toLowerCase().includes('email') || errorMessage.toLowerCase().includes('user not found')) {
+            this.emailError = 'No account found with this email address.';
+          } else if (errorMessage.toLowerCase().includes('password') || errorMessage.toLowerCase().includes('invalid credentials')) {
+            this.passwordError = 'Incorrect password. Please try again.';
+          } else if (errorMessage.toLowerCase().includes('verify') || errorMessage.toLowerCase().includes('confirmation')) {
+            this.emailError = 'Please verify your email address before logging in.';
+          } else {
+            alert(errorMessage);
+          }
+        } else {
+          alert('Login failed. Please check your credentials and try again.')
+        }
       }
     }
   }
@@ -120,11 +177,11 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  padding-top: 62px;
+  padding-top: 60px;
 }
 
 .login-left {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -159,7 +216,10 @@ export default {
 }
 
 .welcome {
-  color: #0d3d31;
+  background: linear-gradient(135deg, #0a2e23 0%, #0d3d31 50%, #16a34a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-size: 2.8rem;
   font-weight: 800;
   margin-bottom: 1.5rem;
@@ -177,7 +237,10 @@ export default {
 
 .tagline-continued {
   font-size: 1.2rem;
-  color: #0d3d31;
+  background: linear-gradient(135deg, #0d3d31 0%, #16a34a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   line-height: 1.6;
   font-weight: 600;
   display: block;
@@ -185,7 +248,7 @@ export default {
 }
 
 .login-right {
-  background: linear-gradient(135deg, #0d3d31 0%, #0f5132 100%);
+  background: linear-gradient(135deg, #0a2e23 0%, #0d3d31 30%, #0f5132 70%, #16a34a 100%);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -259,16 +322,17 @@ export default {
 
 .form-fields input {
   padding: 0.8rem 1rem;
-  border-radius: 10px;
+  border-radius: 12px;
   outline: none;
   font-size: 0.9rem;
   border: 2px solid transparent;
   width: 100%;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   color: white;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(15px);
   box-sizing: border-box;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .form-fields input::placeholder {
@@ -295,10 +359,10 @@ export default {
 .login-btn {
   margin-top: 0.8rem;
   padding: 0.8rem 1.5rem;
-  background: linear-gradient(135deg, #148b53 0%, #16a34a 100%);
+  background: linear-gradient(135deg, #059669 0%, #16a34a 50%, #22c55e 100%);
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 1rem;
   font-weight: 700;
   width: 100%;
@@ -307,6 +371,7 @@ export default {
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+  box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
 }
 
 .login-btn::before {
@@ -325,8 +390,9 @@ export default {
 }
 
 .login-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(20, 139, 83, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(5, 150, 105, 0.5);
+  background: linear-gradient(135deg, #047857 0%, #059669 50%, #16a34a 100%);
 }
 
 .login-btn:active {

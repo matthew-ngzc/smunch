@@ -120,7 +120,6 @@ const logout = () => {
 .navbar-box {
   background-color: #0d3d31;
   padding: 0 30px;
-  border-bottom: 2px solid #eee;
   display: flex;
   justify-content: space-between;
   align-items: center;

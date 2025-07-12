@@ -41,9 +41,11 @@
               id="name" 
               v-model="name" 
               type="text" 
+              :class="{ 'input-error': nameError }"
               placeholder="Enter your name" 
               required 
             />
+            <span :class="['error-msg', { show: nameError }]">{{ nameError }}</span>
           </div>
 
           <div class="input-group">
@@ -52,9 +54,11 @@
               id="phone" 
               v-model="phoneNo" 
               type="text" 
+              :class="{ 'input-error': phoneError }"
               placeholder="Enter your phone number" 
               required 
             />
+            <span :class="['error-msg', { show: phoneError }]">{{ phoneError }}</span>
           </div>
 
           <div class="input-group">
@@ -63,9 +67,11 @@
               id="password"
               v-model="password"
               type="password"
+              :class="{ 'input-error': passwordError }"
               placeholder="Enter your password"
               required
             />
+            <span :class="['error-msg', { show: passwordError }]">{{ passwordError }}</span>
           </div>
           
           <button type="submit" class="signup-btn">
@@ -91,23 +97,127 @@ export default {
       name: '',
       phoneNo: '',
       password: '',
-      emailError: ''
+      emailError: '',
+      nameError: '',
+      phoneError: '',
+      passwordError: ''
     };
   },
   methods: {
-    async handleSignup() {
+    validateEmail() {
+      if (!this.email.trim()) {
+        this.emailError = 'Email is required.';
+        return false;
+      }
       if (!this.email.includes('@smu.edu.sg')) {
         this.emailError = 'Please enter a valid SMU email address.';
+        return false;
+      }
+      const emailRegex = /^[^\s@]+@smu\.edu\.sg$/;
+      if (!emailRegex.test(this.email)) {
+        this.emailError = 'Please enter a valid SMU email format.';
+        return false;
+      }
+      this.emailError = '';
+      return true;
+    },
+
+    validateName() {
+      if (!this.name.trim()) {
+        this.nameError = 'Name is required.';
+        return false;
+      }
+      if (this.name.trim().length < 2) {
+        this.nameError = 'Name must be at least 2 characters long.';
+        return false;
+      }
+      if (this.name.trim().length > 50) {
+        this.nameError = 'Name must be less than 50 characters.';
+        return false;
+      }
+      const nameRegex = /^[a-zA-Z\s'-]+$/;
+      if (!nameRegex.test(this.name.trim())) {
+        this.nameError = 'Name can only contain letters, spaces, hyphens, and apostrophes.';
+        return false;
+      }
+      this.nameError = '';
+      return true;
+    },
+
+    validatePhone() {
+      if (!this.phoneNo.trim()) {
+        this.phoneError = 'Phone number is required.';
+        return false;
+      }
+      // Remove spaces and dashes for validation
+      const cleanPhone = this.phoneNo.replace(/[\s-]/g, '');
+      
+      // Singapore phone number validation (8 digits starting with 6, 8, or 9)
+      const sgPhoneRegex = /^[689]\d{7}$/;
+      if (!sgPhoneRegex.test(cleanPhone)) {
+        this.phoneError = 'Please enter a valid Singapore phone number (8 digits starting with 6, 8, or 9).';
+        return false;
+      }
+      this.phoneError = '';
+      return true;
+    },
+
+    validatePassword() {
+      if (!this.password) {
+        this.passwordError = 'Password is required.';
+        return false;
+      }
+      if (this.password.length < 8) {
+        this.passwordError = 'Password must be at least 8 characters long.';
+        return false;
+      }
+      if (this.password.length > 128) {
+        this.passwordError = 'Password must be less than 128 characters.';
+        return false;
+      }
+      if (!/(?=.*[a-z])/.test(this.password)) {
+        this.passwordError = 'Password must contain at least one lowercase letter.';
+        return false;
+      }
+      if (!/(?=.*[A-Z])/.test(this.password)) {
+        this.passwordError = 'Password must contain at least one uppercase letter.';
+        return false;
+      }
+      if (!/(?=.*\d)/.test(this.password)) {
+        this.passwordError = 'Password must contain at least one number.';
+        return false;
+      }
+      if (!/(?=.*[!@#$%^&*(),.?":{}|<>])/.test(this.password)) {
+        this.passwordError = 'Password must contain at least one special character.';
+        return false;
+      }
+      this.passwordError = '';
+      return true;
+    },
+
+    async handleSignup() {
+      // Clear all previous errors
+      this.emailError = '';
+      this.nameError = '';
+      this.phoneError = '';
+      this.passwordError = '';
+
+      // Validate all fields
+      const isEmailValid = this.validateEmail();
+      const isNameValid = this.validateName();
+      const isPhoneValid = this.validatePhone();
+      const isPasswordValid = this.validatePassword();
+
+      // If any validation fails, stop here
+      if (!isEmailValid || !isNameValid || !isPhoneValid || !isPasswordValid) {
         return;
-      } else {
-        this.emailError = '';
       }
 
       try {
         const response = await axiosInstance.post('/api/auth/signup', {
-          email: this.email,
-          name: this.name,
-          phoneNo: this.phoneNo,
+          email: this.email.trim(),
+          name: this.name.trim(),
+          phoneNo: this.phoneNo.replace(/[\s-]/g, ''), // Clean phone number
           password: this.password
         })
 
@@ -117,7 +227,26 @@ export default {
 
       } catch (error) {
         console.error('Signup failed:', error)
-        alert('Signup failed. Please check your input or try again later.')
+        
+        // Handle specific server errors
+        if (error.response && error.response.data && error.response.data.message) {
+          const errorMessage = error.response.data.message;
+          
+          // Map server errors to specific fields
+          if (errorMessage.toLowerCase().includes('email')) {
+            this.emailError = errorMessage;
+          } else if (errorMessage.toLowerCase().includes('phone')) {
+            this.phoneError = errorMessage;
+          } else if (errorMessage.toLowerCase().includes('password')) {
+            this.passwordError = errorMessage;
+          } else if (errorMessage.toLowerCase().includes('name')) {
+            this.nameError = errorMessage;
+          } else {
+            alert(errorMessage);
+          }
+        } else {
+          alert('Signup failed. Please check your input or try again later.')
+        }
       }
     }
   }
@@ -141,13 +270,13 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  padding-top: 62px;
+  padding-top: 60px;
 }
 
 /* LEFT: white half */
 .signup-left {
   flex: 1;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -182,7 +311,10 @@ export default {
 .welcome {
   font-size: 2.8rem;
   font-weight: 800;
-  color: #0d3d31;
+  background: linear-gradient(135deg, #0a2e23 0%, #0d3d31 50%, #16a34a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 1.5rem;
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -198,7 +330,10 @@ export default {
 .tagline-continued {
   display: block;
   font-size: 1.2rem;
-  color: #0d3d31;
+  background: linear-gradient(135deg, #0d3d31 0%, #16a34a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-top: 1.5rem;
   font-weight: 600;
 }
@@ -206,7 +341,7 @@ export default {
 /* RIGHT: green half */
 .signup-right {
   flex: 1;
-  background: linear-gradient(135deg, #0d3d31 0%, #0f5132 100%);
+  background: linear-gradient(135deg, #0a2e23 0%, #0d3d31 30%, #0f5132 70%, #16a34a 100%);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -278,15 +413,16 @@ export default {
 
 .form-fields input {
   padding: 0.8rem 1rem;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 0.9rem;
   border: 2px solid transparent;
   width: 100%;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   color: white;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(15px);
   box-sizing: border-box;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .form-fields input::placeholder {
@@ -313,10 +449,10 @@ export default {
 .signup-btn {
   margin-top: 0.8rem;
   padding: 0.8rem 1.5rem;
-  background: linear-gradient(135deg, #148b53 0%, #16a34a 100%);
+  background: linear-gradient(135deg, #059669 0%, #16a34a 50%, #22c55e 100%);
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 1rem;
   font-weight: 700;
   width: 100%;
@@ -325,6 +461,7 @@ export default {
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+  box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
 }
 
 .signup-btn::before {
@@ -343,8 +480,9 @@ export default {
 }
 
 .signup-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(20, 139, 83, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(5, 150, 105, 0.5);
+  background: linear-gradient(135deg, #047857 0%, #059669 50%, #16a34a 100%);
 }
 
 .signup-btn:active {
