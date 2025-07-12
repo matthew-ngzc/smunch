@@ -1,3 +1,4 @@
+import { MENU_ITEM_STATUS } from '../constants/enums.constants.js';
 import { supabase } from '../lib/supabaseClient.js';
 import {
   DuplicateError,
@@ -11,6 +12,7 @@ import {
  * @param {boolean} includeUnavailable - Whether to include unavailable items (default: false)
  * @returns {Promise<object[]>} - Array of menu item objects
  * @throws {Error} - If the query fails
+ * TODO: if using customisations, add in the fetching query
  */
 export async function getMenuItemsByMerchantIdOrThrow(merchantId, includeUnavailable = false) {
   let query = supabase
@@ -21,7 +23,7 @@ export async function getMenuItemsByMerchantIdOrThrow(merchantId, includeUnavail
     .order('name', { ascending: true }); // <- secondary sort within type
 
   if (!includeUnavailable) {
-    query = query.eq('is_available', true);
+    query = query.eq('availability_status', MENU_ITEM_STATUS.AVAILABLE);
   }
 
   const { data, error } = await query;
@@ -92,7 +94,7 @@ export async function getMenuItemByIdOrThrow(menuItemId) {
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) {throw NotFoundError("Menu Item", menuItemId);
+  if (!data) {throw NotFoundError("Menu Item", 'ID', menuItemId);
   }
 
   return data;
@@ -116,7 +118,7 @@ export async function updateMenuItemByIdOrThrow(menuItemId, updates) {
 
   if (error) {
     if (error.message.includes('multiple (or no) rows returned')) {
-      return next(NotFoundError('Menu Item', menuItemId));
+      return next(NotFoundError('Menu Item', 'ID', menuItemId));
     }
     throw error;
   }

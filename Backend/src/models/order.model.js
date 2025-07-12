@@ -134,7 +134,7 @@ export async function updateOrderStatusOrThrow(orderId, status) {
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) throw NotFoundError("Order", orderId);
+  if (!data) throw NotFoundError("Order", 'ID', orderId);
   return data;
 }
 
@@ -155,7 +155,7 @@ export async function updatePaymentStatusOrThrow(orderId, status) {
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) throw NotFoundError("Order", orderId);
+  if (!data) throw NotFoundError("Order", 'ID', orderId);
   return data;
 }
 
@@ -210,7 +210,7 @@ export async function getOrderByIdOrThrow(orderId) {
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) throw NotFoundError("Order", orderId);
+  if (!data) throw NotFoundError("Order", 'ID', orderId);
   return data;
 }
 
@@ -229,7 +229,7 @@ export async function getFullOrderByIdOrThrow(orderId) {
     .maybeSingle();
 
   if (orderError) throw orderError;
-  if (!order) throw NotFoundError("Order", orderId);
+  if (!order) throw NotFoundError("Order", 'ID', orderId);
 
   const { data: items, error: itemsError } = await supabase
     .from('order_items')

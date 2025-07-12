@@ -66,6 +66,27 @@ export default function errorHandler(err, req, res, next) {
       code: err.code || 'CONFLICT'
     });
   }
+  // === Manually thrown 401 Unauthorized errors
+  if (err.status === 401) {
+    return res.status(401).json({
+      error: err.message || 'Unauthorized',
+      code: err.code || 'UNAUTHORIZED'
+    });
+  }
+  // === Manually thrown 403 Forbidden errors
+  if (err.status === 403) {
+    return res.status(403).json({
+      error: err.message || 'Forbidden',
+      code: err.code || 'FORBIDDEN'
+    });
+  }
+
+  if (err.status === 429) {
+    return res.status(429).json({ error: 'Too many requests' });
+  }
+
+
+
 
   // === Fallback
   return res.status(500).json({
