@@ -159,7 +159,9 @@ export async function updatePaymentStatusOrThrow(orderId, status) {
   return data;
 }
 
-/**
+/**  
+ * @deprecated ⚠️ DEPRECATED: Use getFullOrdersByCustomerIdAndStatusOrThrow
+ * 
  * Retrieves orders by customer ID with optional status filter.
  *
  * @param {number|string} customerId - Customer (user) ID
@@ -179,7 +181,8 @@ export async function getOrdersByCustomerIdOrThrow(customerId, statuses) {
   let query = supabase
     .from('orders')
     .select('*')
-    .eq('customer_id', customerId);
+    .eq('customer_id', customerId)
+    .order('created_at', { ascending: false });;
 
   // Optionally filter by statuses
   if (Array.isArray(statuses) && statuses.length > 0) {
@@ -187,12 +190,12 @@ export async function getOrdersByCustomerIdOrThrow(customerId, statuses) {
   }
 
   // Query Database
-  const { data, error } = await query.order('created_at', { ascending: false });
+  const { data, error } = await query;
   if (error) throw error;
   return data;
 }
 
-/**
+/** 
  * Retrieves a single order by ID.
  *
  * @param {number|string} orderId - Order ID
@@ -239,5 +242,46 @@ export async function getFullOrderByIdOrThrow(orderId) {
   if (itemsError) throw itemsError;
 
   return { ...order, items };
+}
+
+
+/**
+ * Retrieves a list of full orders (including order items and menu item names) for a given customer.
+ * 
+ * This function returns detailed order objects containing:
+ * - All order fields
+ * - Associated order items (quantity, price, notes, customisations)
+ * - The name of each related menu item
+ * 
+ * Supports optional filtering by order status and pagination via limit and offset.
+ *
+ * @param {number|string} customerId - Customer (user) ID
+ * @param {string[]} [statuses=[]] - Optional array of status strings to filter by (e.g. ['created', 'completed'])
+ * @param {number} [limit=10] - Maximum number of orders to return
+ * @param {number} [offset=0] - Number of records to skip before starting the return set
+ * @returns {Promise<object[]>} - Array of full order objects with nested item details
+ * @throws {Error} - If the user does not exist or if the query fails
+ */
+export async function getFullOrdersByCustomerIdAndStatusOrThrow(customerId, statuses = [], limit = 10, offset = 0){
+  // Check that customer exists
+  await getUserByIdOrThrow(customerId);
+
+  // Build Query
+  let query = supabase
+    .from('orders')
+    .select(`*, order_items (quantity, price_cents, notes, customisations, menu_items(name))`)
+    .eq('customer_id', customerId)
+    .order('created_at', {ascending: false})
+    .range(offset, offset + limit - 1);
+
+  // Filter by Statuses
+  if (statuses.length > 0){
+    query = query.in('order_status', statuses);
+  }
+
+  // Query DB
+  const {data, error} = await query;
+  if (error) throw error;
+  return data;
 }
 

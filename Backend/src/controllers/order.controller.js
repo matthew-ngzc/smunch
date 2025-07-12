@@ -1,10 +1,10 @@
-import { PAYMENT_STATUSES } from '../constants/enums.constants.js';
+import { ORDER_STATUSES, PAYMENT_STATUSES } from '../constants/enums.constants.js';
 import {
   createOrderOrThrow,
   updateOrderStatusOrThrow,
   updatePaymentStatusOrThrow,
-  getOrdersByCustomerIdOrThrow,
-  getOrderByIdOrThrow
+  getOrderByIdOrThrow,
+  getFullOrdersByCustomerIdAndStatusOrThrow
 } from '../models/order.model.js';
 import { generatePayNowQRCode } from '../services/payment.service.js';
 import { canUpdatePaymentStatus } from '../utils/auth.utils.js';
@@ -420,14 +420,15 @@ export const updatePaymentStatus = async (req, res, next) => {
  * @swagger
  * /api/orders/user/{userId}:
  *   get:
- *     summary: Get orders for a user by type
+ *     summary: Get full orders for a user (with items)
  *     description: |
- *       Retrieves orders for a specific user, filtered by optional `type` query:
+ *       Retrieves full orders for a specific user, filtered by optional `type` query:
  *       
- *       - `active`: returns in-progress orders (created, preparing, delivered, etc.)
+ *       - `active`: returns in-progress orders (created, payment_verified, preparing, collected_by_runner, delivered)
  *       - `history`: returns past orders (completed or cancelled)
  *       
  *       If `type` is not provided, returns all orders.
+ *       Supports pagination using `limit` and `offset` query params.
  *     tags: [Orders]
  *     parameters:
  *       - in: path
@@ -443,42 +444,39 @@ export const updatePaymentStatus = async (req, res, next) => {
  *           type: string
  *           enum: [active, history]
  *         description: Filter orders by type
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *         description: "Max number of orders to return (default: 10)"
+ *       - in: query
+ *         name: offset
+ *         required: false
+ *         schema:
+ *           type: integer
+ *         description: "Number of records to skip (default: 0)"
  *     responses:
  *       200:
- *         description: List of orders
+ *         description: List of full orders (with order items)
  *         content:
  *           application/json:
- *             examples:
- *               active:
- *                 summary: With orders
- *                 value:
- *                   orders:
- *                     - order_id: 76
- *                       customer_id: 2
- *                       total_amount_cents: 790
- *                       food_amount_cents: 690
- *                       delivery_fee_cents: 100
- *                       payment_reference: REF123
- *                       payment_status: awaiting_payment
- *                       order_status: created
- *                       customer_confirmed: false
- *                       customer_confirmed_at: null
- *                       created_at: "2025-06-07T09:13:09.953362"
- *                       building: sob
- *                       room_type: Seminar Room
- *                       room_number: "2-7"
- *                       delivery_time: "2025-06-05T12:00:00"
- *                       merchant_id: 5
- *               history:
- *                 summary: No orders
- *                 value:
- *                   orders: []
+ *             example:
+ *               orders:
+ *                 - order_id: 76
+ *                   customer_id: 2
+ *                   order_status: created
+ *                   order_items:
+ *                     - quantity: 1
+ *                       price_cents: 250
+ *                       menu_items:
+ *                         name: Coffee
  *       400:
  *         description: Invalid query parameter
  *         content:
  *           application/json:
  *             example:
- *               error: "Invalid type: 'lolol'. Allowed values: active, history"
+ *               error: "Invalid type: 'foo'. Allowed values: active, history"
  *               code: "INVALID_QUERY_PARAM"
  *       404:
  *         description: User not found
@@ -489,35 +487,40 @@ export const updatePaymentStatus = async (req, res, next) => {
  *               code: "NOT_FOUND_USER"
  */
 /**
- * GET /api/orders/user/:userId?type=active|history
- * Retrieves orders for a specific user.
+ * GET /api/orders/user/:userId?type=active|history&limit=10&offset=0
+ * Retrieves full orders (including items) for a specific user.
  */
 export const getUserOrders = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const { type } = req.query;
+    const { type, limit = 10, offset = 0 } = req.query;
     let statuses;
     if (type === 'active') {
       statuses = [
-        'created',               // order placed, awaiting payment
-        'payment_verified',      // payment confirmed
-        'preparing',             // merchant preparing order (optional, future dev)
-        'collected_by_runner',   // in transit
-        'delivered'              // food delivered, not yet confirmed by user
+        ORDER_STATUSES[0],             // order placed, awaiting payment
+        ORDER_STATUSES[1],             // payment verified
+        ORDER_STATUSES[2],             // merchant preparing order (optional, future dev)
+        ORDER_STATUSES[3],             // in transit
+        ORDER_STATUSES[4]              // food delivered, not yet confirmed by user
       ];
     } else if (type === 'history') {
       statuses = [
-        'completed',             // user confirmed receipt
-        'cancelled'              // user or system cancelled
+        ORDER_STATUSES[5],             // user confirmed receipt
+        ORDER_STATUSES[6]              // user or system cancelled
       ];
-    } else {
+    } else if (type !== undefined) {
         return res.status(400).json({
           error: `Invalid type: '${type}'. Allowed values: active, history`,
           code: 'INVALID_QUERY_PARAM'
       });
-    }
+    } // Allow lack of type to fall through
 
-    const orders = await getOrdersByCustomerIdOrThrow(userId, statuses);
+    // convert limit and offset into the correct types to put into method, and make sure they are reasonable (within 50)
+    const safeLimit = Math.min(Number(limit) || 10, 50);
+    const safeOffset = Number(offset) || 0;
+
+
+    const orders = await getFullOrdersByCustomerIdAndStatusOrThrow(userId, statuses || [], safeLimit, safeOffset);
     res.json({ orders });
   } catch (err) {
     next(err);
