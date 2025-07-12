@@ -43,6 +43,7 @@ export default {
       newPassword: '',
       confirmPassword: '',
       profilePicturePreview: '',
+      selectedProfilePictureFile: null,
       defaultProfilePicture: 'https://ui-avatars.com/api/?name=User&background=0d3d31&color=fff&size=128',
     };
   },
@@ -50,6 +51,7 @@ export default {
     onProfilePictureChange(e) {
       const file = e.target.files[0];
       if (file) {
+        this.selectedProfilePictureFile = file;
         const reader = new FileReader();
         reader.onload = (event) => {
           this.profilePicturePreview = event.target.result;
@@ -60,8 +62,9 @@ export default {
     async handleProfileSave() {
       try {
         let imageUrl = this.profilePicturePreview;
-        if (this.$refs.fileInput && this.$refs.fileInput.files.length > 0) {
-          const file = this.$refs.fileInput.files[0];
+        // Only upload if a new file is selected
+        if (this.selectedProfilePictureFile) {
+          const file = this.selectedProfilePictureFile;
           const filePath = `profile-pictures/${Date.now()}_${file.name}`;
           const fileRef = storageRef(storage, filePath);
           await uploadBytes(fileRef, file);
@@ -71,9 +74,10 @@ export default {
         await axiosInstance.post('/api/user/profile-picture-url', { imageUrl });
         useAuthStore().setProfilePicture(imageUrl);
         this.profilePicturePreview = imageUrl;
+        this.selectedProfilePictureFile = null;
         alert('Profile picture updated!');
       } catch (error) {
-        alert('Failed to upload profile picture.');
+        alert('Failed to upload profile picture. Please check your internet connection and try again.');
         console.error(error);
       }
     }
