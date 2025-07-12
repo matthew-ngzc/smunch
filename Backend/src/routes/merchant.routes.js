@@ -39,23 +39,23 @@ router.get('/:id/menu', getMenu);
 /**
  * Update a merchant's details (not menu)
  * PUT /api/merchants/:id
- * Must be logged in as merchant
+ * Must be logged in as merchant or admin
  */
-router.put('/:id', authenticateToken, requireRole('merchant'), updateMerchant);
+router.put('/:id', authenticateToken, requireRole('merchant', 'admin'), updateMerchant);
 
 /**
  * Add a menu item for a specific merchant
  * POST /api/merchants/:id/menu
- * Must be logged in as merchant
+ * Must be logged in as merchant or admin
  */
-router.post('/:id/menu', authenticateToken, requireRole('merchant'), addMenuItem);
+router.post('/:id/menu', authenticateToken, requireRole('merchant', 'admin'), addMenuItem);
 
 /**
  * Update the menu item for a specific merchant
  * POST /api/merchants/:merchantId/menu/:menuItemId
- * Must be logged in as merchant
+ * Must be logged in as merchant or admin
  */
-router.put('/:merchantId/menu/:menuItemId', authenticateToken, requireRole('merchant'),updateMenuItem);
+router.put('/:merchantId/menu/:menuItemId', authenticateToken, requireRole('merchant', 'admin'),updateMenuItem);
 
 
 export default router;

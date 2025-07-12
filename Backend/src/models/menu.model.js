@@ -44,8 +44,8 @@ export async function createMenuItemOrThrow(payload) {
     description,
     price_cents,
     image_url,
-    is_available = true,
-    type
+    type,
+    availability_status
   } = payload;
 
   // Check for identical item
@@ -58,13 +58,13 @@ export async function createMenuItemOrThrow(payload) {
       description,
       price_cents,
       image_url,
-      is_available,
+      availability_status,
       type
     })
     .maybeSingle();
 
   if (checkError) throw checkError;
-  if (existing) throw DuplicateError("MenU Item", existing.menu_item_id);
+  if (existing) throw DuplicateError("Menu Item", existing.menu_item_id);
 
   // Insert if no identical found
   const { data, error } = await supabase

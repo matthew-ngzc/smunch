@@ -43,3 +43,10 @@ export const PAYMENT_STATUSES = [
   'awaiting_verification',
   'payment_confirmed'
 ];
+
+
+export const MENU_ITEM_STATUS = {
+  AVAILABLE: 'available',
+  OUT_OF_STOCK: 'out of stock',
+  REMOVED: 'removed'
+};

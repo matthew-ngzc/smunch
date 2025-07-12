@@ -11,6 +11,7 @@ import {
   getMenuItemByIdOrThrow,
   updateMenuItemByIdOrThrow
 } from '../models/menu.model.js';
+import { MENU_ITEM_STATUS } from '../constants/enums.constants.js';
 
 
 /** SWAGGER DOCS
@@ -25,6 +26,7 @@ import {
  *       - location (string or null)
  *       - contact_number (string or null)
  *       - image_url (string)
+ *       🔓 **Access**: Public — no login required
  *     tags: [Merchants]
  *     responses:
  *       200:
@@ -67,6 +69,7 @@ export const getAllMerchants = async (req, res, next) => {
  *       - location (string)
  *       - contact_number (string|null)
  *       - image_url (string)
+ *       🔓 **Access**: Public — no login required
  *     tags: [Merchants]
  *     parameters:
  *       - in: path
@@ -119,6 +122,7 @@ export const getMerchant = async (req, res, next) => {
  *       - name (string)
  *       - price_cents (integer)
  *       - type (string|null)
+ *       🔓 **Access**: Public — no login required
  *     tags: [Merchants]
  *     parameters:
  *       - in: path
@@ -167,8 +171,14 @@ export const getMenu = async (req, res, next) => {
  *   post:
  *     summary: Add a new merchant
  *     description: |
+ *       ***DEPRECATED, changed to merchant onboarding flow using invite merchants in admin endpoints***
+ * 
+ *       🔒 **Access**: Must be logged in as admin
+ * 
  *       Creates a new merchant with the provided details. All fields are required.
  *     tags: [Merchants]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -241,8 +251,12 @@ export const addMerchant = async (req, res, next) => {
  *   put:
  *     summary: Update a merchant's details
  *     description: |
+ *       🔒 **Access**: Must be logged in as the **merchant who owns this account** or **admin**
+ * 
  *       Updates the specified merchant’s information.
  *     tags: [Merchants]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -303,7 +317,16 @@ export const addMerchant = async (req, res, next) => {
  */
 export const updateMerchant = async (req, res, next) => {
   try {
-    const { id: merchantId } = req.params;
+    const merchantId = Number(req.params.id);
+    const { user_id, role } = req.user;
+
+    // Check if not admin, then the userid must match the merchant's userid
+    if (role !== 'admin'){
+      const merchant = await getMerchantByIdOrThrow(merchantId, 'user_id');
+      if (merchant.user_id !== user_id){
+        return res.status(403).json({ message: 'You do not have permission to add to this merchant\'s menu'});
+      }
+    }
     await getMerchantByIdOrThrow(merchantId); // validate existence
 
     const updatedMerchant = await updateMerchantByIdOrThrow(merchantId, req.body);
@@ -319,6 +342,8 @@ export const updateMerchant = async (req, res, next) => {
  *   post:
  *     summary: Add a new menu item to a merchant
  *     description: |
+ *       🔒 **Access**: Must be logged in as the **merchant who owns this merchantId** or **admin**
+ * 
  *       Adds a new item to the menu of a given merchant. Input fields:
  *       - name (string, required)
  *       - description (string, optional)
@@ -327,6 +352,8 @@ export const updateMerchant = async (req, res, next) => {
  *       - is_available (boolean, required)
  *       - type (string, optional)
  *     tags: [Merchants]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -386,21 +413,28 @@ export const updateMerchant = async (req, res, next) => {
 /**
  * POST /api/merchants/:id/menu
  * Adds a new menu item to the specified merchant's menu.
- * TODO (future): make sure only authenticated + correct merchant or admin can add items
  */
 export const addMenuItem = async (req, res, next) => {
   try {
-    const merchantId = req.params.id;
-    await getMerchantByIdOrThrow(merchantId); // validate existence
+    const merchantId = Number(req.params.id);
+    const { user_id, role } = req.user;
 
-    const { name, description, price_cents, image_url, is_available = true , type} = req.body;
+    // Check if not admin, then the userid must match the merchant's userid
+    if (role !== 'admin'){
+      const merchant = await getMerchantByIdOrThrow(merchantId, 'user_id');
+      if (merchant.user_id !== user_id){
+        return res.status(403).json({ message: 'You do not have permission to add to this merchant\'s menu'});
+      }
+    }
+
+    const { name, description, price_cents, image_url, availability_status = MENU_ITEM_STATUS.AVAILABLE , type} = req.body;
     const newItem = await createMenuItemOrThrow({
       merchant_id: merchantId,
       name,
       description,
       price_cents,
       image_url,
-      is_available,
+      availability_status,
       type
     });
 
@@ -417,15 +451,24 @@ export const addMenuItem = async (req, res, next) => {
  *   put:
  *     summary: Update a specific menu item for a merchant
  *     description: |
- *       Updates fields for an existing menu item. Verifies that the menu item belongs to the specified merchant.
- *       Only provided fields will be updated. Fields include:
+ *       Updates fields for an existing menu item.
+ *       
+ *       🔒 **Access**:
+ *       - ✅ Admins
+ *       - ✅ The merchant who owns the given `merchantId`
+ *       
+ *       It also verifies that the menu item actually belongs to that merchant.
+ *       
+ *       Only the provided fields will be updated. Updatable fields include:
  *       - name (string)
  *       - description (string|null)
  *       - price_cents (integer)
  *       - image_url (string|null)
- *       - is_available (boolean)
  *       - type (string|null)
+ *       - availability_status (enum: available, out of stock, removed)
  *     tags: [Merchants]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: merchantId
@@ -458,12 +501,13 @@ export const addMenuItem = async (req, res, next) => {
  *               image_url:
  *                 type: string
  *                 example: https://cdn.example.com/images/chicken-rice-deluxe.jpg
- *               is_available:
- *                 type: boolean
- *                 example: true
  *               type:
  *                 type: string
  *                 example: food
+ *               availability_status:
+ *                 type: string
+ *                 enum: [available, out of stock, removed]
+ *                 example: out of stock
  *     responses:
  *       200:
  *         description: Menu item updated successfully
@@ -477,16 +521,23 @@ export const addMenuItem = async (req, res, next) => {
  *                 description: Extra chicken + egg
  *                 price_cents: 650
  *                 image_url: https://cdn.example.com/images/chicken-rice-deluxe.jpg
- *                 is_available: true
  *                 type: food
+ *                 availability_status: out of stock
  *       403:
- *         description: Menu item does not belong to specified merchant
+ *         description: Forbidden — user lacks permission
  *         content:
  *           application/json:
- *             example:
- *               message: This menu item does not belong to the specified merchant
+ *             examples:
+ *               wrong_merchant_user:
+ *                 summary: Authenticated user does not own the merchant account
+ *                 value:
+ *                   message: You do not have permission to modify this merchant's menu
+ *               mismatched_menu_item:
+ *                 summary: Menu item does not belong to specified merchant
+ *                 value:
+ *                   message: This menu item does not belong to the specified merchant
  *       404:
- *         description: Merchant / Menu Item not found
+ *         description: Merchant or Menu Item not found
  *         content:
  *           application/json:
  *             example:
@@ -498,18 +549,32 @@ export const addMenuItem = async (req, res, next) => {
  * Updates an existing menu item for the specified merchant.
  * Checks that the menu item belongs to the specified merchant.
  * only updates fields that are provided in the request body.
- * TODO (future): make sure only authenticated + correct merchant or admin can update items
  */
 export const updateMenuItem = async (req, res, next) => {
   try {
-    const { merchantId, menuItemId } = req.params;
+    const merchantId = Number(req.params.merchantId);
+    const menuItemId = Number(req.params.menuItemId);
+    const { user_id, role } = req.user;
+    
+    // validate menu item existence
     const menuItem = await getMenuItemByIdOrThrow(menuItemId);
 
-    //checks that the menu item belongs to the specified merchant
-    if (String(menuItem.merchant_id) !== String(merchantId)) {
-      return res.status(403).json({ message: 'This menu item does not belong to the specified merchant' });
+    // Check if not admin, then the userid must match the merchant's userid
+    if (role !== 'admin'){
+      const merchant = await getMerchantByIdOrThrow(merchantId, 'user_id');
+      if (merchant.user_id !== user_id){
+        return res.status(403).json({ message: 'You do not have permission to modify this merchant\'s menu'});
+      }
     }
 
+    //checks that the menu item belongs to the specified merchant
+    if (userRole !== 'admin'){
+      if (String(menuItem.merchant_id) !== String(merchantId)) {
+        return res.status(403).json({ message: 'This menu item does not belong to the specified merchant' });
+      }
+    }
+
+    // update item
     const updatedItem = await updateMenuItemByIdOrThrow(menuItemId, req.body);
     res.json({ menu_item: updatedItem });
   } catch (err) {
