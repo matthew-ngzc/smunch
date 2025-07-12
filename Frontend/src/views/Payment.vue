@@ -45,7 +45,7 @@ const total = computed(() =>
 
 const done = async () => {
   try {
-    await updatePaymentStatus(orderId) // WAIT FOR MATT TO GIVE ME THE ENDPOINT
+    await updatePaymentStatus(orderId) 
     router.push({ name: 'Home' })
   } catch (err) {
     console.error('Failed to update payment status:', err)

@@ -2,3 +2,4 @@ pinia
 bootstrap
 @popperjs/core
 cors 
+firebase

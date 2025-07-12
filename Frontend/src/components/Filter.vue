@@ -54,11 +54,17 @@
           <label>time</label>
           <select  v-model="time">
             <option value="" disabled selected hidden>select</option>
+            <option value="08:15 AM">08:15 AM</option>
             <option value="12:00 PM">12:00 PM</option>
+            <option value="03:30 PM">03:30 PM</option>
+            <option value="07:00 PM">07:00 PM</option>
           </select>
         </div>
       </div>
      
+      <div v-if="showValidationError" class="warning-banner">
+        Please fill in all fields before proceeding.
+      </div>
 
       <!-- next button -->
     <button class="next-btn" @click="goToSummary">next</button>
@@ -71,7 +77,7 @@
 <script setup>
 
 
-import { ref } from 'vue'
+import { ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { createOrder } from '@/services/orderFoodService' 
 import { useDeliveryStore } from '@/stores/delivery'
@@ -79,7 +85,7 @@ import { useCartStore } from '@/stores/cart'
 import { useOrderStore } from '@/stores/order'
 import { useAuthStore } from '@/stores/auth'
 
-
+const showValidationError = ref(false)
 const router = useRouter()
 const deliveryStore = useDeliveryStore()
 const cartStore = useCartStore()
@@ -92,9 +98,20 @@ const facilityType = ref('')
 const date = ref('')
 const time = ref('')
 
-
+watchEffect(() => {
+  if (building.value && floor.value && facilityType.value && date.value && time.value) {
+    showValidationError.value = false
+  }
+})
 
 async function goToSummary() {
+  if (!building.value || !floor.value || !facilityType.value || !date.value || !time.value) {
+    showValidationError.value = true
+    return
+  }
+
+  showValidationError.value = false
+
   const merchantId = orderStore.selectedMerchantId
   const customerId = authStore.userId
 
@@ -135,10 +152,11 @@ async function goToSummary() {
     const response = await createOrder(payload)
     const newOrderId = response.data.order.order_id
     orderStore.setOrderId(newOrderId)
+
+    await router.push('/summary') 
     orderStore.setMerchantId(null)  // Reset merchant ID
+    // console.log(orderStore.selectedMerchantId)
 
-
-    router.push('/summary') 
   } catch (error) {
     console.error('Order submission failed:', error)
     alert('Failed to submit order. Please try again.')
@@ -156,7 +174,7 @@ function convertTo24Hr(timeStr) {
     hours = '00'
   }
 
-  return `${hours}:${minutes}`
+  return `${hours.padStart(2, '0')}:${minutes}`
 }
 
 </script>
@@ -244,6 +262,17 @@ function convertTo24Hr(timeStr) {
 /* hover effect for next button */
 .next-btn:hover {
    background-color: #036232;
+}
+
+.warning-banner {
+  background-color: #ffe6e6;
+  color: #b30000;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-weight: 500;
+  border: 1px solid #ffb3b3;
 }
 
 </style>

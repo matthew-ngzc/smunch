@@ -18,6 +18,12 @@ export default defineComponent({
     const cart = useCartStore()
     const router = useRouter()
     const quantities = ref({})
+    const showEmptyCartWarning = ref(false)
+
+    const hasItemsInCart = computed(() =>
+      cart.items.some(item => item.quantity > 0)
+    )
+
 
 
     const increase = (id) => {
@@ -70,11 +76,15 @@ export default defineComponent({
 
     // button next clicked, go to the next page
     const next = () => {
+      if (!hasItemsInCart.value) {
+        showEmptyCartWarning.value = true
+        return
+      }
       router.push({ name: 'selectLocation' })  
     }
 
     // have to also return data for progress timeline!
-    return { cart, total, next, data, routes, quantities, increase, decrease }
+    return { cart, total, next, data, routes, quantities, increase, decrease, hasItemsInCart, showEmptyCartWarning }
   }
 })
 
@@ -134,6 +144,9 @@ export default defineComponent({
           <h3 class="cost"> ${{ total.toFixed(2) }} </h3>
         </div>
 
+        <div v-if="showEmptyCartWarning" class="warning-banner">
+          Your cart is empty. Please select at least one item before proceeding.
+        </div>
         <div class="wrapper"> 
           <button class="next" @click="next">next</button>
         </div>
@@ -312,6 +325,17 @@ export default defineComponent({
 
 .next-btn:hover {
    background-color: #036232;
+}
+
+.warning-banner {
+  background-color: #ffe6e6;
+  color: #b30000;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-weight: 500;
+  border: 1px solid #ffb3b3;
 }
 
 </style> 

@@ -1,5 +1,5 @@
 <script lang="js">
-import { defineComponent, ref, onMounted } from 'vue'
+import { defineComponent, ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getMenuById, getMerchantInfoById } from '@/services/orderFoodService' 
 import { useCartStore } from '@/stores/cart'
@@ -15,14 +15,31 @@ export default defineComponent({
     const merchantInfo = ref({})
     const merchantMenu = ref([])
     const quantities = ref({})
+    const showEmptyCartWarning = ref(false)
+
+    watch(quantities, (newQuantities) => {
+      const hasItems = Object.values(newQuantities).some(qty => qty > 0)
+      if (hasItems) showEmptyCartWarning.value = false
+    }, { deep: true })
 
     const increase = (id) => {
       quantities.value[id] = (quantities.value[id] || 0) + 1
+      if (showEmptyCartWarning.value) {
+        const hasItems = Object.values(quantities.value).some(qty => qty > 0)
+        if (hasItems) showEmptyCartWarning.value = false
+      }
     }
 
     const decrease = (id) => {
-      if (quantities.value[id] > 0) quantities.value[id]--
+      if (quantities.value[id] > 0) {
+        quantities.value[id]--
+        if (showEmptyCartWarning.value) {
+          const hasItems = Object.values(quantities.value).some(qty => qty > 0)
+          if (hasItems) showEmptyCartWarning.value = false
+        }
+      }
     }
+
 
     // this function is triggered when user presses the "checkout" button
     const checkout = () => {
@@ -38,8 +55,14 @@ export default defineComponent({
           merchant_name: merchantInfo.value.name
         }))
 
+        // TO CREATE A NICE UI
+        if (selectedItems.length === 0) {
+          // alert('Your cart is empty. Please select at least one item before checking out.')
+          showEmptyCartWarning.value = true
+          return
+        }
       cart.setCart(selectedItems)
-      router.push({ name: 'cartPage' })  // Make sure cartPage is a valid route
+      router.push({ name: 'cartPage' })  
     }
 
     onMounted(async () => {
@@ -66,7 +89,8 @@ export default defineComponent({
       quantities,
       increase,
       decrease,
-      checkout
+      checkout,
+      showEmptyCartWarning   
     }
   }
 })
@@ -102,6 +126,10 @@ export default defineComponent({
         </div>
       </div>
       <div class="menu-price">${{ (item.price_cents / 100).toFixed(2) }}</div>
+    </div>
+
+    <div v-if="showEmptyCartWarning" class="warning-banner">
+      Your cart is empty. Please select at least one item before checking out.
     </div>
 
     <button class="checkout-btn" @click="checkout">checkout</button>
@@ -237,4 +265,16 @@ export default defineComponent({
   cursor: pointer;
   font-weight: bold;
 }
+
+.warning-banner {
+  background-color: #ffe6e6;
+  color: #b30000;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-weight: 500;
+  border: 1px solid #ffb3b3;
+}
+
 </style>

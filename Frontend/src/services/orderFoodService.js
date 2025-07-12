@@ -54,8 +54,8 @@ export async function getPaymentQRCode(id) {
  * (PUT) Update payment status
  */
 export async function updatePaymentStatus(orderId) {
-  return axiosInstance.put(`/api/orders/${orderId}/payment-status`, { // WAIT FOR MATT TO GIVE ME THE ENDPOINT
-    status: 'awaitingConfirmation',
+  return axiosInstance.put(`/api/orders/${orderId}/payment-status`, { 
+    status: 'awaiting_verification'
   })
 }
 
