@@ -119,3 +119,18 @@ export async function updateLastLoginOrThrow(userId) {
 export async function verifyPassword(plainText, hashedPassword) {
   return await bcrypt.compare(plainText, hashedPassword);
 }
+
+/**
+ * Updates the user's profile_picture field in Supabase.
+ * @param {number} userId - The user's ID
+ * @param {string} imageUrl - The public URL of the profile picture
+ * @returns {Promise<void>}
+ * @throws {Error} - If update fails
+ */
+export async function updateUserProfilePicture(userId, imageUrl) {
+  const { error } = await supabase
+    .from('users')
+    .update({ profile_picture: imageUrl })
+    .eq('user_id', userId);
+  if (error) throw error;
+}

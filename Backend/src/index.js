@@ -7,7 +7,8 @@ import orderRoutes from "./routes/order.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import errorHandler from "./middlewares/error.middleware.js";
 import { swaggerSpec, swaggerUi } from './config/swagger.config.js';
-import cors from 'cors'
+import cors from 'cors';
+import path from 'path';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/merchants", merchantRoutes);
 app.use("/api/admin", adminRoutes);
+app.use('/uploads/profile-pictures', express.static(path.resolve('Backend/uploads/profile-pictures')));
 
 app.use(errorHandler);
 

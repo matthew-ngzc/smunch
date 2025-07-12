@@ -4,7 +4,7 @@
       <h2>My Profile</h2>
       <div class="profile-picture-section">
         <img :src="profilePicturePreview || defaultProfilePicture" class="profile-picture" alt="Profile Picture" />
-        <input type="file" accept="image/*" @change="onProfilePictureChange" />
+        <input type="file" accept="image/*" @change="onProfilePictureChange" ref="fileInput" />
       </div>
       <form @submit.prevent="handleProfileSave" class="profile-form">
         <div class="input-group">
@@ -30,6 +30,11 @@
 </template>
 
 <script>
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/firebase/firebaseConfig';
+import axiosInstance from '@/utility/axiosInstance';
+import { useAuthStore } from '@/stores/auth';
+
 export default {
   data() {
     return {
@@ -52,9 +57,25 @@ export default {
         reader.readAsDataURL(file);
       }
     },
-    handleProfileSave() {
-      // Add validation and API calls here
-      alert('Profile changes saved! (Implement API integration)');
+    async handleProfileSave() {
+      try {
+        let imageUrl = this.profilePicturePreview;
+        if (this.$refs.fileInput && this.$refs.fileInput.files.length > 0) {
+          const file = this.$refs.fileInput.files[0];
+          const filePath = `profile-pictures/${Date.now()}_${file.name}`;
+          const fileRef = storageRef(storage, filePath);
+          await uploadBytes(fileRef, file);
+          imageUrl = await getDownloadURL(fileRef);
+        }
+
+        await axiosInstance.post('/api/user/profile-picture-url', { imageUrl });
+        useAuthStore().setProfilePicture(imageUrl);
+        this.profilePicturePreview = imageUrl;
+        alert('Profile picture updated!');
+      } catch (error) {
+        alert('Failed to upload profile picture.');
+        console.error(error);
+      }
     }
   }
 }
