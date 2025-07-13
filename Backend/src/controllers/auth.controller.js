@@ -11,6 +11,7 @@ import {
 } from '../models/user.model.js';
 import { getMerchantByEmailOrThrow, updateMerchantByIdOrThrow } from '../models/merchant.model.js';
 import { supabase } from '../lib/supabaseClient.js';
+import { verifyTurnstileToken } from '../utils/turnstile.js';
 
 
 
@@ -82,32 +83,32 @@ import { supabase } from '../lib/supabaseClient.js';
  * Starts the signup process by verifying the email is allowed and not taken,
  * and then sends a verification email containing a JWT token.
  * Account is only created after verification.
- * TODO: password strength validation
- * TODO: email format validation
- * TODO: phone number format validation
+ * TODO: password strength validation  //Regan: Done in FE to some extent
+ * TODO: email format validation  //Regan: Done in FE to some extent
+ * TODO: phone number format validation  //Regan : Done in FE to some extent
  * DONE: rate limit signup attempts
  * TODO: add reCAPTCHA to prevent spam
  * TODO: prevent sql injection in email/password
  */
 export const signup = async (req, res, next) => {
   try {
-    const { email, name, phoneNo, password } = req.body;
+    // const { email, name, phoneNo, password } = req.body;
     // TODO: if using captcha replace above line with this
-    //const { email, name, phoneNo, password, captcha_token } = req.body;
-    //check if all fields are provided
-    // if (!email || !name || !phoneNo || !password) {
-    //   return res.status(400).json({ message: 'All fields are required' });
-    // }
+    const { email, name, phoneNo, password, captcha_token } = req.body;
+    // check if all fields are provided
+    if (!email || !name || !phoneNo || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
 
-    // if (!captcha_token) {
-    //   return res.status(400).json({ message: 'Missing CAPTCHA token' });
-    // }
+    if (!captcha_token) {
+      return res.status(400).json({ message: 'Missing CAPTCHA token' });
+    }
 
-    //const userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
-    // const isValidCaptcha = await verifyTurnstileToken(captcha_token, userIp);
-    // if (!isValidCaptcha) {
-    //   return res.status(400).json({ message: 'CAPTCHA verification failed' });
-    // }
+    const userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
+    const isValidCaptcha = await verifyTurnstileToken(captcha_token, userIp);
+    if (!isValidCaptcha) {
+      return res.status(400).json({ message: 'CAPTCHA verification failed' });
+    }
 
     //only allow SMU emails
     if (!email.endsWith('smu.edu.sg')) {

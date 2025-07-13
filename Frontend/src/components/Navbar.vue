@@ -36,10 +36,10 @@ onBeforeUnmount(() => {
 })
 
 const logout = () => {
-  console.log('Logging out...')
-  auth.logout()           
-  closeMenu() // close the dropdown
-  router.push('/')    
+  auth.logout();
+  sessionStorage.setItem('justLoggedOut', 'true');
+  closeMenu();
+  router.push({ path: '/', query: { logout: Date.now() } }); // Always triggers route change
 }
 
 

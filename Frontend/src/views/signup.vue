@@ -4,45 +4,42 @@
     <div v-if="showSuccessNotification" class="success-notification">
       <div class="notification-content">
         <svg class="success-icon" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          <path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clip-rule="evenodd"
+          />
         </svg>
         <div class="notification-text">
           <h4>Account Created Successfully!</h4>
-          <p>Please check your email and verify your account before logging in.</p>
+          <p>Please check your email and verify your account before logging in. The email verificationlink will expire in 1 hour.</p>
         </div>
         <button @click="hideNotification" class="close-btn">
           <svg fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            <path
+              fill-rule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
           </svg>
         </button>
       </div>
     </div>
-    
-    <!-- Left: White -->
+
     <div class="signup-left">
       <div class="left-content">
         <h2 class="welcome">Sign up now!</h2>
         <p class="tagline">
-          <!-- Lazy to walk to your favourite store?<br />
-          — Don't worry, we gotchu.<br /><br />
-          Skip the walk and ditch the queue.<br />
-          We'll bring your meal right to you.<br />
-          Here at SMUNCH, that's what we do.<br /><br /> -->
           Too lazy to walk? Your cravings can wait —<br />
           We’ll fetch your meal, you just hydrate.<br /><br />
-
           Skip the queue, avoid the heat,<br />
           Get your favourite bites without leaving your seat.<br /><br />
-
-          No fuss, no rush, no lunchtime race —
-          SMUNCH brings your food, straight to your place.
-
+          No fuss, no rush, no lunchtime race — SMUNCH brings your food, straight to your place.
           <span class="tagline-continued">By students, for students.</span>
         </p>
       </div>
     </div>
 
-    <!-- Right: Green -->
     <div class="signup-right">
       <div class="right-content">
         <h1 class="logo">SMUNCH</h1>
@@ -51,88 +48,59 @@
         <form @submit.prevent="handleSignup" class="form-fields">
           <div class="input-group">
             <label for="email">Email</label>
-            <input
-              id="email"
-              v-model="email"
-              type="text"
-              :class="{ 'input-error': emailError }"
-              placeholder="Enter your SMU email"
-              required
-            />
+            <input id="email" v-model="email" type="text" :class="{ 'input-error': emailError }" placeholder="Enter your SMU email" required />
             <span :class="['error-msg', { show: emailError }]">{{ emailError }}</span>
           </div>
 
           <div class="input-group">
             <label for="name">Name</label>
-            <input 
-              id="name" 
-              v-model="name" 
-              type="text" 
-              :class="{ 'input-error': nameError }"
-              placeholder="Enter your name" 
-              required 
-            />
+            <input id="name" v-model="name" type="text" :class="{ 'input-error': nameError }" placeholder="Enter your name" required />
             <span :class="['error-msg', { show: nameError }]">{{ nameError }}</span>
           </div>
 
           <div class="input-group">
             <label for="phone">Phone Number</label>
-            <input 
-              id="phone" 
-              v-model="phoneNo" 
-              type="text" 
-              :class="{ 'input-error': phoneError }"
-              placeholder="Enter your phone number" 
-              required 
-            />
+            <input id="phone" v-model="phoneNo" type="text" :class="{ 'input-error': phoneError }" placeholder="Enter your phone number" required />
             <span :class="['error-msg', { show: phoneError }]">{{ phoneError }}</span>
           </div>
 
           <div class="input-group">
             <label for="password">Password</label>
             <div class="password-input-container">
-              <input
-                id="password"
-                v-model="password"
-                :type="showPassword ? 'text' : 'password'"
-                :class="{ 'input-error': passwordError }"
-                placeholder="Enter your password"
-                required
-              />
-              <button 
-                type="button" 
-                class="password-toggle"
-                @click="togglePassword"
-                :title="showPassword ? 'Hide password' : 'Show password'"
-              >
+              <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" :class="{ 'input-error': passwordError }" placeholder="Enter your password" required />
+              <button type="button" class="password-toggle" @click="togglePassword" :title="showPassword ? 'Hide password' : 'Show password'">
                 <svg v-if="showPassword" class="eye-icon" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
                 </svg>
                 <svg v-else class="eye-icon" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd"/>
-                  <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z"/>
+                  <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
+                  <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
                 </svg>
               </button>
             </div>
             <span :class="['error-msg', { show: passwordError }]">{{ passwordError }}</span>
           </div>
-          
+
+          <!-- CAPTCHA Section -->
+          <div class="input-group">
+            <label>Verification</label>
+            <div class="cf-turnstile"></div>
+          </div>
+
           <button type="submit" class="signup-btn">
             <span>Sign Up</span>
           </button>
         </form>
 
-        <p class="login-prompt">
-          Have an account? <router-link to="/login">Log in</router-link>
-        </p>
+        <p class="login-prompt">Have an account? <router-link to="/login">Log in</router-link></p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import axiosInstance from '@/utility/axiosInstance'
+import axiosInstance from '@/utility/axiosInstance';
 
 export default {
   data() {
@@ -146,177 +114,101 @@ export default {
       phoneError: '',
       passwordError: '',
       showPassword: false,
-      showSuccessNotification: false
+      showSuccessNotification: false,
+      captchaToken: ''
     };
+  },
+  mounted() {
+    window.onCaptchaSuccess = this.onCaptchaSuccess;
+
+    this.$nextTick(() => {
+      if (window.turnstile && document.querySelector('.cf-turnstile')) {
+        window.turnstile.render(document.querySelector('.cf-turnstile'), {
+          sitekey: '0x4AAAAAABkzbPipeBNppqdL', // Replace with your actual site key
+          callback: this.onCaptchaSuccess
+        });
+      }
+    });
   },
   methods: {
     validateEmail() {
-      if (!this.email.trim()) {
-        this.emailError = 'Email is required.';
-        return false;
-      }
-      if (!this.email.includes('@smu.edu.sg')) {
-        this.emailError = 'Please enter a valid SMU email address.';
-        return false;
-      }
-      const emailRegex = /^[^\s@]+@smu\.edu\.sg$/;
-      if (!emailRegex.test(this.email)) {
-        this.emailError = 'Please enter a valid SMU email format.';
-        return false;
-      }
+      const trimmed = this.email.trim();
+      if (!trimmed) return (this.emailError = 'Email is required.'), false;
+      if (!trimmed.endsWith('@smu.edu.sg')) return (this.emailError = 'Use your SMU email.'), false;
+      const regex = /^[^\s@]+@smu\.edu\.sg$/;
+      if (!regex.test(trimmed)) return (this.emailError = 'Invalid SMU email format.'), false;
       this.emailError = '';
       return true;
     },
-
     validateName() {
-      if (!this.name.trim()) {
-        this.nameError = 'Name is required.';
-        return false;
-      }
-      if (this.name.trim().length < 2) {
-        this.nameError = 'Name must be at least 2 characters long.';
-        return false;
-      }
-      if (this.name.trim().length > 50) {
-        this.nameError = 'Name must be less than 50 characters.';
-        return false;
-      }
-      const nameRegex = /^[a-zA-Z\s'-]+$/;
-      if (!nameRegex.test(this.name.trim())) {
-        this.nameError = 'Name can only contain letters, spaces, hyphens, and apostrophes.';
-        return false;
-      }
+      const trimmed = this.name.trim();
+      if (!trimmed) return (this.nameError = 'Name is required.'), false;
+      if (trimmed.length < 2) return (this.nameError = 'Name too short.'), false;
+      if (trimmed.length > 50) return (this.nameError = 'Name too long.'), false;
+      const regex = /^[a-zA-Z\s'-]+$/;
+      if (!regex.test(trimmed)) return (this.nameError = 'Invalid characters.'), false;
       this.nameError = '';
       return true;
     },
-
     validatePhone() {
-      if (!this.phoneNo.trim()) {
-        this.phoneError = 'Phone number is required.';
-        return false;
-      }
-      // Remove spaces and dashes for validation
-      const cleanPhone = this.phoneNo.replace(/[\s-]/g, '');
-      
-      // Singapore phone number validation (8 digits starting with 6, 8, or 9)
-      const sgPhoneRegex = /^[689]\d{7}$/;
-      if (!sgPhoneRegex.test(cleanPhone)) {
-        this.phoneError = 'Please enter a valid Singapore phone number (8 digits starting with 6, 8, or 9).';
-        return false;
-      }
+      const clean = this.phoneNo.replace(/[\s-]/g, '');
+      if (!clean) return (this.phoneError = 'Phone is required.'), false;
+      if (!/^[689]\d{7}$/.test(clean)) return (this.phoneError = 'Invalid SG phone.'), false;
       this.phoneError = '';
       return true;
     },
-
     validatePassword() {
-      if (!this.password) {
-        this.passwordError = 'Password is required.';
-        return false;
-      }
-      if (this.password.length < 8) {
-        this.passwordError = 'Password must be at least 8 characters long.';
-        return false;
-      }
-      if (this.password.length > 128) {
-        this.passwordError = 'Password must be less than 128 characters.';
-        return false;
-      }
-      if (!/(?=.*[a-z])/.test(this.password)) {
-        this.passwordError = 'Password must contain at least one lowercase letter.';
-        return false;
-      }
-      if (!/(?=.*[A-Z])/.test(this.password)) {
-        this.passwordError = 'Password must contain at least one uppercase letter.';
-        return false;
-      }
-      if (!/(?=.*\d)/.test(this.password)) {
-        this.passwordError = 'Password must contain at least one number.';
-        return false;
-      }
-      if (!/(?=.*[!@#$%^&*(),.?":{}|<>])/.test(this.password)) {
-        this.passwordError = 'Password must contain at least one special character.';
-        return false;
-      }
+      const p = this.password;
+      if (!p) return (this.passwordError = 'Password required.'), false;
+      if (p.length < 8 || p.length > 128) return (this.passwordError = 'Length issue.'), false;
+      if (!/[a-z]/.test(p)) return (this.passwordError = 'Add lowercase.'), false;
+      if (!/[A-Z]/.test(p)) return (this.passwordError = 'Add uppercase.'), false;
+      if (!/\d/.test(p)) return (this.passwordError = 'Add number.'), false;
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(p)) return (this.passwordError = 'Add symbol.'), false;
       this.passwordError = '';
       return true;
     },
-
     togglePassword() {
       this.showPassword = !this.showPassword;
     },
-
+    onCaptchaSuccess(token) {
+      this.captchaToken = token;
+    },
     showNotification() {
       this.showSuccessNotification = true;
-      // Auto-hide after 5 seconds
-      setTimeout(() => {
-        this.hideNotification();
-      }, 5000);
+      setTimeout(this.hideNotification, 5000);
     },
-
     hideNotification() {
       this.showSuccessNotification = false;
     },
-
     async handleSignup() {
-      // Clear all previous errors
-      this.emailError = '';
-      this.nameError = '';
-      this.phoneError = '';
-      this.passwordError = '';
+      if (![this.validateEmail(), this.validateName(), this.validatePhone(), this.validatePassword()].every(Boolean)) return;
 
-      // Validate all fields
-      const isEmailValid = this.validateEmail();
-      const isNameValid = this.validateName();
-      const isPhoneValid = this.validatePhone();
-      const isPasswordValid = this.validatePassword();
-
-      // If any validation fails, stop here
-      if (!isEmailValid || !isNameValid || !isPhoneValid || !isPasswordValid) {
-        return;
-      }
+      const token = this.captchaToken;
 
       try {
-        const response = await axiosInstance.post('/api/auth/signup', {
+        await axiosInstance.post('/api/auth/signup', {
           email: this.email.trim(),
           name: this.name.trim(),
-          phoneNo: this.phoneNo.replace(/[\s-]/g, ''), // Clean phone number
-          password: this.password
-        })
-
-        console.log('Sign up successful!');
+          phoneNo: this.phoneNo.replace(/[\s-]/g, ''),
+          password: this.password,
+          captcha_token: token
+        });
         this.showNotification();
-        // Navigate to login after a short delay to show the notification
-        setTimeout(() => {
-          this.$router.push('/login');
-        }, 2000);
-
+        setTimeout(() => this.$router.push('/login'), 5000);
       } catch (error) {
-        console.error('Signup failed:', error)
-        
-        // Handle specific server errors
-        if (error.response && error.response.data && error.response.data.message) {
-          const errorMessage = error.response.data.message;
-          
-          // Map server errors to specific fields
-          if (errorMessage.toLowerCase().includes('email')) {
-            this.emailError = errorMessage;
-          } else if (errorMessage.toLowerCase().includes('phone')) {
-            this.phoneError = errorMessage;
-          } else if (errorMessage.toLowerCase().includes('password')) {
-            this.passwordError = errorMessage;
-          } else if (errorMessage.toLowerCase().includes('name')) {
-            this.nameError = errorMessage;
-          } else {
-            alert(errorMessage);
-          }
-        } else {
-          alert('Signup failed. Please check your input or try again later.')
-        }
+        const msg = error.response?.data?.message || 'Signup failed.';
+        if (msg.toLowerCase().includes('email')) this.emailError = msg;
+        else if (msg.toLowerCase().includes('phone')) this.phoneError = msg;
+        else if (msg.toLowerCase().includes('password')) this.passwordError = msg;
+        else if (msg.toLowerCase().includes('name')) this.nameError = msg;
+        else alert(msg);
       }
     }
   }
 };
 </script>
+
 
 <style scoped>
 * {
@@ -717,28 +609,29 @@ export default {
   .signup-container {
     flex-direction: column;
   }
-  
-  .signup-left, .signup-right {
+
+  .signup-left,
+  .signup-right {
     flex: none;
     height: 50%;
   }
-  
+
   .welcome {
     font-size: 2rem;
   }
-  
+
   .tagline {
     font-size: 1rem;
   }
-  
+
   .logo {
     font-size: 2rem;
   }
-  
+
   .right-content {
     padding: 1.5rem;
   }
-  
+
   .left-content {
     padding: 1.5rem;
   }
@@ -748,24 +641,24 @@ export default {
   .welcome {
     font-size: 1.8rem;
   }
-  
+
   .tagline {
     font-size: 0.9rem;
   }
-  
+
   .logo {
     font-size: 1.8rem;
   }
-  
+
   .subheading {
     font-size: 1rem;
   }
-  
+
   .form-fields input {
     padding: 0.7rem 0.8rem;
     font-size: 0.85rem;
   }
-  
+
   .signup-btn {
     padding: 0.7rem 1.2rem;
     font-size: 0.9rem;

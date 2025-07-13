@@ -79,6 +79,16 @@
             <span>Email verified successfully! You can now log in.</span>
           </div>
         </div>
+
+        <!-- Logout Success Message -->
+        <div v-if="showLogoutSuccess" class="verification-success">
+          <div class="verification-content">
+            <svg class="verification-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <span>Logged out successfully!</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -96,11 +106,13 @@ export default {
       emailError: '',
       passwordError: '',
       showPassword: false,
-      showVerificationSuccess: false
+      showVerificationSuccess: false,
+      showLogoutSuccess: false
     };
   },
   mounted() {
     this.checkForVerificationSuccess();
+    this.checkForLogoutSuccess();
   },
   methods: {
     validateEmail() {
@@ -150,11 +162,20 @@ export default {
       }
     },
 
+    checkForLogoutSuccess() {
+      if (sessionStorage.getItem('justLoggedOut') === 'true') {
+        this.showLogoutSuccess = true;
+        sessionStorage.removeItem('justLoggedOut');
+        setTimeout(() => {
+          this.showLogoutSuccess = false;
+        }, 3500);
+      }
+    },
+
     handleLoginError(errorMessage, statusCode) {
-      // Enhanced error handling based on server response and client-side validation
+
       if (errorMessage === 'Invalid email or password') {
-        // Since server returns same message for both cases, we'll provide helpful feedback
-        // by checking if the user input meets basic requirements
+
         
         const emailValid = this.email.trim() && this.email.includes('@smu.edu.sg');
         const passwordValid = this.password && this.password.length >= 8;
@@ -164,8 +185,7 @@ export default {
         } else if (!passwordValid) {
           this.passwordError = 'Please check your password.';
         } else {
-          // Both fields look valid format-wise, so it's likely a credential issue
-          // We'll show error on password field as it's more common
+  
           this.passwordError = 'Incorrect password. Please try again.';
         }
       } else if (errorMessage === 'Email and password are required') {

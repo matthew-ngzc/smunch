@@ -1,5 +1,14 @@
 <template>
   <div>
+    <!-- Logout Success Message -->
+    <div v-if="showLogoutSuccess" class="logout-success-banner">
+      <div class="logout-success-content">
+        <svg class="logout-success-icon" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <span>You have successfully logged out.</span>
+      </div>
+    </div>
     <section class="hero-image-row">
       <div class="hero-image-left">
         <img class="full-img" :src="dinoSmunchIcon" alt="dinoSmunch" />
@@ -24,21 +33,21 @@
         </div>
         <div class="row text-center justify-content-center">
           <div class="col-md-4 benefit">
-            <img src="/public/dinoTime.png" alt="Save Time" class="benefit-icon" />
+            <img src="/dinoTime.png" alt="Save Time" class="benefit-icon" />
             <h5 class="benefit-title">Save Time</h5>
             <p class="benefit-text">
               No need to leave class or study spots. Get food delivered during short breaks.
             </p>
           </div>
           <div class="col-md-4 benefit">
-            <img src="/public/richDino.png" alt="Earn Money" class="benefit-icon" />
+            <img src="/richDino.png" alt="Earn Money" class="benefit-icon" />
             <h5 class="benefit-title">Earn Money</h5>
             <p class="benefit-text">
               Turn free time between classes into an earning opportunity by delivering food.
             </p>
           </div>
           <div class="col-md-4 benefit">
-            <img src="/public/dinoandfriends.png" alt="Connect with Peers" class="benefit-icon" />
+            <img src="/dinoandfriends.png" alt="Connect with Peers" class="benefit-icon" />
             <h5 class="benefit-title">Connect with Peers</h5>
             <p class="benefit-text">
               Build community by helping fellow students and making new connections.
@@ -97,32 +106,55 @@
 </template>
 
 <script lang="js">
-import { defineComponent } from 'vue'
-import { useRouter } from 'vue-router'
+import { defineComponent, ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import Testimonials from '@/components/Testimonials.vue'
-import dinoSmunchIcon from '/public/dinoSMUNCHING.png'
+import dinoSmunchIcon from '/dinoSMUNCHING.png'
 
 export default defineComponent({
   name: 'LandingPage',
   components: { Testimonials },
   setup() {
     const router = useRouter()
+    const route = useRoute()
     const authStore = useAuthStore()
+    const showLogoutSuccess = ref(false)
 
-    const handleHomeClick = () => {
-      if (authStore.isAuthenticated()) {
-        router.push('/home')
-      } else {
-        router.push('/signup')
+    function triggerLogoutMessage() {
+      showLogoutSuccess.value = true
+      setTimeout(() => {
+        showLogoutSuccess.value = false
+      }, 3500)
+    }
+
+    function checkLogoutFlag() {
+      if (sessionStorage.getItem('justLoggedOut') === 'true') {
+        sessionStorage.removeItem('justLoggedOut')
+        triggerLogoutMessage()
       }
     }
 
+    onMounted(() => {
+      checkLogoutFlag()
+    })
+
+    watch(() => route.fullPath, () => {
+      checkLogoutFlag()
+    })
+
     return { 
       dinoSmunchIcon,
-      handleHomeClick
+      showLogoutSuccess,
+      handleHomeClick: () => {
+        if (authStore.isAuthenticated()) {
+          router.push('/home')
+        } else {
+          router.push('/signup')
+        }
+      }
     }
-  },
+  }
 })
 </script>
 
@@ -302,4 +334,34 @@ export default defineComponent({
   font-size: 0.65rem;
 }
 
+.logout-success-banner {
+  position: fixed;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+  pointer-events: none;
+}
+.logout-success-content {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 18px 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 auto;
+  pointer-events: all;
+}
+.logout-success-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
 </style>
