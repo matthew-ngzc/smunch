@@ -11,19 +11,43 @@
           <li>Email: <a href="mailto:smunch.dev@gmail.com">smunch.dev@gmail.com</a></li>
           <li>Location: SMU Campus</li>
         </ul>
-        <form class="contact-form" @submit.prevent>
-          <input type="text" placeholder="Your Name" required />
-          <input type="email" placeholder="Your Email" required />
-          <textarea placeholder="Your Message" required></textarea>
-          <button type="submit">Send Message</button>
+        <form class="contact-form" @submit.prevent="handleSubmit">
+          <input type="text" placeholder="Your Name" v-model="name" required />
+          <input type="email" placeholder="Your Email" v-model="email" required />
+          <textarea placeholder="Your Message" v-model="message" required></textarea>
+          <button type="submit" :disabled="loading">{{ loading ? 'Sending...' : 'Send Message' }}</button>
         </form>
+        <div v-if="status" class="form-status">{{ status }}</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-// No special logic needed
+import { ref } from 'vue'
+import { sendContactForm } from '@/services/contactService'
+
+const name = ref('')
+const email = ref('')
+const message = ref('')
+const status = ref('')
+const loading = ref(false)
+
+async function handleSubmit() {
+  status.value = ''
+  loading.value = true
+  try {
+    await sendContactForm({ name: name.value, email: email.value, message: message.value })
+    status.value = 'Your message has been sent! We will get back to you soon.'
+    name.value = ''
+    email.value = ''
+    message.value = ''
+  } catch (err) {
+    status.value = err?.response?.data?.message || 'Failed to send message. Please try again later.'
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -145,5 +169,12 @@
 }
 .contact-form button:hover {
   background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+}
+.form-status {
+  margin-top: 1.2rem;
+  font-size: 1.08rem;
+  color: #059669;
+  font-weight: 600;
+  text-align: center;
 }
 </style> 
