@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import VueWheelSpinner from 'vue-wheel-spinner'
 import { fetchAllMerchants } from '@/services/orderFoodService'
+import { useRoute } from 'vue-router'
 
 // ----- WHEEL STATE -----
 const showWheel      = ref(false)
@@ -11,6 +12,7 @@ const spinnerRef     = ref(null)
 const defaultWinner  = ref(0)
 const winnerResult   = ref(null)
 const spinning       = ref(false)
+const route = useRoute()
 
 // Wheel cursor options (you already had these)
 const cursorAngle    = 0
@@ -23,8 +25,30 @@ const pokerShuffled    = ref([])
 const shuffling        = ref(false)
 const pokerResult      = ref(null)
 
+// ----- GUESS THE EMOJIS STATE & DATA -----
+const showEmojis = ref(false)
+const emojiGame = ref({}) // { merchant, emoji, answer, slots, tiles }
+const emojiMappings = [
+  { merchant: 'Koufu',      emoji: '👄🫃' },
+  { merchant: 'Luckin',    emoji: '🇨🇳🦌🤳' },
+  { merchant: 'Supergreen',emoji: '🦸‍♂️🟢🍴' },
+  { merchant: 'WokHey',    emoji: '👨‍🍳🍳👋' },
+  { merchant: 'Braek',     emoji: '🧠😮‍💨🛌😋' },
+]
+const emojiSlots = ref([]) // [{letter, filledLetter}]
+const emojiTiles = ref([]) // [{letter, used}]
+const emojiGuess = ref([]) // user's current guess (array of letters)
+const emojiError = ref('')
+const emojiWin = ref(false)
+const confettiActive = ref(false)
+
 // ----- FETCH MERCHANTS ON MOUNT -----
 onMounted(async () => {
+
+  showWheel.value = false
+  showPoker.value = false
+  showEmojis.value = false
+
   try {
     const res = await fetchAllMerchants()
     const merchants = res.data
@@ -55,6 +79,17 @@ onMounted(async () => {
     ]
     pokerOptions.value = ['Supergreen','Koufu','Braek']
     pokerShuffled.value = pokerOptions.value.map(name => ({ name, image:'', highlight:false }))
+  }
+})
+
+watch(() => route.path, (newPath) => {
+  if (newPath === '/game') {
+    showWheel.value = false
+    showPoker.value = false
+    showEmojis.value = false
+    winnerResult.value = null
+    pokerResult.value = null
+    confettiActive.value = false
   }
 })
 
@@ -107,6 +142,105 @@ function shufflePoker() {
   }, 125)
 }
 
+// ----- GUESS THE EMOJIS FUNCTIONS -----
+function openEmojis() {
+  // Pick a random merchant
+  const pick = emojiMappings[Math.floor(Math.random()*emojiMappings.length)]
+  const answer = pick.merchant.toUpperCase().split('')
+  // Shuffle answer letters
+  const shuffled = [...answer]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  // Add extra random letters (distractors)
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+  const distractors = []
+  while (distractors.length < Math.max(3, Math.ceil(answer.length/2))) {
+    const rand = alphabet[Math.floor(Math.random()*alphabet.length)]
+    if (!answer.includes(rand) && !distractors.includes(rand)) {
+      distractors.push(rand)
+    }
+  }
+  let allTiles = [...shuffled, ...distractors]
+  // Shuffle all tiles
+  for (let i = allTiles.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[allTiles[i], allTiles[j]] = [allTiles[j], allTiles[i]]
+  }
+  emojiGame.value = { ...pick, answer }
+  emojiSlots.value = answer.map(() => null)
+  emojiTiles.value = allTiles.map(l => ({ letter: l, used: false }))
+  emojiGuess.value = Array(answer.length).fill('')
+  emojiError.value = ''
+  emojiWin.value = false
+  confettiActive.value = false
+  showEmojis.value = true
+  showWheel.value = false
+  showPoker.value = false
+}
+function closeEmojis() {
+  showEmojis.value = false
+  emojiError.value = ''
+  emojiWin.value = false
+  confettiActive.value = false
+}
+
+// Drag and drop logic
+function onDragStartTile(idx) {
+  if (emojiTiles.value[idx].used) return
+  event.dataTransfer.setData('text/plain', idx)
+}
+function onDropSlot(slotIdx) {
+  event.preventDefault()
+  const tileIdx = event.dataTransfer.getData('text/plain')
+  if (tileIdx === null) return
+  const tile = emojiTiles.value[tileIdx]
+  if (!tile || tile.used) return
+  // Place letter in slot
+  if (emojiSlots.value[slotIdx]) return // already filled
+  emojiSlots.value[slotIdx] = tile.letter
+  emojiTiles.value[tileIdx].used = true
+  emojiGuess.value[slotIdx] = tile.letter
+  emojiError.value = ''
+  // Check if all slots filled
+  if (emojiGuess.value.every(l => l)) {
+    checkEmojiAnswer()
+  }
+}
+function allowDropSlot() {
+  event.preventDefault()
+}
+function removeLetterFromSlot(slotIdx) {
+  const letter = emojiSlots.value[slotIdx]
+  if (!letter) return
+  // Find the tile and mark as unused
+  const tileIdx = emojiTiles.value.findIndex(t => t.letter === letter && t.used)
+  if (tileIdx !== -1) emojiTiles.value[tileIdx].used = false
+  emojiSlots.value[slotIdx] = null
+  emojiGuess.value[slotIdx] = ''
+  emojiError.value = ''
+}
+function checkEmojiAnswer() {
+  const guess = emojiGuess.value.join('')
+  const answer = emojiGame.value.answer.join('')
+  if (guess === answer) {
+    emojiWin.value = true
+    emojiError.value = ''
+    confettiActive.value = true
+    setTimeout(() => { confettiActive.value = false }, 2500)
+  } else {
+    emojiError.value = 'Wrong! Try again.'
+    // Optionally: clear all slots and tiles
+    setTimeout(() => {
+      emojiSlots.value = emojiGame.value.answer.map(() => null)
+      emojiTiles.value.forEach(t => t.used = false)
+      emojiGuess.value = Array(emojiGame.value.answer.length).fill('')
+      emojiError.value = ''
+    }, 1200)
+  }
+}
+
 // ----- PANEL OPEN/CLOSE -----
 function openPoker() {
   showPoker.value  = true
@@ -125,10 +259,10 @@ function closeGame() {
 <template>
   <div class="game no-scroll">
     <div class="game-page">
-      <h1 class="game-title">Game Zone</h1>
+      <h1 class="game-title">Welcome to Smunch Game Zone</h1>
 
       <!-- CHOICE SCREEN -->
-      <div v-if="!showWheel && !showPoker" class="game-options">
+      <div v-if="!showWheel && !showPoker && !showEmojis" class="game-options">
         <div class="game-card wheel-game" @click="showWheel = true">
           <img src="/dinoSpinTheWheel.png" class="game-icon" alt="Spin the Wheel" />
           <p>Spin the Wheel</p>
@@ -137,7 +271,7 @@ function closeGame() {
           <img src="/dinoPokerCards.png" class="game-icon" alt="Poker Game" />
           <p>Poker Roulette</p>
         </div>
-        <div class="game-card disabled">
+        <div class="game-card emoji-game" @click="openEmojis">
           <img src="/dinoGuessEmojis.png" class="game-icon" alt="Emoji Guessing Game" />
           <p>Guess the Emojis</p>
         </div>
@@ -160,7 +294,7 @@ function closeGame() {
           @spin-end="onSpinEnd"
         >
           <template #cursor>
-            <div class="wheel-pointer-big">▲</div>
+            <div class="wheel-pointer-big">⭐️</div>
           </template>
           <template #default>
             <button
@@ -179,7 +313,7 @@ function closeGame() {
       <!-- POKER SCREEN -->
       <div v-if="showPoker" class="game-modal">
         <button class="close-btn" @click="closeGame">×</button>
-        <h2>Poker</h2>
+        <h2>Smunch Poker Roulette</h2>
 
         <div class="poker-cards">
           <div
@@ -200,6 +334,44 @@ function closeGame() {
         <div v-if="pokerResult" class="result">
           Result: <b>{{ pokerResult }}</b>
         </div>
+      </div>
+
+      <!-- GUESS THE EMOJIS GAME -->
+      <div v-if="showEmojis" class="game-modal">
+        <button class="close-btn" @click="closeEmojis">×</button>
+        <h2>Guess the Merchant with the Following Emojis!</h2>
+        <div class="emoji-hint">{{ emojiGame.emoji }}</div>
+        <div class="hangman-slots">
+          <div
+            v-for="(slot, idx) in emojiSlots"
+            :key="'slot'+idx"
+            class="hangman-slot"
+            :class="{ filled: !!slot }"
+            @dragover.prevent="allowDropSlot"
+            @drop="onDropSlot(idx)"
+            @click="removeLetterFromSlot(idx)"
+          >
+            <span v-if="slot">{{ slot }}</span>
+            <span v-else>&nbsp;</span>
+          </div>
+        </div>
+        <div class="hangman-tiles">
+          <div
+            v-for="(tile, idx) in emojiTiles"
+            :key="'tile'+idx+tile.letter"
+            class="hangman-tile"
+            :class="{ used: tile.used }"
+            draggable="true"
+            @dragstart="onDragStartTile(idx)"
+          >
+            {{ tile.letter }}
+          </div>
+        </div>
+        <div v-if="emojiError" class="emoji-error">{{ emojiError }}</div>
+        <div v-if="emojiWin" class="emoji-success">
+          🎉 Correct! The merchant is <b>{{ emojiGame.merchant }}</b>!
+        </div>
+        <div v-if="confettiActive" class="confetti"></div>
       </div>
     </div>
   </div>
@@ -293,15 +465,17 @@ function closeGame() {
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
-  padding: 40px 48px;
-  min-width: 350px;
-  max-width: 98vw;
+  padding: 48px 56px;
+  min-width: 420px;
+  max-width: 95vw;
+  max-height: 95vh;
   margin-top: 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
 }
+
 .close-btn {
   position: absolute;
   top: 18px;
@@ -389,5 +563,94 @@ function closeGame() {
   font-weight: 700;
   color: #134e4a;
   text-align: center;
+}
+.emoji-game {
+  background: linear-gradient(135deg, #81d4fa 0%, #ffe082 100%);
+  color: #134e4a;
+}
+
+.hangman-slots {
+  display: flex;
+  gap: 1.2rem;
+  margin: 32px 0 18px 0;
+  justify-content: center;
+}
+.hangman-slot {
+  width: 48px;
+  height: 60px;
+  border-bottom: 3px solid #17614a;
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #17614a;
+  text-align: center;
+  background: #e0f7fa;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.18s, border 0.18s;
+}
+.hangman-slot.filled {
+  background: #b2f7ef;
+  border-bottom: 3px solid #468d8c;
+}
+.hangman-tiles {
+  display: flex;
+  gap: 1.2rem;
+  margin: 18px 0 18px 0;
+  justify-content: center;
+}
+.hangman-tile {
+  width: 48px;
+  height: 48px;
+  background: #ffd600;
+  color: #134e4a;
+  font-size: 2rem;
+  font-weight: 800;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #0001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+  transition: background 0.18s, color 0.18s, opacity 0.18s;
+}
+.hangman-tile.used {
+  background: #e0e0e0;
+  color: #bdbdbd;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.emoji-hint {
+  font-size: 2.5rem;
+  text-align: center;
+  margin: 18px 0 0 0;
+}
+.emoji-error {
+  color: #d32f2f;
+  font-weight: 700;
+  margin-top: 18px;
+  font-size: 1.2rem;
+}
+.emoji-success {
+  color: #388e3c;
+  font-weight: 800;
+  margin-top: 18px;
+  font-size: 1.3rem;
+}
+.confetti {
+  position: absolute;
+  left: 0; right: 0; top: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 100;
+  animation: confetti-fall 2.2s linear;
+  background: url('https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/asset/emoji/confetti.png') center/cover no-repeat;
+  opacity: 0.8;
+}
+@keyframes confetti-fall {
+  0% { opacity: 0.8; }
+  100% { opacity: 0; }
 }
 </style> 
