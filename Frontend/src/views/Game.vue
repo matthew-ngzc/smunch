@@ -3,37 +3,39 @@ import { ref, onMounted, watch } from 'vue'
 import VueWheelSpinner from 'vue-wheel-spinner'
 import { fetchAllMerchants } from '@/services/orderFoodService'
 import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 // ----- WHEEL STATE -----
-const showWheel      = ref(false)
-const showPoker      = ref(false)
-const slices         = ref([])
-const spinnerRef     = ref(null)
-const defaultWinner  = ref(0)
-const winnerResult   = ref(null)
-const spinning       = ref(false)
+const showWheel = ref(false)
+const showPoker = ref(false)
+const slices = ref([])
+const spinnerRef = ref(null)
+const defaultWinner = ref(0)
+const winnerResult = ref(null)
+const spinning = ref(false)
 const route = useRoute()
+const router = useRouter()
 
 // Wheel cursor options (you already had these)
-const cursorAngle    = 0
+const cursorAngle = 0
 const cursorPosition = 'edge'
 const cursorDistance = 0
 
 // ----- POKER STATE -----
-const pokerOptions     = ref([])
-const pokerShuffled    = ref([])
-const shuffling        = ref(false)
-const pokerResult      = ref(null)
+const pokerOptions = ref([])
+const pokerShuffled = ref([])
+const shuffling = ref(false)
+const pokerResult = ref(null)
 
 // ----- GUESS THE EMOJIS STATE & DATA -----
 const showEmojis = ref(false)
 const emojiGame = ref({}) // { merchant, emoji, answer, slots, tiles }
 const emojiMappings = [
-  { merchant: 'Koufu',      emoji: '👄🫃' },
-  { merchant: 'Luckin',    emoji: '🇨🇳🦌🤳' },
-  { merchant: 'Supergreen',emoji: '🦸‍♂️🟢🍴' },
-  { merchant: 'WokHey',    emoji: '👨‍🍳🍳👋' },
-  { merchant: 'Braek',     emoji: '🧠😮‍💨🛌😋' },
+  { merchant: 'Koufu', emoji: '👄🫃' },
+  { merchant: 'Luckin', emoji: '🇨🇳🦌🤳' },
+  { merchant: 'Supergreen', emoji: '🦸‍♂️🟢🍴' },
+  { merchant: 'WokHey', emoji: '👨‍🍳🍳👋' },
+  { merchant: 'Braek', emoji: '🧠😮‍💨🛌😋' },
 ]
 const emojiSlots = ref([]) // [{letter, filledLetter}]
 const emojiTiles = ref([]) // [{letter, used}]
@@ -41,6 +43,41 @@ const emojiGuess = ref([]) // user's current guess (array of letters)
 const emojiError = ref('')
 const emojiWin = ref(false)
 const confettiActive = ref(false)
+
+// ----- DINO POPUP STATE -----
+const showDino = ref(false)
+const dinoMerchant = ref('')
+const dinoTimeout = ref(null)
+const dinoLoading = ref(false)
+const dinoCountdown = ref(15)
+let dinoCountdownInterval = null
+
+function showDinoPopup(merchant) {
+  dinoMerchant.value = merchant
+  showDino.value = true
+  dinoLoading.value = true
+  dinoCountdown.value = 10
+  if (dinoCountdownInterval) clearInterval(dinoCountdownInterval)
+  dinoCountdownInterval = setInterval(() => {
+    if (dinoCountdown.value > 0) dinoCountdown.value--
+  }, 1000)
+  // Start 10s timer to auto-redirect
+  dinoTimeout.value = setTimeout(() => {
+    dinoLoading.value = false
+    showDino.value = false
+    if (dinoMerchant.value && dinoMerchant.value.merchant_id) {
+      router.push(`/order/${dinoMerchant.value.merchant_id}`)
+    } else {
+      router.push('/order')
+    }
+  }, 10000)
+}
+function cancelDinoPopup() {
+  showDino.value = false
+  dinoLoading.value = false
+  if (dinoTimeout.value) clearTimeout(dinoTimeout.value)
+  if (dinoCountdownInterval) clearInterval(dinoCountdownInterval)
+}
 
 // ----- FETCH MERCHANTS ON MOUNT -----
 onMounted(async () => {
@@ -54,18 +91,19 @@ onMounted(async () => {
     const merchants = res.data
 
     // Build wheel slices
-    const wheelColors = ['#5ea6c4','#b2f7ef','#468d8c','#c8e6c9','#81d4fa','#ffd600','#ffb74d','#a5d6a7']
-    slices.value = merchants.map((m,i) => ({
+    const wheelColors = ['#5ea6c4', '#b2f7ef', '#468d8c', '#c8e6c9', '#81d4fa', '#ffd600', '#ffb74d', '#a5d6a7']
+    slices.value = merchants.map((m, i) => ({
       color: wheelColors[i % wheelColors.length],
-      text:  m.name
+      text: m.name,
+      merchant: m
     }))
 
     // Build poker options
-    pokerOptions.value = merchants.map(m => m.name)
+    pokerOptions.value = merchants.map(m => m)
     // initialize the “deck” for display
     pokerShuffled.value = pokerOptions.value.map(name => ({
       name,
-      image: (merchants.find(m=>m.name===name)||{}).image_url || '',
+      image: (merchants.find(m => m.name === name) || {}).image_url || '',
       highlight: false
     }))
 
@@ -73,12 +111,12 @@ onMounted(async () => {
     console.error(err)
     // fallback for both games
     slices.value = [
-      { color:'#5ea6c4', text:'Supergreen' },
-      { color:'#b2f7ef', text:'Koufu' },
-      { color:'#468d8c', text:'Braek' }
+      { color: '#5ea6c4', text: 'Supergreen' },
+      { color: '#b2f7ef', text: 'Koufu' },
+      { color: '#468d8c', text: 'Braek' }
     ]
-    pokerOptions.value = ['Supergreen','Koufu','Braek']
-    pokerShuffled.value = pokerOptions.value.map(name => ({ name, image:'', highlight:false }))
+    pokerOptions.value = ['Supergreen', 'Koufu', 'Braek']
+    pokerShuffled.value = pokerOptions.value.map(name => ({ name, image: '', highlight: false }))
   }
 })
 
@@ -105,19 +143,23 @@ function onSpinStart() {
 }
 
 function onSpinEnd(winnerIndex) {
-  spinning.value    = false
+  spinning.value = false
   winnerResult.value = slices.value[winnerIndex]
+  if (winnerResult.value?.merchant) {
+    showDinoPopup(winnerResult.value.merchant)
+  }
 }
 
 // ----- POKER FUNCTIONS -----
 function showPokerCards() {
-  pokerShuffled.value = pokerOptions.value.map((name) => ({
-    name,
-    image: pokerShuffled.value.find(c=>c.name===name)?.image || '',
-    highlight: false
+  pokerShuffled.value = pokerOptions.value.map((merchant) => ({
+    name: merchant.name,
+    image: merchant.image_url || '',
+    highlight: false,
+    merchant_id: merchant.merchant_id
   }))
 }
-watch(pokerOptions, showPokerCards, { immediate:true })
+watch(pokerOptions, showPokerCards, { immediate: true })
 
 function shufflePoker() {
   if (shuffling.value) return
@@ -128,16 +170,22 @@ function shufflePoker() {
   let count = 0
   const maxCount = 40
   const iv = setInterval(() => {
-    pokerShuffled.value.forEach(c=>c.highlight=false)
-    const idx = Math.floor(Math.random()*opts.length)
+    pokerShuffled.value.forEach(c => c.highlight = false)
+    const idx = Math.floor(Math.random() * opts.length)
     pokerShuffled.value[idx].highlight = true
     count++
     if (count > maxCount) {
       clearInterval(iv)
-      const finalIdx = Math.floor(Math.random()*opts.length)
-      pokerShuffled.value.forEach((c,i)=>c.highlight = i===finalIdx)
-      pokerResult.value = opts[finalIdx]
+      const finalIdx = Math.floor(Math.random() * opts.length)
+      const selected = opts[finalIdx]
+      pokerShuffled.value.forEach((c, i) => c.name === selected.name ? c.highlight = true : c.highlight = false)
+      pokerResult.value = selected
       shuffling.value = false
+
+      if (pokerResult.value) {
+        showDinoPopup(pokerResult.value)
+      }
+
     }
   }, 125)
 }
@@ -145,19 +193,19 @@ function shufflePoker() {
 // ----- GUESS THE EMOJIS FUNCTIONS -----
 function openEmojis() {
   // Pick a random merchant
-  const pick = emojiMappings[Math.floor(Math.random()*emojiMappings.length)]
+  const pick = emojiMappings[Math.floor(Math.random() * emojiMappings.length)]
   const answer = pick.merchant.toUpperCase().split('')
   // Shuffle answer letters
   const shuffled = [...answer]
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
   }
   // Add extra random letters (distractors)
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
   const distractors = []
-  while (distractors.length < Math.max(3, Math.ceil(answer.length/2))) {
-    const rand = alphabet[Math.floor(Math.random()*alphabet.length)]
+  while (distractors.length < Math.max(3, Math.ceil(answer.length / 2))) {
+    const rand = alphabet[Math.floor(Math.random() * alphabet.length)]
     if (!answer.includes(rand) && !distractors.includes(rand)) {
       distractors.push(rand)
     }
@@ -166,7 +214,7 @@ function openEmojis() {
   // Shuffle all tiles
   for (let i = allTiles.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[allTiles[i], allTiles[j]] = [allTiles[j], allTiles[i]]
+      ;[allTiles[i], allTiles[j]] = [allTiles[j], allTiles[i]]
   }
   emojiGame.value = { ...pick, answer }
   emojiSlots.value = answer.map(() => null)
@@ -229,6 +277,17 @@ function checkEmojiAnswer() {
     emojiError.value = ''
     confettiActive.value = true
     setTimeout(() => { confettiActive.value = false }, 2500)
+    // For emoji game, only merchant name is available, so pass an object with name only
+    const normalize = name => name.replace(/\s+/g, '').toLowerCase()
+    const matchedMerchant = pokerOptions.value.find(m =>
+      normalize(m.name) === normalize(emojiGame.value.merchant)
+    )
+    // Tries to find the actual merchant from the list (which includes merchant_id) and falls back to just the name if not found
+    if (matchedMerchant) {
+      showDinoPopup(matchedMerchant)
+    } else {
+      showDinoPopup({ name: emojiGame.value.merchant })
+    }
   } else {
     emojiError.value = 'Wrong! Try again.'
     // Optionally: clear all slots and tiles
@@ -243,16 +302,16 @@ function checkEmojiAnswer() {
 
 // ----- PANEL OPEN/CLOSE -----
 function openPoker() {
-  showPoker.value  = true
-  showWheel.value  = false
+  showPoker.value = true
+  showWheel.value = false
   winnerResult.value = null
-  pokerResult.value  = null
+  pokerResult.value = null
 }
 function closeGame() {
   showWheel.value = false
   showPoker.value = false
   winnerResult.value = null
-  pokerResult.value  = null
+  pokerResult.value = null
 }
 </script>
 
@@ -282,31 +341,31 @@ function closeGame() {
         <button class="close-btn" @click="closeGame">×</button>
         <h2>Spin the Wheel</h2>
 
-        <VueWheelSpinner
-          ref="spinnerRef"
-          class="spinner"
-          :slices="slices"
-          :winner-index="defaultWinner"
-          :cursor-angle="cursorAngle"
-          :cursor-position="cursorPosition"
-          :cursor-distance="cursorDistance"
-          @spin-start="onSpinStart"
-          @spin-end="onSpinEnd"
-        >
+        <VueWheelSpinner ref="spinnerRef" class="spinner" :slices="slices" :winner-index="defaultWinner"
+          :cursor-angle="cursorAngle" :cursor-position="cursorPosition" :cursor-distance="cursorDistance"
+          @spin-start="onSpinStart" @spin-end="onSpinEnd">
           <template #cursor>
             <div class="wheel-pointer-big">⭐️</div>
           </template>
           <template #default>
-            <button
-              class="spin-btn"
-              :disabled="spinning"
-              @click="handleSpinButtonClick"
-            >Spin</button>
+            <button class="spin-btn" :disabled="spinning" @click="handleSpinButtonClick">Spin</button>
           </template>
         </VueWheelSpinner>
 
         <div v-if="winnerResult" class="result">
           Result: <b>{{ winnerResult.text }}</b>
+        </div>
+
+        <div v-if="showDino" class="dino-popup-inner">
+          <img src="/dinoRun.png" class="dino-img" alt="Dino running" />
+          <div class="dino-bubble">
+            Transporting you to {{ dinoMerchant?.name || dinoMerchant }} right now!
+            <span v-if="dinoLoading" style="display:inline-flex;align-items:center;gap:8px;">
+              <div class="dino-loader"></div>
+              <span class="dino-countdown">{{ dinoCountdown }}s</span>
+            </span>
+          </div>
+          <button v-if="dinoLoading" class="dino-cancel" @click="cancelDinoPopup">Not now</button>
         </div>
       </div>
 
@@ -316,12 +375,7 @@ function closeGame() {
         <h2>Smunch Poker Roulette</h2>
 
         <div class="poker-cards">
-          <div
-            v-for="card in pokerShuffled"
-            :key="card.name"
-            class="poker-card"
-            :class="{ selected: card.highlight }"
-          >
+          <div v-for="card in pokerShuffled" :key="card.merchant_id || card.name" class="poker-card" :class="{ selected: card.highlight }">
             <img v-if="card.image" :src="card.image" class="poker-img" :alt="card.name" />
             <div class="poker-name">{{ card.name }}</div>
           </div>
@@ -332,7 +386,19 @@ function closeGame() {
         </button>
 
         <div v-if="pokerResult" class="result">
-          Result: <b>{{ pokerResult }}</b>
+          Result: <b>{{ pokerResult.name }}</b>
+        </div>
+
+        <div v-if="showDino" class="dino-popup-inner">
+          <img src="/dinoRun.png" class="dino-img" alt="Dino running" />
+          <div class="dino-bubble">
+            Transporting you to {{ dinoMerchant?.name || dinoMerchant }} right now!
+            <span v-if="dinoLoading" style="display:inline-flex;align-items:center;gap:8px;">
+              <div class="dino-loader"></div>
+              <span class="dino-countdown">{{ dinoCountdown }}s</span>
+            </span>
+          </div>
+          <button v-if="dinoLoading" class="dino-cancel" @click="cancelDinoPopup">Not now</button>
         </div>
       </div>
 
@@ -342,28 +408,15 @@ function closeGame() {
         <h2>Guess the Merchant with the Following Emojis!</h2>
         <div class="emoji-hint">{{ emojiGame.emoji }}</div>
         <div class="hangman-slots">
-          <div
-            v-for="(slot, idx) in emojiSlots"
-            :key="'slot'+idx"
-            class="hangman-slot"
-            :class="{ filled: !!slot }"
-            @dragover.prevent="allowDropSlot"
-            @drop="onDropSlot(idx)"
-            @click="removeLetterFromSlot(idx)"
-          >
+          <div v-for="(slot, idx) in emojiSlots" :key="'slot' + idx" class="hangman-slot" :class="{ filled: !!slot }"
+            @dragover.prevent="allowDropSlot" @drop="onDropSlot(idx)" @click="removeLetterFromSlot(idx)">
             <span v-if="slot">{{ slot }}</span>
             <span v-else>&nbsp;</span>
           </div>
         </div>
         <div class="hangman-tiles">
-          <div
-            v-for="(tile, idx) in emojiTiles"
-            :key="'tile'+idx+tile.letter"
-            class="hangman-tile"
-            :class="{ used: tile.used }"
-            draggable="true"
-            @dragstart="onDragStartTile(idx)"
-          >
+          <div v-for="(tile, idx) in emojiTiles" :key="'tile' + idx + tile.letter" class="hangman-tile"
+            :class="{ used: tile.used }" draggable="true" @dragstart="onDragStartTile(idx)">
             {{ tile.letter }}
           </div>
         </div>
@@ -372,19 +425,33 @@ function closeGame() {
           🎉 Correct! The merchant is <b>{{ emojiGame.merchant }}</b>!
         </div>
         <div v-if="confettiActive" class="confetti"></div>
+
+        <div v-if="showDino" class="dino-popup-inner">
+          <img src="/dinoRun.png" class="dino-img" alt="Dino running" />
+          <div class="dino-bubble">
+            Transporting you to {{ dinoMerchant?.name || dinoMerchant }} right now!
+            <span v-if="dinoLoading" style="display:inline-flex;align-items:center;gap:8px;">
+              <div class="dino-loader"></div>
+              <span class="dino-countdown">{{ dinoCountdown }}s</span>
+            </span>
+          </div>
+          <button v-if="dinoLoading" class="dino-cancel" @click="cancelDinoPopup">Not now</button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
-<style scoped>
 
+<style scoped>
 .game.no-scroll {
   position: fixed;
-  top: 60px; /* adjust if you have a header height */
+  top: 60px;
+  /* adjust if you have a header height */
   left: 0;
   width: 100vw;
-  height: calc(100vh - 60px); /* fills viewport minus header */
+  height: calc(100vh - 60px);
+  /* fills viewport minus header */
   background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
   display: flex;
   align-items: center;
@@ -409,12 +476,14 @@ function closeGame() {
   margin-bottom: 2.5rem;
   text-align: center;
 }
+
 .game-options {
   display: flex;
   gap: 3rem;
   justify-content: center;
   align-items: center;
 }
+
 .game-card {
   width: 270px;
   height: 270px;
@@ -426,33 +495,39 @@ function closeGame() {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255, 255, 255, 0.85);
   transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
   border: 1.5px solid #e0e0e0;
 }
+
 .game-card p {
   font-size: 1.3rem;
   font-weight: 700;
   margin: 0;
   text-align: center;
 }
+
 .wheel-game {
   background: linear-gradient(135deg, #5ea6c4 0%, #b2f7ef 100%);
   color: #134e4a;
 }
+
 .poker-game {
   background: linear-gradient(135deg, #468d8c 0%, #b2f7ef 100%);
   color: #134e4a;
 }
+
 .game-card:hover:not(.disabled) {
   transform: translateY(-10px) scale(1.04);
   box-shadow: 0 16px 48px rgba(44, 62, 80, 0.18);
   background: #e0f2f1;
 }
+
 .game-card.disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
 .game-icon {
   width: 100px;
   height: 100px;
@@ -485,11 +560,13 @@ function closeGame() {
   font-size: 2rem;
   cursor: pointer;
 }
+
 .spinner {
   width: 460px;
   height: 460px;
   margin: 0 auto 18px auto;
 }
+
 .wheel-pointer-big {
   position: absolute;
   left: 50%;
@@ -500,6 +577,7 @@ function closeGame() {
   z-index: 10;
   text-shadow: 0 2px 8px #0001;
 }
+
 .spin-btn {
   background: #17614a;
   color: #fff;
@@ -514,22 +592,26 @@ function closeGame() {
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .spin-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
+
 .result {
   margin-top: 24px;
   font-size: 1.3rem;
   font-weight: 700;
   color: #17614a;
 }
+
 .poker-cards {
   display: flex;
   gap: 2rem;
   margin: 32px 0 24px 0;
   justify-content: center;
 }
+
 .poker-card {
   width: 110px;
   height: 150px;
@@ -547,23 +629,27 @@ function closeGame() {
   transition: background 0.18s, border 0.18s, box-shadow 0.18s;
   position: relative;
 }
+
 .poker-card.selected {
   background: #b2f7ef;
   border: 2.5px solid #17614a;
   box-shadow: 0 0 16px #17614a44;
 }
+
 .poker-img {
   width: 60px;
   height: 60px;
   object-fit: contain;
   margin-bottom: 8px;
 }
+
 .poker-name {
   font-size: 1.1rem;
   font-weight: 700;
   color: #134e4a;
   text-align: center;
 }
+
 .emoji-game {
   background: linear-gradient(135deg, #81d4fa 0%, #ffe082 100%);
   color: #134e4a;
@@ -575,6 +661,7 @@ function closeGame() {
   margin: 32px 0 18px 0;
   justify-content: center;
 }
+
 .hangman-slot {
   width: 48px;
   height: 60px;
@@ -591,16 +678,19 @@ function closeGame() {
   cursor: pointer;
   transition: background 0.18s, border 0.18s;
 }
+
 .hangman-slot.filled {
   background: #b2f7ef;
   border-bottom: 3px solid #468d8c;
 }
+
 .hangman-tiles {
   display: flex;
   gap: 1.2rem;
   margin: 18px 0 18px 0;
   justify-content: center;
 }
+
 .hangman-tile {
   width: 48px;
   height: 48px;
@@ -617,40 +707,142 @@ function closeGame() {
   user-select: none;
   transition: background 0.18s, color 0.18s, opacity 0.18s;
 }
+
 .hangman-tile.used {
   background: #e0e0e0;
   color: #bdbdbd;
   cursor: not-allowed;
   opacity: 0.6;
 }
+
 .emoji-hint {
   font-size: 2.5rem;
   text-align: center;
   margin: 18px 0 0 0;
 }
+
 .emoji-error {
   color: #d32f2f;
   font-weight: 700;
   margin-top: 18px;
   font-size: 1.2rem;
 }
+
 .emoji-success {
   color: #388e3c;
   font-weight: 800;
   margin-top: 18px;
   font-size: 1.3rem;
 }
+
 .confetti {
   position: absolute;
-  left: 0; right: 0; top: 0; bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
   pointer-events: none;
   z-index: 100;
   animation: confetti-fall 2.2s linear;
   background: url('https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/asset/emoji/confetti.png') center/cover no-repeat;
   opacity: 0.8;
 }
+
 @keyframes confetti-fall {
-  0% { opacity: 0.8; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0.8;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
-</style> 
+
+.dino-popup-inner {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  margin-top: 32px;
+}
+
+.dino-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 0;
+}
+
+.dino-bubble {
+  background: #90caf9;
+  color: #134e4a;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 18px 24px;
+  margin-left: 0;
+  margin-bottom: 12px;
+  min-width: 220px;
+  box-shadow: 0 2px 8px #0001;
+  position: relative;
+}
+
+.dino-bubble:before {
+  content: '';
+  position: absolute;
+  left: -18px;
+  bottom: 10px;
+  width: 0;
+  height: 0;
+  border-top: 18px solid transparent;
+  border-bottom: 18px solid transparent;
+  border-right: 18px solid #90caf9;
+}
+
+.dino-loader {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid #fff;
+  border-top: 3px solid #17614a;
+  border-radius: 50%;
+  animation: dino-spin 1s linear infinite;
+  margin-left: 12px;
+  vertical-align: middle;
+}
+
+@keyframes dino-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.dino-cancel {
+  background: #ffd600;
+  color: #134e4a;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 22px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-left: 12px;
+  margin-bottom: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0001;
+  transition: background 0.18s;
+}
+
+.dino-cancel:hover {
+  background: #ffe082;
+}
+
+.dino-countdown {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #17614a;
+  margin-left: 2px;
+}
+</style>
