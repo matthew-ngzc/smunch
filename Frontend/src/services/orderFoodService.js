@@ -28,13 +28,13 @@ export async function getMerchantInfoById(id) {
   return axiosInstance.get(`/api/merchants/${id}`)
 }
 // get user's active orders
-export async function getActiveOrders(userId) {
-  return axiosInstance.get(`/api/orders/user/${userId}?type=active`)
+export async function getActiveOrders(userId, limit = 5, offset = 0) {
+  return axiosInstance.get(`/api/orders/user/${userId}?type=active&limit=${limit}&offset=${offset}`)
 }
 
 // get user's past orders
-export async function getPastOrders(userId) {
-  return axiosInstance.get(`/api/orders/user/${userId}?type=history`)
+export async function getPastOrders(userId, limit = 5, offset = 0) {
+  return axiosInstance.get(`/api/orders/user/${userId}?type=history&limit=${limit}&offset=${offset}`)
 }
 /**
  * Create an order (POST)

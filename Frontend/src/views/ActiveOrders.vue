@@ -8,13 +8,17 @@ import { formatDateTime, formatStatusClass, formatStatus } from '@/utility/order
 const authStore = useAuthStore()
 const activeOrders = ref([])
 const selectedOrder = ref(null)
+const currentPage = ref(1)
+const pageSize = 5
+const totalOrders = ref(0)
 
-onMounted(async () => {
+async function fetchActiveOrders(page = 1) {
   const userId = authStore.userId
+  const offset = (page - 1) * pageSize
   try {
-    const res = await getActiveOrders(userId)
+    const res = await getActiveOrders(userId, pageSize, offset)
     const orders = res.data.orders
-
+    totalOrders.value = res.data.total || 0
     const ordersWithMerchant = await Promise.all(
       orders.map(async (order) => {
         const merchantRes = await getMerchantInfoById(order.merchant_id)
@@ -22,12 +26,20 @@ onMounted(async () => {
         return order
       })
     )
-
     activeOrders.value = ordersWithMerchant
   } catch (error) {
     console.error('Failed to load active orders:', error)
   }
+}
+
+onMounted(() => {
+  fetchActiveOrders(1)
 })
+
+function changePage(page) {
+  currentPage.value = page
+  fetchActiveOrders(page)
+}
 
 function getItemCount(order) {
   if (!order.order_items || !Array.isArray(order.order_items)) return 0
@@ -83,6 +95,16 @@ watch(selectedOrder, (newVal) => {
         </div>
       </li>
     </ul>
+    <div class="pagination">
+      <button
+        v-for="page in Math.ceil(totalOrders / pageSize)"
+        :key="page"
+        :class="['page-btn', { active: page === currentPage } ]"
+        @click="changePage(page)"
+      >
+        {{ page }}
+      </button>
+    </div>
     <OrderReceipt v-if="selectedOrder" :order="selectedOrder" :onClose="closeReceipt" />
   </div>
 </template>
@@ -171,5 +193,25 @@ watch(selectedOrder, (newVal) => {
 .status-yellow {
   background-color: gold;
   color: black;
+}
+
+.pagination {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+  justify-content: center;
+}
+.page-btn {
+  background: #eee;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.page-btn.active, .page-btn:hover {
+  background: #17614a;
+  color: #fff;
 }
 </style>
