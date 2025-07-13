@@ -11,12 +11,12 @@
           <label>building</label>
           <select v-model="building">
             <option value="" disabled selected hidden>select</option>
-            <option value="business">school of business</option>
-            <option value="law">school of law</option>
-            <option value="economics">school of economics</option>
-            <option value="accounting">school of accounting</option>
-            <option value="scis1">school of computing and information systems 1</option>
-            <option value="scis2">school of computing and information systems 2</option>
+            <option value="Business">School of Business</option>
+            <option value="Law">School of Law</option>
+            <option value="Economics">School of Economics</option>
+            <option value="Accounting">School of Accounting</option>
+            <option value="Scis1">School of Computing and Information Systems 1</option>
+            <option value="Scis2">School of Computing and Information Systems 2</option>
           </select>
         </div>
 
@@ -25,9 +25,9 @@
           <label>floor</label>
           <select v-model="floor">
             <option value="" disabled selected hidden>select</option>
-            <option value="level 2">2</option>
-            <option value="level 3">3</option>
-            <option value="level 4">4</option>
+            <option value="Level 2">2</option>
+            <option value="Level 3">3</option>
+            <option value="Level 4">4</option>
           </select>
         </div>
 
@@ -36,10 +36,10 @@
           <label>facility type</label>
           <select v-model="facilityType">
             <option value="" disabled selected hidden>select</option>
-            <option value="classroom">classroom</option>
-            <option value="group study room">group study room</option>
-            <option value="meeting pod">meeting pod</option>
-            <option value="seminar room">seminar room</option>
+            <option value="Classroom">classroom</option>
+            <option value="Group study room">group study room</option>
+            <option value="Meeting pod">meeting pod</option>
+            <option value="Seminar room">seminar room</option>
           </select>
         </div>
 

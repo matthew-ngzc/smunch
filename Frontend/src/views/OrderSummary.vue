@@ -126,12 +126,19 @@ function convertTo24Hr(timeStr) {
         </div>
       
         <div class="summary-totals">
+
+          <div class="cost-wrapper"> 
+            <!--  total cost of items in cart, from script using computed -->
+            <span> Total (Excl. delivery fee): </span> 
+            <span> ${{ (total-1).toFixed(2) }}</span> 
+          </div>
+
           <div class="total-row">
-            <span>Delivery fee</span>
+            <span>Delivery fee:</span>
             <span>$1.00</span>
           </div>
           <div class="total-row bold">
-            <span>Total</span>
+            <span>Total:</span>
             <span>${{ total.toFixed(2) }}</span>
             
           </div>
@@ -222,6 +229,8 @@ function convertTo24Hr(timeStr) {
   gap: 30px; /* space between quantity and price */
 }
 
+
+
 .qty {
    /* to prevent the RHS cost from shifting the menu control */
   display: inline-block;
@@ -253,6 +262,13 @@ function convertTo24Hr(timeStr) {
   margin: 4px 0;
   
 }
+
+.cost-wrapper {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0;
+}
+
 .total-row.bold {
   font-weight: bold;
 }

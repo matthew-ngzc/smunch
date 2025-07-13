@@ -3,25 +3,39 @@ import { computed, ref } from 'vue'
 import { formatDateTime as _formatDateTime, formatStatusClass, formatStatus } from '@/utility/orderHelpers'
 import { getPaymentQRCode, updatePaymentStatus } from '@/services/orderFoodService'
 
+// define props passed into this component
+// 'order' contains all the order details
+// 'onClose' is a function to close the receipt modal
+// 'showOrderStatus' determines if the UI shows order status (past) or payment status (active)
 const props = defineProps({
   order: Object,
   onClose: Function,
   showOrderStatus: Boolean // true for past orders, false/undefined for active
 })
 
+// compute total item count by summing up quantities of all items in the order
 const itemCount = computed(() => {
   if (!props.order.order_items) return 0
   return props.order.order_items.reduce((sum, item) => sum + (item.quantity || 1), 0)
 })
+
+// convert subtotal from cents to dollars and format to 2 decimal places
 const subtotal = computed(() => (props.order.food_amount_cents / 100).toFixed(2))
+
+// convert delivery fee from cents to dollars
 const deliveryFee = computed(() => (props.order.delivery_fee_cents / 100).toFixed(2))
+
+// compute total amount in dollars
 const total = computed(() => (props.order.total_amount_cents / 100).toFixed(2))
 
+
+// helper to format customisation key-value pairs as strings
 function formatCustomisations(customisations) {
   if (!customisations || Object.keys(customisations).length === 0) return null;
   return Object.entries(customisations).map(([key, value]) => `${key}: ${value}`);
 }
 
+// formats delivery location string nicely from building, room type, and room number
 function formatLocation(order) {
   let loc = ''
   if (order.building) loc += order.building.charAt(0).toUpperCase() + order.building.slice(1)
@@ -30,6 +44,7 @@ function formatLocation(order) {
   return loc.trim()
 }
 
+// format a datetime with or without time depending on showTime flag
 function formatDateTime(date, showTime) {
   const d = new Date(date)
   if (showTime) {
@@ -38,6 +53,7 @@ function formatDateTime(date, showTime) {
   return d.toLocaleDateString('en-GB') + ', ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase()
 }
 
+// return display text and css class for order status badge
 function getOrderStatusBadge(order) {
   if (order.order_status === 'completed') {
     return { text: 'Completed', class: 'status-green' }
@@ -48,11 +64,14 @@ function getOrderStatusBadge(order) {
   }
 }
 
+// state for showing payment modal and loading states
 const showPaymentModal = ref(false)
 const paymentData = ref(null)
 const loadingPayment = ref(false)
 const paymentError = ref(null)
 
+// triggered when user clicks on the 'click to pay' button
+// fetches QR code and payment info from backend
 async function handlePaymentClick() {
   loadingPayment.value = true
   paymentError.value = null
@@ -66,19 +85,23 @@ async function handlePaymentClick() {
     loadingPayment.value = false
   }
 }
+
+// closes the payment modal
 function closePaymentModal() {
   showPaymentModal.value = false
 }
 
+// states for handling 'done' button click after user completes payment
 const doneLoading = ref(false)
 const doneError = ref(null)
 
+// updates the payment status when user confirms they completed payment
 async function handlePaymentDone() {
   doneLoading.value = true
   doneError.value = null
   try {
     await updatePaymentStatus(props.order.order_id)
-    // Update the order's payment_status locally so UI updates immediately
+    // immediately reflect new payment status in UI
     props.order.payment_status = 'awaiting_verification'
     closePaymentModal()
   } catch (e) {
@@ -88,76 +111,105 @@ async function handlePaymentDone() {
   }
 }
 </script>
-
 <template>
   <div class="receipt-backdrop" @click.self="onClose">
     <div class="receipt-box">
+      <!-- back button -->
       <div class="receipt-header-row">
         <button class="back-button" @click="onClose" aria-label="Close receipt">←</button>
-      </div>
-      <div class="header-title-wrapper">
-        <h2>Order Receipt</h2>
-      </div>
-      <div class="receipt-order-header">
-        <img v-if="order.merchant && order.merchant.image_url" :src="order.merchant.image_url" alt="Merchant Logo" class="receipt-logo" />
-        <div class="order-details">
-          <div class="order-title-row">
-            <span class="order-id">Order {{ order.order_id }}</span>
-            <span class="item-count">{{ itemCount }} item<span v-if="itemCount > 1">s</span></span>
-          </div>
-          <div class="order-meta">
-            <div>Reference No. : {{ order.payment_reference }}</div>
-            <div>Location : {{ formatLocation(order) }}</div>
-            <div>Merchant : {{ order.merchant ? order.merchant.name : order.merchant_id }}</div>
-            <div>Deliver date and time : {{ formatDateTime(order.delivery_time) }}</div>
-            <div class="order-placed">Order placed on {{ formatDateTime(order.created_at, true) }}</div>
-          </div>
+          <!-- title -->
+        <div class="header-title-wrapper">
+          <h2>Order Receipt</h2>
         </div>
-        <!-- Show only order status for past orders, only payment status for active orders -->
-        <span v-if="showOrderStatus" :class="['status-badge', getOrderStatusBadge(order).class]">
-          {{ getOrderStatusBadge(order).text }}
-        </span>
-        <template v-else>
-          <button
-            v-if="order.payment_status === 'awaiting_payment'"
-            class="status-badge status-grey payment-btn"
-            @click="handlePaymentClick"
-            :disabled="loadingPayment"
-          >
-            <span v-if="!loadingPayment">Click here to make payment</span>
-            <span v-else>Loading...</span>
-          </button>
-          <span v-else class="status-badge" :class="formatStatusClass(order.payment_status)">
-            {{ formatStatus(order.payment_status) }}
-          </span>
-        </template>
       </div>
+      <!-- order header: logo + info -->
+    <div class="receipt-order-header">
+  <img v-if="order.merchant?.image_url" :src="order.merchant.image_url" alt="Merchant Logo" class="receipt-logo" />
+
+  <div class="order-info">
+    <div class="order-title-row">
+      <span class="order-id">Order {{ order.order_id }}</span>
+    </div>
+
+    <div class="order-meta">
+      <div>Destination: School of {{ order.building.charAt(0).toUpperCase() + order.building.slice(1) }},  {{ order.room_number.charAt(0).toUpperCase() + order.room_number.slice(1) }} {{ order.room_type.charAt(0).toUpperCase() + order.room_type.slice(1) }} </div>
+      <div>Merchant: {{ order.merchant?.name || order.merchant_id }}</div>
+      <div>Pick up time: {{ formatDateTime(order.delivery_time) }}</div>
+    </div>
+  </div>
+
+  <div class="order-summary-right">
+    <div class="count-price">
+      <div class="summary-count">  {{ itemCount }} item<span v-if="itemCount > 1">s</span>  </div>
+      <div class="summary-price"> ${{ total }}</div>
+    </div>
+
+    <span v-if="showOrderStatus" :class="['status-badge', getOrderStatusBadge(order).class]">
+      {{ getOrderStatusBadge(order).text }}
+    </span>
+    <template v-else>
+      <button
+        v-if="order.payment_status === 'awaiting_payment'"
+        class="status-badge status-grey payment-btn"
+        @click="handlePaymentClick"
+        :disabled="loadingPayment"
+      >
+        <span v-if="!loadingPayment">Click here to make payment</span>
+        <span v-else>Loading...</span>
+      </button>
+      <span v-else :class="['status-badge', formatStatusClass(order.payment_status)]">
+        {{ formatStatus(order.payment_status) }}
+      </span>
+    </template>
+  </div>
+</div>
+
       <hr class="divider" />
+
+      <!-- receipt body -->
       <div class="receipt-body">
         <div class="section-title">Order Summary</div>
+
         <div class="item-list">
           <div class="item-row" v-for="(item, idx) in order.order_items" :key="idx">
             <div class="item-name">
               {{ item.menu_items.name }}
-              <span v-if="item.quantity > 1" class="item-qty">x{{ item.quantity }}</span>
+              <span v-if="item.quantity > 0" class="item-qty">x{{ item.quantity }}</span>
             </div>
-            <div v-if="item.notes" class="item-notes">{{ item.notes }}</div>
+            <div class="item-price">
+              ${{ ((item.price_cents * item.quantity) / 100).toFixed(2) }}
+            </div>
           </div>
         </div>
+
+
+
         <div class="summary-table">
-          <div class="summary-row"><span>Subtotal</span><span>${{ subtotal }}</span></div>
-          <div class="summary-row"><span>Delivery fee</span><span>${{ deliveryFee }}</span></div>
-          <div class="summary-row total"><span>Total</span><span class="total-bold">${{ total }}</span></div>
+          <div class="summary-row">
+            <span class="summary-label">Subtotal</span>
+            <span class="summary-value">${{ subtotal }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Delivery Fee</span>
+            <span class="summary-value">${{ deliveryFee }}</span>
+          </div>
+          <div class="summary-row total">
+            <span class="summary-label">Total</span>
+            <span class="summary-value">${{ total }}</span>
+          </div>
         </div>
-        <div class="receipt-footer-message">
-          Thank you for ordering with Smunch
-        </div>
+
+
+        <div class="receipt-footer-message">Thank you for ordering with Smunch</div>
       </div>
-      <!-- Payment Modal -->
+
+      <!-- payment modal -->
       <div v-if="showPaymentModal" class="payment-modal-backdrop" @click.self="closePaymentModal">
         <div class="payment-modal-box">
           <button class="close-payment-modal" @click="closePaymentModal">×</button>
+
           <h2 class="payment-title">Follow the steps below to proceed with payment.</h2>
+
           <div class="payment-content">
             <div class="payment-steps">
               <div class="payment-step"><b>STEP 1:</b><br>
@@ -171,18 +223,20 @@ async function handlePaymentDone() {
                 Press “done” once payment has been made!
               </div>
             </div>
+
             <div class="payment-qr-section">
               <img v-if="paymentData?.qrCode" :src="paymentData.qrCode" alt="PayNow QR" class="payment-qr" />
               <div class="paynow-recipient">Paynow recipient’s Name: Smunch</div>
             </div>
           </div>
-          <div class="payment-confirm-msg">
-            You will receive a confirmation from Smunch Admin within 1–2 days.
-          </div>
+
+          <div class="payment-confirm-msg">You will receive a confirmation from Smunch Admin within 1–2 days.</div>
+
           <button class="payment-done-btn" @click="handlePaymentDone" :disabled="doneLoading">
             <span v-if="!doneLoading">done</span>
             <span v-else>Processing...</span>
           </button>
+
           <div v-if="doneError" class="payment-error">{{ doneError }}</div>
           <div v-if="paymentError" class="payment-error">{{ paymentError }}</div>
         </div>
@@ -207,135 +261,135 @@ async function handlePaymentDone() {
   border: 1px solid #888;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-  padding: 40px 48px 40px 48px;
+  padding: 40px 48px;
   width: 1300px;
   max-width: 98vw;
   max-height: 80vh;
   overflow-y: auto;
-  margin: 0 auto;
-  position: relative;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
+
 
 .receipt-header-row {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
-  position: relative;
-  justify-content: flex-start;
+  justify-content: flex-start; /* for button */
 }
+
+/* back button */
 .back-button {
   background: none;
   border: none;
   font-size: 2rem;
-  font-weight: 400;
-  cursor: pointer;
   color: #222;
-  margin-right: 8px;
-  position: static;
-  left: 0;
-  top: 0;
-  transform: none;
+  cursor: pointer;
 }
+
+/* title */
 .header-title-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 30px;
+  position: absolute;         /* take out of layout */
+  left: 50%;                  /* start at middle */
+  transform: translateX(-50%);/* pull left by 50% of its own width */
+  font-size: 1.25rem;
+  font-weight: bold;
 }
-.receipt-header-row h2,
+
 .header-title-wrapper h2 {
   font-size: 2.2rem;
   font-weight: 700;
   margin: 0;
-  text-align: center;
 }
+
+/* header layout */
 .receipt-order-header {
   display: flex;
   align-items: flex-start;
+  justify-content: space-between;
   gap: 24px;
-  margin-bottom: 24px;
-  margin-top: 24px; 
-  width: 100%;
+  margin: 24px 0;
 }
+
 .receipt-logo {
   width: 120px;
   height: 120px;
   object-fit: contain;
-  margin-right: 16px;
 }
-.order-details {
+
+.order-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
+
 .order-title-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  font-size: 1.2rem;
+  font-weight: 600;
   margin-bottom: 8px;
 }
 .order-id {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-right: 16px;
+  font-weight: bold;
 }
-.item-count {
-  font-size: 1.1rem;
+.order-meta {
+  font-size: 1rem;
   color: #222;
-  margin-right: 16px;
 }
+
+.order-summary-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+  margin-top: 2px;
+}
+
+.count-price {
+  display: flex;
+  gap: 14px;
+}
+
+.summary-count,
+.summary-price {
+  font-size: 1rem;
+  color: #444;
+  font-weight: 500;
+}
+.summary-price {
+  font-weight: 700;
+}
+
 .status-badge {
   background: #444;
   color: #fff;
-  border-radius: 20px;
-  padding: 6px 20px;
-  font-size: 1rem;
+  border-radius: 16px;
+  padding: 4px 16px;
+  font-size: 0.9rem;
   font-weight: 600;
-  margin-left: auto;
-  margin-top: 8px;
-  height: 32px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  margin-top: 13px;
 }
-.status-green {
-  background-color: #198754 !important;
-  color: white !important;
-}
-.status-red {
-  background-color: #d63a00 !important;
-  color: white !important;
-}
-.status-grey {
-  background-color: #6c757d !important;
-  color: white !important;
-}
+
+.status-green { background-color: #198754; }
+.status-red   { background-color: #d63a00; }
+.status-grey  { background-color: #6c757d; }
 .status-yellow {
-  background-color: #ffd600 !important;
-  color: #222 !important;
+  background-color: #ffd600;
+  color: #222;
   font-weight: 700;
 }
-.order-meta {
-  font-size: 1.1rem;
-  color: #222;
-  margin-bottom: 0;
-}
-.order-meta > div {
-  margin-bottom: 2px;
-}
-.order-placed {
-  font-size: 0.9rem;
-  color: #444;
-  margin-top: 8px;
-}
+
+/* divider line */
 .divider {
   border: none;
   border-top: 1px solid #888;
-  margin: 16px 0 24px 0;
+  margin-top: -8px;
 }
+
+/* receipt body */
 .receipt-body {
   margin-top: 16px;
 }
@@ -344,83 +398,89 @@ async function handlePaymentDone() {
   font-weight: 700;
   margin-bottom: 16px;
 }
+
+/* item list */
 .item-list {
-  margin-bottom: 32px;
+  margin-bottom: 47px;
+  margin-top: 29px;
 }
 .item-row {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-bottom: 8px;
   display: flex;
-  flex-direction: row;
   justify-content: space-between;
-  align-items: center;
-}
-.item-name {
+  align-items: flex-start;
   font-size: 1.1rem;
   font-weight: 600;
+  margin-bottom: 2px;
+ 
+}
+.item-name {
+  display: flex;
+  align-items: center;
+  margin-left: 15px;
 }
 .item-qty {
-  font-size: 1.1rem;
   font-weight: 400;
   margin-left: 8px;
 }
 .item-notes {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #888;
   margin-left: 8px;
 }
+
+
 .summary-table {
   width: 100%;
-  margin-top: 70px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-}
-.summary-row {
-  width: 300px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.1rem;
-  margin-bottom: 8px;
-}
-.summary-row.total .total-bold {
-  font-weight: bold;
-  font-size: 1.15em;
-}
-@media (max-width: 1000px) {
-  .receipt-box {
-    width: 98vw;
-    padding: 16px;
-  }
-  .summary-row {
-    width: 100%;
-    min-width: 0;
-  }
 }
 
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+}
+
+.summary-label,
+.summary-value {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  font-weight: 500;
+  
+}
+
+.summary-row.total .summary-value {
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+
+/* footer message */
 .receipt-footer-message {
-  margin-top: 100px;
+  margin-top: 80px;
   text-align: center;
   font-size: 1.1rem;
   color: rgb(110, 110, 106);
   font-weight: 500;
 }
 
+/* payment button */
 .payment-btn {
-  cursor: pointer;
   border: none;
-  outline: none;
-  font-size: 1rem;
-  font-weight: 600;
   background: #6c757d;
   color: #fff;
-  transition: background 0.2s;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
 }
 .payment-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
+
+/* payment modal */
 .payment-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -437,32 +497,31 @@ async function handlePaymentDone() {
   padding: 40px 48px;
   width: 1100px;
   max-width: 98vw;
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 .close-payment-modal {
   position: absolute;
   top: 18px;
   right: 24px;
+  font-size: 2rem;
   background: none;
   border: none;
-  font-size: 2rem;
   cursor: pointer;
 }
 .payment-title {
   font-size: 2rem;
   font-weight: 700;
-  text-align: center;
   margin-bottom: 32px;
+  text-align: center;
 }
 .payment-content {
   display: flex;
-  flex-direction: row;
   gap: 40px;
-  width: 100%;
   justify-content: space-between;
+  width: 100%;
   margin-bottom: 32px;
 }
 .payment-steps {
@@ -470,17 +529,13 @@ async function handlePaymentDone() {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  font-size: 1.15rem;
-}
-.payment-step {
-  margin-bottom: 8px;
+  font-size: 1.1rem;
 }
 .payment-qr-section {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
   gap: 12px;
 }
 .payment-qr {
@@ -489,15 +544,14 @@ async function handlePaymentDone() {
   object-fit: contain;
   border: 1px solid #eee;
   border-radius: 8px;
-  margin-bottom: 8px;
 }
 .paynow-recipient {
   font-size: 1rem;
-  text-align: center;
   color: #444;
+  text-align: center;
 }
 .payment-confirm-msg {
-  margin: 32px 0 16px 0;
+  margin: 32px 0 16px;
   text-align: center;
   font-size: 1.1rem;
   color: #222;
@@ -510,12 +564,8 @@ async function handlePaymentDone() {
   padding: 10px 40px;
   font-size: 1.2rem;
   font-weight: 700;
-  margin: 0 auto;
-  display: block;
-  margin-bottom: 8px;
   cursor: pointer;
-  transition: background 0.2s;
-  margin-top: 16px;
+  margin: 16px auto 8px;
 }
 .payment-done-btn:hover {
   background: #198754;
@@ -524,5 +574,16 @@ async function handlePaymentDone() {
   color: #d63a00;
   margin-top: 12px;
   text-align: center;
+}
+
+/* responsive */
+@media (max-width: 1000px) {
+  .receipt-box {
+    width: 98vw;
+    padding: 16px;
+  }
+  .summary-row {
+    width: 100%;
+  }
 }
 </style>

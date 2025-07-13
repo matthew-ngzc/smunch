@@ -75,24 +75,29 @@ watch(selectedOrder, (newVal) => {
         <div class="order-content">
           <img :src="order.merchant.image_url" alt="merchant logo" class="merchant-logo" />
           <div class="order-main">
-            <div class="order-header">
-              <div>
-                <h3>Order {{ order.order_id }}</h3>
-                <p>Destination: {{ order.building.toUpperCase() }}, {{ order.room_type }} {{ order.room_number }}</p>
+          <div class="order-header">
+            <div class="order-text">
+              <h3>Order {{ order.order_id }}</h3>
+              <div class="order-meta">
+                <p>Destination: School of {{ order.building.charAt(0).toUpperCase() + order.building.slice(1) }},  {{ order.room_number.charAt(0).toUpperCase() + order.room_number.slice(1) }} {{ order.room_type.charAt(0).toUpperCase() + order.room_type.slice(1) }}</p>
                 <p>Merchant: {{ order.merchant.name }}</p>
-                <p>Deliver date and time: {{ formatDateTime(order.delivery_time) }}</p>
+                <p>Delivery date & time: {{ formatDateTime(order.delivery_time) }}</p>
                 <small>Order placed on {{ formatDateTime(order.created_at) }}</small>
               </div>
-              <div class="order-summary">
-                <div>{{ getItemCount(order) }} item<span v-if="getItemCount(order) > 1">s</span></div>
+            </div>
+
+            <div class="order-summary">
+              <div class="top-summary">
+                <span>{{ getItemCount(order) }} item<span v-if="getItemCount(order) > 1">s</span></span>
                 <div class="order-price">${{ (order.total_amount_cents / 100).toFixed(2) }}</div>
-                <span class="status-badge" :class="formatStatusClass(order.payment_status)">
-                  {{ formatStatus(order.payment_status) }}
-                </span>
               </div>
+              <span class="status-badge" :class="formatStatusClass(order.payment_status)">
+                {{ formatStatus(order.payment_status) }}
+              </span>
             </div>
           </div>
-        </div>
+          </div>
+        </div> 
       </li>
     </ul>
     <div class="pagination">
@@ -134,6 +139,7 @@ watch(selectedOrder, (newVal) => {
   padding: 20px;
   background-color: white;
   cursor: pointer;
+  box-shadow: 0 0 10px rgb(175, 172, 172);
 }
 
 .order-content {
@@ -143,8 +149,8 @@ watch(selectedOrder, (newVal) => {
 }
 
 .merchant-logo {
-  width: 80px;
-  height: 80px;
+  width: 110px;
+  height: 100px;
   object-fit: contain;
 }
 
@@ -155,31 +161,64 @@ watch(selectedOrder, (newVal) => {
 .order-header {
   display: flex;
   justify-content: space-between;
-  gap: 24px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
+.order-text {
+  flex: 1;
+}
+
+.order-header h3 {
+  font-weight: bold;
+  font-size: 23px;
+  margin-bottom: 6px;
+}
+
+.order-meta p,
+.order-meta small {
+  margin: 2px 0;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.order-meta small {
+  margin-top: 16px;
+  display: block;
+  color: grey;
+  font-size: 12px;
+}
+
 .order-summary {
-  text-align: right;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: flex-end;
+  min-width: 120px;
+  height: 100%;
+}
+
+.top-summary {
+  display: flex;
+  flex-direction: column;
   align-items: flex-end;
 }
 
 .order-price {
   font-size: 18px;
   font-weight: bold;
+  margin-top: 2px;
 }
 
 .status-badge {
   padding: 6px 12px;
-  border-radius: 12px;
+  border-radius: 16px;
   font-size: 12px;
   font-weight: bold;
   color: white;
   text-align: center;
   min-width: 120px;
+  margin-top: 36px;
 }
 
 .status-green {
