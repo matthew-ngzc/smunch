@@ -24,21 +24,21 @@
         </div>
         <div class="row text-center justify-content-center">
           <div class="col-md-4 benefit">
-            <img src="/public/dinoTime.png" alt="Save Time" class="benefit-icon" />
+            <img src="/dinoTime.png" alt="Save Time" class="benefit-icon" />
             <h5 class="benefit-title">Save Time</h5>
             <p class="benefit-text">
               No need to leave class or study spots. Get food delivered during short breaks.
             </p>
           </div>
           <div class="col-md-4 benefit">
-            <img src="/public/richDino.png" alt="Earn Money" class="benefit-icon" />
+            <img src="/richDino.png" alt="Earn Money" class="benefit-icon" />
             <h5 class="benefit-title">Earn Money</h5>
             <p class="benefit-text">
               Turn free time between classes into an earning opportunity by delivering food.
             </p>
           </div>
           <div class="col-md-4 benefit">
-            <img src="/public/dinoandfriends.png" alt="Connect with Peers" class="benefit-icon" />
+            <img src="/dinoandfriends.png" alt="Connect with Peers" class="benefit-icon" />
             <h5 class="benefit-title">Connect with Peers</h5>
             <p class="benefit-text">
               Build community by helping fellow students and making new connections.
@@ -101,7 +101,7 @@ import { defineComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import Testimonials from '@/components/Testimonials.vue'
-import dinoSmunchIcon from '/public/dinoSMUNCHING.png'
+import dinoSmunchIcon from '/dinoSMUNCHING.png'
 
 export default defineComponent({
   name: 'LandingPage',

@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, readonly, computed } from 'vue'
+import { readonly, computed } from 'vue'
 
 const props = defineProps({
   data: {
