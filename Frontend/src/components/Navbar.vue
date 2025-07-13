@@ -61,6 +61,7 @@ const logout = () => {
       <router-link to="/home">home</router-link>
       <router-link to="/order">order</router-link> 
       <router-link to="/run">run</router-link>
+      <router-link to="/game">play</router-link>
     </div>
 
     <div class="navbar-right" v-if="auth.token">
