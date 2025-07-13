@@ -71,11 +71,11 @@ export default defineComponent({
       <h1 class="greeting">Hi {{ userName || 'sexy' }}, what would you like to do today?</h1>
       <div class="options">
         <div class="card order" @click="goToOrder">
-          <img src="/public/dinousephone.png" alt="order icon" class="icon" />
+          <img src="/dinousephone.png" alt="order icon" class="icon" />
           <p>Order with SMUNCH!</p>
         </div>
         <div class="card run" @click="goToRun">
-          <img src="/public/dinoRun.png" alt="run icon" class="icon" />
+          <img src="/dinoRun.png" alt="run icon" class="icon" />
           <p>Run with SMUNCH!</p>
         </div>
       </div>
