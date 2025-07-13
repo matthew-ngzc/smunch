@@ -22,6 +22,9 @@ import Help from '../views/Help.vue'
 import PastOrders from '../views/PastOrders.vue'
 import ActiveOrders from '../views/ActiveOrders.vue'
 import Profile from '../views/Profile.vue'
+import FAQ from '../views/FAQ.vue'
+import About from '../views/About.vue'
+import Contact from '../views/Contact.vue'
 
 // REIWEN : this is a routes array and each route object has 3 properties
   const routes = [
@@ -40,7 +43,10 @@ import Profile from '../views/Profile.vue'
   { path: '/activeorders', name: 'activeorders', component: ActiveOrders },
   { path: '/pastorders', name: 'pastorders', component: PastOrders },
   { path: '/help', name: 'help', component: Help },
-  { path: '/profile', name: 'profile', component: Profile }
+  { path: '/profile', name: 'profile', component: Profile },
+  { path: '/faq', name: 'faq', component: FAQ },
+  { path: '/about', name: 'about', component: About },
+  { path: '/contact', name: 'contact', component: Contact }
 ]
 
 

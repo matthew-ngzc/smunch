@@ -285,7 +285,7 @@ export default {
 
         console.log('Sign up successful!');
         this.showNotification();
-        // Navigate to login after a short delay to show the notification
+
         setTimeout(() => {
           this.$router.push('/login');
         }, 2000);
