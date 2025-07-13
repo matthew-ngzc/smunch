@@ -86,6 +86,7 @@
           <div class="input-group">
             <label>Verification</label>
             <div class="cf-turnstile"></div>
+            <span :class="['error-msg', { show: captchaError }]">{{ captchaError }}</span>
           </div>
 
           <button type="submit" class="signup-btn">
@@ -115,7 +116,8 @@ export default {
       passwordError: '',
       showPassword: false,
       showSuccessNotification: false,
-      captchaToken: ''
+      captchaToken: '',
+      captchaError: '',
     };
   },
   mounted() {
@@ -134,7 +136,7 @@ export default {
     validateEmail() {
       const trimmed = this.email.trim();
       if (!trimmed) return (this.emailError = 'Email is required.'), false;
-      if (!trimmed.endsWith('@smu.edu.sg')) return (this.emailError = 'Use your SMU email.'), false;
+      if (!trimmed.endsWith('@smu.edu.sg')) return (this.emailError = 'Use your SMU email. (eg. johndoe.2025@smu.edu.sg)'), false;
       const regex = /^[^\s@]+@smu\.edu\.sg$/;
       if (!regex.test(trimmed)) return (this.emailError = 'Invalid SMU email format.'), false;
       this.emailError = '';
@@ -197,11 +199,22 @@ export default {
         this.showNotification();
         setTimeout(() => this.$router.push('/login'), 5000);
       } catch (error) {
+        const status = error.response?.status;
         const msg = error.response?.data?.message || 'Signup failed.';
+        //
+        if (status === 409 && msg.toLowerCase().includes('account')) {
+          this.emailError = 'An account with this email already exists.';
+          return;
+        }
+        //
         if (msg.toLowerCase().includes('email')) this.emailError = msg;
         else if (msg.toLowerCase().includes('phone')) this.phoneError = msg;
         else if (msg.toLowerCase().includes('password')) this.passwordError = msg;
         else if (msg.toLowerCase().includes('name')) this.nameError = msg;
+        else if (msg.toLowerCase().includes('captcha')) {
+          this.captchaError = 'CAPTCHA verification failed. Please try again.';
+          return;
+        }
         else alert(msg);
       }
     }
