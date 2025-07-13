@@ -106,8 +106,8 @@
 </template>
 
 <script lang="js">
-import { defineComponent, ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { defineComponent, ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import Testimonials from '@/components/Testimonials.vue'
 import dinoSmunchIcon from '/dinoSMUNCHING.png'
@@ -117,33 +117,44 @@ export default defineComponent({
   components: { Testimonials },
   setup() {
     const router = useRouter()
+    const route = useRoute()
     const authStore = useAuthStore()
     const showLogoutSuccess = ref(false)
 
-    onMounted(() => {
-      if (sessionStorage.getItem('justLoggedOut') === 'true') {
-        showLogoutSuccess.value = true
-        sessionStorage.removeItem('justLoggedOut')
-        setTimeout(() => {
-          showLogoutSuccess.value = false
-        }, 5000)
-      }
-    })
+    function triggerLogoutMessage() {
+      showLogoutSuccess.value = true
+      setTimeout(() => {
+        showLogoutSuccess.value = false
+      }, 3500)
+    }
 
-    const handleHomeClick = () => {
-      if (authStore.isAuthenticated()) {
-        router.push('/home')
-      } else {
-        router.push('/signup')
+    function checkLogoutFlag() {
+      if (sessionStorage.getItem('justLoggedOut') === 'true') {
+        sessionStorage.removeItem('justLoggedOut')
+        triggerLogoutMessage()
       }
     }
+
+    onMounted(() => {
+      checkLogoutFlag()
+    })
+
+    watch(() => route.fullPath, () => {
+      checkLogoutFlag()
+    })
 
     return { 
       dinoSmunchIcon,
-      handleHomeClick,
-      showLogoutSuccess
+      showLogoutSuccess,
+      handleHomeClick: () => {
+        if (authStore.isAuthenticated()) {
+          router.push('/home')
+        } else {
+          router.push('/signup')
+        }
+      }
     }
-  },
+  }
 })
 </script>
 
