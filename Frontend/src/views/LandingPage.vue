@@ -1,5 +1,14 @@
 <template>
   <div>
+    <!-- Logout Success Message -->
+    <div v-if="showLogoutSuccess" class="logout-success-banner">
+      <div class="logout-success-content">
+        <svg class="logout-success-icon" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <span>You have successfully logged out.</span>
+      </div>
+    </div>
     <section class="hero-image-row">
       <div class="hero-image-left">
         <img class="full-img" :src="dinoSmunchIcon" alt="dinoSmunch" />
@@ -97,7 +106,7 @@
 </template>
 
 <script lang="js">
-import { defineComponent } from 'vue'
+import { defineComponent, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import Testimonials from '@/components/Testimonials.vue'
@@ -109,6 +118,17 @@ export default defineComponent({
   setup() {
     const router = useRouter()
     const authStore = useAuthStore()
+    const showLogoutSuccess = ref(false)
+
+    onMounted(() => {
+      if (sessionStorage.getItem('justLoggedOut') === 'true') {
+        showLogoutSuccess.value = true
+        sessionStorage.removeItem('justLoggedOut')
+        setTimeout(() => {
+          showLogoutSuccess.value = false
+        }, 5000)
+      }
+    })
 
     const handleHomeClick = () => {
       if (authStore.isAuthenticated()) {
@@ -120,7 +140,8 @@ export default defineComponent({
 
     return { 
       dinoSmunchIcon,
-      handleHomeClick
+      handleHomeClick,
+      showLogoutSuccess
     }
   },
 })
@@ -302,4 +323,34 @@ export default defineComponent({
   font-size: 0.65rem;
 }
 
+.logout-success-banner {
+  position: fixed;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+  pointer-events: none;
+}
+.logout-success-content {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 18px 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 auto;
+  pointer-events: all;
+}
+.logout-success-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
 </style>

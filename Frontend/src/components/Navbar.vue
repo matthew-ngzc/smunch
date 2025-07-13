@@ -37,9 +37,10 @@ onBeforeUnmount(() => {
 
 const logout = () => {
   console.log('Logging out...')
-  auth.logout()           
+  auth.logout()
+  sessionStorage.setItem('justLoggedOut', 'true') // Set flag for logout success
   closeMenu() // close the dropdown
-  router.push('/')    
+  router.push('/') // redirect to landing page
 }
 
 
