@@ -2,6 +2,7 @@
 import express from 'express';
 import { supabase } from '../lib/supabaseClient.js';
 import { getRainStatus } from '../controllers/weather.controller.js';
+import { sendContactEmail } from '../controllers/contact.controller.js';
 
 const router = express.Router();
 
@@ -14,5 +15,6 @@ router.get('/health', async (req, res) => {
 });
 
 router.get('/weather/rain-status', getRainStatus);
+router.post('/contact', sendContactEmail);
 
 export default router;
