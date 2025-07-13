@@ -4,19 +4,23 @@ import { useRouter } from 'vue-router'
 import OrderIcon from '@/assets/order-icon.png'
 import RunIcon from '@/assets/run-icon.png'
 import { useAuthStore } from '@/stores/auth'
+import DinoWeather from '@/components/DinoWeather.vue'
 
 export default defineComponent({
   name: 'Home',
+  components: { DinoWeather },
   setup() {
     const router = useRouter()
     const auth = useAuthStore()
     const userName = auth.userName
     const showWelcomeMessage = ref(false)
+    const weather = ref(null)
+    const weatherLoaded = ref(false)
     
     const goToOrder = () => { router.push('/order') }
     const goToRun = () => { router.push('/run') }
     
-    onMounted(() => {
+    onMounted(async () => {
       // Show welcome message if user just logged in
       const justLoggedIn = sessionStorage.getItem('justLoggedIn')
       if (justLoggedIn === 'true') {
@@ -28,6 +32,13 @@ export default defineComponent({
           showWelcomeMessage.value = false
         }, 3000)
       }
+      try {
+        const res = await fetch('/api/health/weather/rain-status')
+        if (res.ok) {
+          weather.value = await res.json()
+        }
+      } catch (e) { /* ignore */ }
+      weatherLoaded.value = true
     })
     
     return { 
@@ -36,7 +47,9 @@ export default defineComponent({
       RunIcon, 
       goToOrder, 
       goToRun,
-      showWelcomeMessage
+      showWelcomeMessage,
+      weather,
+      weatherLoaded
     }
   }
 })
@@ -67,6 +80,7 @@ export default defineComponent({
         </div>
       </div>
     </div>
+    <DinoWeather v-if="weatherLoaded && weather" :raining="weather.raining" :message="weather.message" />
   </div>
 </template>
 

@@ -1,6 +1,7 @@
 // routes/health.routes.js
 import express from 'express';
 import { supabase } from '../lib/supabaseClient.js';
+import { getRainStatus } from '../controllers/weather.controller.js';
 
 const router = express.Router();
 
@@ -11,5 +12,7 @@ router.get('/health', async (req, res) => {
   }
   res.json({ message: 'Server is up and Supabase is connected' });
 });
+
+router.get('/weather/rain-status', getRainStatus);
 
 export default router;
