@@ -16,9 +16,7 @@
       <div class="hero-text-right">
         <h1 class="hero-title">smunch</h1>
         <p class="hero-subtitle">By students, for students.</p>
-        <router-link to="/signup">
-          <button class="hero-button">Get Started</button>
-        </router-link>
+        <button class="hero-button" @click="handleHomeClick">Get Started</button>
       </div>
     </section>
 
@@ -66,7 +64,7 @@
       <section class="cta-section text-center">
         <h2 class="cta-title">Ready to Get Started?</h2>
         <p class="cta-subtitle">Join SMUNCH today and transform how you get food on campus!</p>
-        <router-link to="/signup">
+        <router-link v-if="!authStore.isAuthenticated()" to="/signup">
           <button class="cta-button">Sign Up Now</button>
         </router-link>
       </section>
@@ -152,7 +150,8 @@ export default defineComponent({
         } else {
           router.push('/signup')
         }
-      }
+      },
+      authStore 
     }
   }
 })
