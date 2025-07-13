@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { getPastOrders, getMerchantInfoById } from '@/services/orderFoodService'
 import { useAuthStore } from '@/stores/auth'
 import OrderReceipt from '@/components/OrderReceipt.vue'
@@ -66,6 +66,18 @@ function getOrderStatusBadge(order) {
     return { text: order.order_status, class: 'status-grey' }
   }
 }
+
+const totalPages = computed(() => Math.ceil(totalOrders.value / pageSize))
+const paginationRange = computed(() => {
+  // Always show all page numbers for < 1 2 3 4 5 >
+  return totalPages.value > 1 ? Array.from({ length: totalPages.value }, (_, i) => i + 1) : []
+})
+function prevPage() {
+  if (currentPage.value > 1) changePage(currentPage.value - 1)
+}
+function nextPage() {
+  if (currentPage.value < totalPages.value) changePage(currentPage.value + 1)
+}
 </script>
 
 <template>
@@ -98,14 +110,16 @@ function getOrderStatusBadge(order) {
       </li>
     </ul>
     <div class="pagination">
+      <button class="page-btn nav-btn" :disabled="currentPage === 1" @click="prevPage">&#60;</button>
       <button
-        v-for="page in Math.ceil(totalOrders / pageSize)"
+        v-for="page in paginationRange"
         :key="page"
         :class="['page-btn', { active: page === currentPage } ]"
         @click="changePage(page)"
       >
         {{ page }}
       </button>
+      <button class="page-btn nav-btn" :disabled="currentPage === totalPages" @click="nextPage">&#62;</button>
     </div>
     <OrderReceipt v-if="selectedOrder" :order="selectedOrder" :onClose="closeReceipt" :showOrderStatus="true" />
   </div>
@@ -216,18 +230,39 @@ function getOrderStatusBadge(order) {
   gap: 8px;
   margin-top: 24px;
   justify-content: center;
+  align-items: center;
 }
 .page-btn {
-  background: #eee;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 16px;
-  font-size: 1rem;
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #222;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: border 0.2s, color 0.2s, background 0.2s;
 }
-.page-btn.active, .page-btn:hover {
-  background: #17614a;
-  color: #fff;
+.page-btn.active {
+  border: 2px solid #6c3cff;
+  color: #6c3cff;
+  background: #fff;
+}
+.page-btn[disabled] {
+  cursor: default;
+  color: #bbb;
+  background: #f3f3f3;
+  border: 2px solid #e0e0e0;
+}
+.page-btn.nav-btn {
+  font-size: 1.5rem;
+  padding: 8px 16px;
+  color: #bbb;
+  background: #f3f3f3;
+  border: 2px solid #e0e0e0;
+}
+.page-btn.nav-btn:not([disabled]) {
+  color: #222;
+  background: #fff;
 }
 </style>
