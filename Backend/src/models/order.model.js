@@ -285,3 +285,30 @@ export async function getFullOrdersByCustomerIdAndStatusOrThrow(customerId, stat
   return data;
 }
 
+/**
+ * Retrieves the total number of orders for a specific customer,
+ * optionally filtered by order status.
+ *
+ * This function does not return any order data — it only returns the count.
+ * Uses Supabase's `head: true` to skip fetching rows and `count: 'exact'` for an accurate total.
+ *
+ * @param {number|string} customerId - ID of the customer whose orders are being counted
+ * @param {string[]} [statuses=[]] - Optional array of order statuses to filter by (e.g. ['created', 'completed'])
+ * @returns {Promise<number>} - Total number of matching orders
+ * @throws {Error} - If the Supabase query fails
+ */
+export async function getOrderCountByCustomerIdAndStatusOrThrow(customerId, statuses = []){
+  let query = supabase
+    .from('orders')
+    .select('order_id', {count: 'exact', head: true})
+    .eq('customer_id', customerId);
+
+    if (statuses.length > 0){
+      query = query.in('order_status', statuses)
+    }
+
+    const {count, error} = await query;
+    if (error) throw error;
+    return count;
+}
+

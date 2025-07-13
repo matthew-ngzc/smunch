@@ -4,7 +4,8 @@ import {
   updateOrderStatusOrThrow,
   updatePaymentStatusOrThrow,
   getOrderByIdOrThrow,
-  getFullOrdersByCustomerIdAndStatusOrThrow
+  getFullOrdersByCustomerIdAndStatusOrThrow,
+  getOrderCountByCustomerIdAndStatusOrThrow
 } from '../models/order.model.js';
 import { generatePayNowQRCode } from '../services/payment.service.js';
 import { canUpdatePaymentStatus } from '../utils/auth.utils.js';
@@ -427,8 +428,12 @@ export const updatePaymentStatus = async (req, res, next) => {
  *       - `active`: returns in-progress orders (created, payment_verified, preparing, collected_by_runner, delivered)
  *       - `history`: returns past orders (completed or cancelled)
  *       
- *       If `type` is not provided, returns all orders.
- *       Supports pagination using `limit` and `offset` query params.
+ *       If `type` is not provided, returns all orders regardless of status.
+ *       
+ *       The results are paginated using the `limit` and `offset` query parameters. 
+ *       The total number of matching orders (ignoring limit/offset) is returned as a separate `total` field.
+ * 
+ *       E.g. To get the second page of 10 results, set `offset=10` and `limit=10`. Default is offset=0, limit=10.
  *     tags: [Orders]
  *     parameters:
  *       - in: path
@@ -458,10 +463,11 @@ export const updatePaymentStatus = async (req, res, next) => {
  *         description: "Number of records to skip (default: 0)"
  *     responses:
  *       200:
- *         description: List of full orders (with order items)
+ *         description: Paginated list of full orders with total count
  *         content:
  *           application/json:
  *             example:
+ *               total: 42
  *               orders:
  *                 - order_id: 76
  *                   customer_id: 2
@@ -519,9 +525,13 @@ export const getUserOrders = async (req, res, next) => {
     const safeLimit = Math.min(Number(limit) || 10, 50);
     const safeOffset = Number(offset) || 0;
 
-
-    const orders = await getFullOrdersByCustomerIdAndStatusOrThrow(userId, statuses || [], safeLimit, safeOffset);
-    res.json({ orders });
+    // Use promise to run these concurrently
+    const [orders, total] = await Promise.all([
+      await getFullOrdersByCustomerIdAndStatusOrThrow(userId, statuses, safeLimit, safeOffset),
+      await getOrderCountByCustomerIdAndStatusOrThrow(userId, statuses)
+    ]);
+    
+    res.json({ total, orders });
   } catch (err) {
     next(err);
   }

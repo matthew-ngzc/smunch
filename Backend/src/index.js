@@ -38,7 +38,7 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.SUPABASE_ANON_KEY){
   console.warn("[WARNING] Supabase URL or Key not set in environment variables!");
 }
 
