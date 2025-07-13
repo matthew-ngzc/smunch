@@ -20,7 +20,7 @@ const bubbleText = computed(() => {
   if (props.raining) {
     return "It might rain in the next hour. Stay dry and order in!";
   } else {
-    return "Life's good. Let's get SMUNCHIN'!";
+    return "Life's good. Let's get SMUNCHIN' !";
   }
 })
 </script>

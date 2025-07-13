@@ -1,6 +1,7 @@
 <template>
   <div class="page no-scroll">
     <h2 class="coming-soon">coming soon!</h2>
+    <img src="/dinoRun.png" alt="Running Dino" class="dino-run" />
   </div>
 </template>
 
@@ -36,5 +37,37 @@ export default defineComponent({
   font-weight: bold;
   color: #0d3d31;
   transform: none;
+}
+.dino-run {
+  position: fixed;
+  left: 0;
+  bottom: 18px;
+  width: 110px;
+  height: auto;
+  z-index: 200;
+  animation: runAcross 3.5s linear infinite;
+  pointer-events: none;
+}
+@keyframes runAcross {
+  0% {
+    left: -120px;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    left: 100vw;
+    opacity: 0;
+  }
+}
+@media (max-width: 600px) {
+  .dino-run {
+    width: 60px;
+    bottom: 8px;
+  }
 }
 </style>
