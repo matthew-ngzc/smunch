@@ -27,10 +27,12 @@ export function isCorrectUser({ role, userId, order}) {
         return { allowed: true };
     }
     
+    // not user and not admin
     if (role !== 'user') {
         return { allowed: false, reason: 'Only users or admins may view or edit this order.' };
     }
     
+    // is user, check id matching anot
     if (order.customer_id !== userId) {
         return { allowed: false, reason: 'You can only view or edit your own orders.' };
     }

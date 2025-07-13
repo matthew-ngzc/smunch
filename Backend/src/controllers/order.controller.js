@@ -8,7 +8,7 @@ import {
   getOrderCountByCustomerIdAndStatusOrThrow
 } from '../models/order.model.js';
 import { generatePayNowQRCode } from '../services/payment.service.js';
-import { canUpdatePaymentStatus } from '../utils/auth.utils.js';
+import { canUpdatePaymentStatus, isCorrectUser } from '../utils/auth.utils.js';
 
 
 /** SWAGGER DOCS
@@ -150,6 +150,7 @@ import { canUpdatePaymentStatus } from '../utils/auth.utils.js';
  *   payment_reference: string,   // e.g., SMUNCH-42-1
  *   paynow_number: string        // e.g., '91234567'
  * }
+ * TODO: check the jwt against the customer_id
  */
 export const createOrder = async (req, res, next) => {
   try {
@@ -536,3 +537,74 @@ export const getUserOrders = async (req, res, next) => {
     next(err);
   }
 };
+
+
+/**
+ * @swagger
+ * /api/orders/{orderId}/refresh-status:
+ *   get:
+ *     summary: Refresh payment and order status
+ *     description: |
+ *       Allows a user to refresh and retrieve the latest `payment_status` and `order_status` of their order.  
+ *       Only the owner of the order or an admin may access this endpoint.
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the order to retrieve
+ *     responses:
+ *       200:
+ *         description: Order status retrieved successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               order_id: 123
+ *               payment_status: awaiting_verification
+ *               order_status: preparing
+ *       403:
+ *         description: Forbidden — not authorized to access this order
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: You can only view or edit your own orders.
+ *       404:
+ *         description: Order not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Order with ID 123 not found"
+ */
+
+/**
+ * GET /api/orders/:orderId/refresh-status
+ *
+ * Returns the `payment_status` and `order_status` of a specific order.
+ * Only accessible by the order owner or an admin.
+ */
+export const getOrderAndPaymentStatus = async (req, res, next) => {
+  try {
+    const {orderId } = req.params;
+    const userId = req.user.id;
+    const role = req.user.role;
+
+    const { customer_id, payment_status, order_status } = 
+      await getOrderByIdOrThrow( orderId, 'customer_id,payment_status,order_status');
+
+    const {allowed, reason} = isCorrectUser({ role, userId, order: { customer_id}});
+    if (!allowed) return res.status(403).json({ error: reason });
+
+    // output
+    res.status(200).json({
+      order_id: orderId,
+      payment_status,
+      order_status
+    });
+  } catch (err){
+    next(err);
+  }
+}
