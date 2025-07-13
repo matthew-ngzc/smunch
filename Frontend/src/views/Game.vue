@@ -1,205 +1,208 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import VueWheelSpinner from 'vue-wheel-spinner'
 import { fetchAllMerchants } from '@/services/orderFoodService'
 
-const showWheel = ref(false)
-const showPoker = ref(false)
-const showResult = ref(false)
-const result = ref('')
-const spinning = ref(false)
-const shuffling = ref(false)
-const merchants = ref([])
-const wheelOptions = ref([])
-const pokerOptions = ref([])
-const wheelAngle = ref(0)
-const selectedWheel = ref('')
-const selectedPoker = ref('')
+// ----- WHEEL STATE -----
+const showWheel      = ref(false)
+const showPoker      = ref(false)
+const slices         = ref([])
+const spinnerRef     = ref(null)
+const defaultWinner  = ref(0)
+const winnerResult   = ref(null)
+const spinning       = ref(false)
 
+// Wheel cursor options (you already had these)
+const cursorAngle    = 0
+const cursorPosition = 'edge'
+const cursorDistance = 0
+
+// ----- POKER STATE -----
+const pokerOptions     = ref([])
+const pokerShuffled    = ref([])
+const shuffling        = ref(false)
+const pokerResult      = ref(null)
+
+// ----- FETCH MERCHANTS ON MOUNT -----
 onMounted(async () => {
   try {
     const res = await fetchAllMerchants()
-    console.log("Fetched merchants:", res.data)
-    merchants.value = res.data
-    // Use all merchants for the games
-    wheelOptions.value = merchants.value.map(m => m.name)
-    pokerOptions.value = merchants.value.map(m => m.name)
-  } catch (e) {
-    // fallback to default if fetch fails
-    console.error("Error fetching merchants:", e)  
-    wheelOptions.value = ['Supergreen', 'Koufu', 'Braek']
-    pokerOptions.value = ['Supergreen', 'Koufu', 'Braek']
+    const merchants = res.data
+
+    // Build wheel slices
+    const wheelColors = ['#5ea6c4','#b2f7ef','#468d8c','#c8e6c9','#81d4fa','#ffd600','#ffb74d','#a5d6a7']
+    slices.value = merchants.map((m,i) => ({
+      color: wheelColors[i % wheelColors.length],
+      text:  m.name
+    }))
+
+    // Build poker options
+    pokerOptions.value = merchants.map(m => m.name)
+    // initialize the “deck” for display
+    pokerShuffled.value = pokerOptions.value.map(name => ({
+      name,
+      image: (merchants.find(m=>m.name===name)||{}).image_url || '',
+      highlight: false
+    }))
+
+  } catch (err) {
+    console.error(err)
+    // fallback for both games
+    slices.value = [
+      { color:'#5ea6c4', text:'Supergreen' },
+      { color:'#b2f7ef', text:'Koufu' },
+      { color:'#468d8c', text:'Braek' }
+    ]
+    pokerOptions.value = ['Supergreen','Koufu','Braek']
+    pokerShuffled.value = pokerOptions.value.map(name => ({ name, image:'', highlight:false }))
   }
-  console.log(wheelOptions)
 })
 
-const wheelGradient = computed(() => {
-  const colors = ['#5ea6c4', '#b2f7ef', '#468d8c', '#c8e6c9', '#81d4fa', '#ffd600', '#ffb74d', '#a5d6a7']
-  const n = wheelOptions.value.length
-  const angle = 360 / n
-  let gradient = `conic-gradient(`
-  for (let i = 0; i < n; i++) {
-    const start = i * angle
-    const end = (i + 1) * angle
-    const color = colors[i % colors.length]
-    gradient += `${color} ${start}deg ${end}deg${i < n - 1 ? ', ' : ''}`
-  }
-  gradient += `)`
-  return gradient
-})
+// ----- WHEEL FUNCTIONS -----
+function handleSpinButtonClick() {
+  defaultWinner.value = Math.floor(Math.random() * slices.value.length)
+  spinnerRef.value.spinWheel(defaultWinner.value)
+}
 
-function openWheel() {
-  showWheel.value = true
-  showPoker.value = false
-  showResult.value = false
-  result.value = ''
-  selectedWheel.value = ''
-}
-function openPoker() {
-  showPoker.value = true
-  showWheel.value = false
-  showResult.value = false
-  result.value = ''
-  selectedPoker.value = ''
-}
-function closeGame() {
-  showWheel.value = false
-  showPoker.value = false
-  showResult.value = false
-  result.value = ''
-  selectedWheel.value = ''
-  selectedPoker.value = ''
-}
-function spinWheel() {
-  if (spinning.value) return
+function onSpinStart() {
   spinning.value = true
-  showResult.value = false
-  // Randomly select a segment
-  const opts = wheelOptions.value
-  const idx = Math.floor(Math.random() * opts.length)
-  const anglePer = 360 / opts.length
-  // Spin at least 3 full turns + land on the selected
-  const finalAngle = 360 * 3 + (360 - idx * anglePer - anglePer / 2)
-  wheelAngle.value = finalAngle
-  setTimeout(() => {
-    spinning.value = false
-    selectedWheel.value = opts[idx]
-    showResult.value = true
-  }, 2200)
+  winnerResult.value = null
 }
-function getSegmentStyle(i) {
-  const n = wheelOptions.value.length || 1
-  const angle = 360 / n
-  const colors = ['#5ea6c4', '#b2f7ef', '#468d8c', '#c8e6c9', '#81d4fa', '#ffd600', '#ffb74d', '#a5d6a7']
-  // Each segment is a pie slice using clip-path
-  return {
-    '--segment-rotate': `${i * angle}deg`,
-    '--segment-color': colors[i % colors.length],
-    zIndex: n - i
-  }
+
+function onSpinEnd(winnerIndex) {
+  spinning.value    = false
+  winnerResult.value = slices.value[winnerIndex]
 }
-function getTextStyle(i, angle) {
-  const n = wheelOptions.value.length || 1
-  const step = 360 / n
-  return {
-    transform: `rotate(${-i * step - angle + step / 2}deg) translateY(-90px)`,
-    position: 'absolute',
-    left: '50%',
-    top: '50%',
-    width: '90px',
-    marginLeft: '-45px',
-    textAlign: 'center',
-    pointerEvents: 'none'
-  }
-}
-// For Poker game: show cards, animate shuffling
-const pokerShuffled = ref([])
+
+// ----- POKER FUNCTIONS -----
 function showPokerCards() {
-  // Always show the cards, even before shuffling
-  pokerShuffled.value = pokerOptions.value.map((name, idx) => ({
+  pokerShuffled.value = pokerOptions.value.map((name) => ({
     name,
-    image: (merchants.value.find(m => m.name === name) || {}).image_url || '',
+    image: pokerShuffled.value.find(c=>c.name===name)?.image || '',
     highlight: false
   }))
 }
-watch(pokerOptions, showPokerCards)
+watch(pokerOptions, showPokerCards, { immediate:true })
+
 function shufflePoker() {
   if (shuffling.value) return
   shuffling.value = true
-  showResult.value = false
+  pokerResult.value = null
+
   const opts = pokerOptions.value
-  // Animate shuffling: highlight cards in sequence
   let count = 0
-  const maxCount = 40 // ~5 seconds at 125ms per step
-  const interval = setInterval(() => {
-    pokerShuffled.value.forEach((c, i) => c.highlight = false)
-    const idx = Math.floor(Math.random() * opts.length)
+  const maxCount = 40
+  const iv = setInterval(() => {
+    pokerShuffled.value.forEach(c=>c.highlight=false)
+    const idx = Math.floor(Math.random()*opts.length)
     pokerShuffled.value[idx].highlight = true
     count++
     if (count > maxCount) {
-      clearInterval(interval)
-      // Pick a final card
-      const finalIdx = Math.floor(Math.random() * opts.length)
-      pokerShuffled.value.forEach((c, i) => c.highlight = i === finalIdx)
-      selectedPoker.value = opts[finalIdx]
-      showResult.value = true
+      clearInterval(iv)
+      const finalIdx = Math.floor(Math.random()*opts.length)
+      pokerShuffled.value.forEach((c,i)=>c.highlight = i===finalIdx)
+      pokerResult.value = opts[finalIdx]
       shuffling.value = false
     }
   }, 125)
 }
+
+// ----- PANEL OPEN/CLOSE -----
+function openPoker() {
+  showPoker.value  = true
+  showWheel.value  = false
+  winnerResult.value = null
+  pokerResult.value  = null
+}
+function closeGame() {
+  showWheel.value = false
+  showPoker.value = false
+  winnerResult.value = null
+  pokerResult.value  = null
+}
 </script>
 
 <template>
-    <div class="game no-scroll">
-      <div class="game-page">
-        <h1 class="game-title">Game Zone</h1>
-        <div v-if="!showWheel && !showPoker" class="game-options">
-          <div class="game-card wheel-game" @click="openWheel">
-            <img src="/dinoSpinTheWheel.png" class="game-icon" alt="Spin the Wheel" />
-            <p>Spin the Wheel</p>
-          </div>
-          <div class="game-card poker-game" @click="openPoker">
-            <img src="/dinoPokerCards.png" class="game-icon" alt="Poker Game" />
-            <p>Poker</p>
-          </div>
-          <div class="game-card disabled">
-            <img src="/dinoGuessEmojis.png" class="game-icon" alt="Emoji Guessing Game" />
-            <p>Guess the Emojis</p>
+  <div class="game no-scroll">
+    <div class="game-page">
+      <h1 class="game-title">Game Zone</h1>
+
+      <!-- CHOICE SCREEN -->
+      <div v-if="!showWheel && !showPoker" class="game-options">
+        <div class="game-card wheel-game" @click="showWheel = true">
+          <img src="/dinoSpinTheWheel.png" class="game-icon" alt="Spin the Wheel" />
+          <p>Spin the Wheel</p>
+        </div>
+        <div class="game-card poker-game" @click="openPoker">
+          <img src="/dinoPokerCards.png" class="game-icon" alt="Poker Game" />
+          <p>Poker Roulette</p>
+        </div>
+        <div class="game-card disabled">
+          <img src="/dinoGuessEmojis.png" class="game-icon" alt="Emoji Guessing Game" />
+          <p>Guess the Emojis</p>
+        </div>
+      </div>
+
+      <!-- WHEEL SCREEN -->
+      <div v-if="showWheel" class="game-modal">
+        <button class="close-btn" @click="closeGame">×</button>
+        <h2>Spin the Wheel</h2>
+
+        <VueWheelSpinner
+          ref="spinnerRef"
+          class="spinner"
+          :slices="slices"
+          :winner-index="defaultWinner"
+          :cursor-angle="cursorAngle"
+          :cursor-position="cursorPosition"
+          :cursor-distance="cursorDistance"
+          @spin-start="onSpinStart"
+          @spin-end="onSpinEnd"
+        >
+          <template #cursor>
+            <div class="wheel-pointer-big">▲</div>
+          </template>
+          <template #default>
+            <button
+              class="spin-btn"
+              :disabled="spinning"
+              @click="handleSpinButtonClick"
+            >Spin</button>
+          </template>
+        </VueWheelSpinner>
+
+        <div v-if="winnerResult" class="result">
+          Result: <b>{{ winnerResult.text }}</b>
+        </div>
+      </div>
+
+      <!-- POKER SCREEN -->
+      <div v-if="showPoker" class="game-modal">
+        <button class="close-btn" @click="closeGame">×</button>
+        <h2>Poker</h2>
+
+        <div class="poker-cards">
+          <div
+            v-for="card in pokerShuffled"
+            :key="card.name"
+            class="poker-card"
+            :class="{ selected: card.highlight }"
+          >
+            <img v-if="card.image" :src="card.image" class="poker-img" :alt="card.name" />
+            <div class="poker-name">{{ card.name }}</div>
           </div>
         </div>
-        <!-- Spin the Wheel Game -->
-        <div v-if="showWheel" class="game-modal">
-          <button class="close-btn" @click="closeGame">×</button>
-          <h2>Spin the Wheel</h2>
-          <div class="wheel" :style="{ transform: `rotate(${wheelAngle}deg)`, background: wheelGradient }">
-            <div class="wheel-label" v-for="(opt, i) in wheelOptions" :key="opt"
-                :style="getTextStyle(i, wheelAngle)">
-              {{ opt }}
-            </div>
-          </div>
-          <div class="wheel-pointer">▼</div>
-          
-          <button class="spin-btn" :disabled="spinning" @click="spinWheel">
-            {{ spinning ? 'Spinning...' : 'Spin' }}
-          </button>
-          <div v-if="showResult" class="result">
-            Result: <b>{{ selectedWheel }}</b>
-          </div>
-        </div>
-        <!-- Poker Game -->
-        <div v-if="showPoker" class="game-modal">
-          <button class="close-btn" @click="closeGame">×</button>
-          <h2>Poker</h2>
-          <div class="poker-cards">
-            <div v-for="card in pokerShuffled" :key="card.name" class="poker-card" :class="{ selected: card.highlight }">
-              <img v-if="card.image" :src="card.image" class="poker-img" :alt="card.name" />
-              <div class="poker-name">{{ card.name }}</div>
-            </div>
-          </div>
-          <button class="spin-btn" :disabled="shuffling" @click="shufflePoker">{{ shuffling ? 'Shuffling...' : 'Shuffle' }}</button>
-          <div v-if="showResult" class="result">Result: <b>{{ selectedPoker }}</b></div>
+
+        <button class="spin-btn" :disabled="shuffling" @click="shufflePoker">
+          {{ shuffling ? 'Shuffling...' : 'Shuffle' }}
+        </button>
+
+        <div v-if="pokerResult" class="result">
+          Result: <b>{{ pokerResult }}</b>
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 <style scoped>
@@ -308,57 +311,28 @@ function shufflePoker() {
   font-size: 2rem;
   cursor: pointer;
 }
-.wheel-container {
-  position: relative;
-  width: 220px;
-  height: 220px;
-  margin: 32px auto 24px auto;
+.spinner {
+  width: 460px;
+  height: 460px;
+  margin: 0 auto 18px auto;
 }
-.wheel {
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  border: 8px solid #b2f7ef;
-  background: none;
-  position: relative;
-  transition: transform 2.2s cubic-bezier(0.23, 1, 0.32, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.wheel-label {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #134e4a;
-  background: #ffffffcc;
-  padding: 2px 8px;
-  border-radius: 6px;
-  margin-bottom: 10px;
+.wheel-pointer-big {
   position: absolute;
   left: 50%;
-  top: 50%;
-  width: 90px;
-  margin-left: -45px;
-  text-align: center;
-  pointer-events: none;
-}
-.wheel-pointer {
-  position: absolute;
-  left: 50%;
-  top: -24px;
+  top: -40px;
   transform: translateX(-50%);
-  font-size: 2.2rem;
+  font-size: 2.8rem;
   color: #17614a;
-  z-index: 2;
+  z-index: 10;
+  text-shadow: 0 2px 8px #0001;
 }
 .spin-btn {
   background: #17614a;
   color: #fff;
   border: none;
   border-radius: 24px;
-  padding: 10px 40px;
-  font-size: 1.2rem;
+  padding: 18px 60px;
+  font-size: 1.5rem;
   font-weight: 700;
   margin: 0 auto;
   display: block;
