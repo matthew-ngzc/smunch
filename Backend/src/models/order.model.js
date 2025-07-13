@@ -202,10 +202,10 @@ export async function getOrdersByCustomerIdOrThrow(customerId, statuses) {
  * @returns {Promise<object>} - Order object
  * @throws {Error} - If not found or query fails
  */
-export async function getOrderByIdOrThrow(orderId) {
+export async function getOrderByIdOrThrow(orderId, fields = '*') {
   const { data, error } = await supabase
     .from('orders')
-    .select('*')
+    .select(fields)
     .eq('order_id', orderId)
     .maybeSingle();
 

@@ -1,6 +1,7 @@
 import { PAYMENT_STATUSES } from "../constants/enums.constants.js";
 import axios from 'axios';
 import dotenv from "dotenv";
+import e from "express";
 
 dotenv.config();
 
@@ -26,10 +27,12 @@ export function isCorrectUser({ role, userId, order}) {
         return { allowed: true };
     }
     
+    // not user and not admin
     if (role !== 'user') {
         return { allowed: false, reason: 'Only users or admins may view or edit this order.' };
     }
     
+    // is user, check id matching anot
     if (order.customer_id !== userId) {
         return { allowed: false, reason: 'You can only view or edit your own orders.' };
     }
@@ -103,4 +106,84 @@ export async function verifyTurnstileToken(token, remoteip = '') {
   });
 
   return res.data.success;
+}
+
+
+// validates the fields sent in from the sign up form for users
+export async function validateUserSignupInput({email, name, phoneNo, password}){
+  // check that all fields present
+  if (!email || !name || !phoneNo || !password){
+    return { valid: false, message: 'All fields are required' };
+  }
+  
+  // Email Checks
+  let { valid, message } = await validateEmailFormat(email, false);
+  if (!valid) return { valid, message };
+
+  // name checking (alphanumeric, ' and -)
+  if (!/^[a-zA-Z\s'-]{2,50}$/.test(name)) {
+    return { valid: false, message: 'Name must be 2-50 characters, using only letters, spaces, hyphens, or apostrophes' };
+  }
+
+  // phone number checking (might remove)
+  ({ valid, message } = validatePhoneNumber(phoneNo));
+  if (!valid) return { valid, message };
+
+  // password strength checking
+  ({ valid, message } = await validatePasswordStrength(password));
+  if (!valid) return { valid, message };
+
+  return { valid: true };
+}
+
+export async function validateMerchantSignupInput({phoneNo, password}){
+
+}
+
+// email format checking
+export async function validateEmailFormat(email, isMerchant = false){
+  const cleanedEmail = email.trim();
+  if (!isMerchant){
+    // only allow SMU emails
+    if (!email.endsWith('smu.edu.sg')) {
+      return { valid: false, message: 'Only SMU emails allowed' };
+    }
+    // check for email structure (allows @scis.smu.edu.sg)
+    const smuEmailRegex = /^[a-zA-Z0-9._%+-]+@([a-z]+\.)?smu\.edu\.sg$/i;
+    if (!smuEmailRegex.test(cleanedEmail)) {
+      return { valid: false, message: 'Invalid SMU email format' };
+    }
+  }
+  else { // Merchant email checks (no need smu)
+    const generalEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!generalEmailRegex.test(cleanedEmail)) {
+      return { valid: false, message: 'Invalid email format' };
+    }
+  }
+  return { valid: true };
+}
+
+// Phone number checking
+export function validatePhoneNumber(phoneNo) {
+  if (!/^[689]\d{7}$/.test(phoneNo)) {
+    return {
+      valid: false,
+      message: 'Phone number must be an 8-digit SG mobile starting with 6, 8, or 9. Exclude the +65'
+    };
+  }
+  return { valid: true };
+}
+
+// password checking
+export async function validatePasswordStrength(password){
+  if (
+    password.length < 8 || password.length > 128 ||
+    !/[a-z]/.test(password) ||
+    !/[A-Z]/.test(password) ||
+    !/[0-9]/.test(password) ||
+    !/[!@#$%^&*(),.?":{}|<>]/.test(password)
+  ) {
+    return { valid: false, message: 'Password must be 8-128 characters with uppercase, lowercase, number, and symbol' };
+  }
+  return { valid: true };
 }
