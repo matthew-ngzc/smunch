@@ -135,18 +135,18 @@ async function handlePaymentDone() {
       <div>Destination: School of {{ order.building.charAt(0).toUpperCase() + order.building.slice(1) }},  {{ order.room_number.charAt(0).toUpperCase() + order.room_number.slice(1) }} {{ order.room_type.charAt(0).toUpperCase() + order.room_type.slice(1) }} </div>
       <div>Merchant: {{ order.merchant?.name || order.merchant_id }}</div>
       <div>Pick up time: {{ formatDateTime(order.delivery_time) }}</div>
+      <div>Reference No. : {{ order.payment_reference }}</div>
+      <div class="order-placed">Order placed on {{ formatDateTime(order.created_at, true) }}</div>
     </div>
   </div>
 
   <div class="order-summary-right">
-    <div class="count-price">
-      <div class="summary-count">  {{ itemCount }} item<span v-if="itemCount > 1">s</span>  </div>
-      <div class="summary-price"> ${{ total }}</div>
-    </div>
+
 
     <span v-if="showOrderStatus" :class="['status-badge', getOrderStatusBadge(order).class]">
       {{ getOrderStatusBadge(order).text }}
     </span>
+
     <template v-else>
       <button
         v-if="order.payment_status === 'awaiting_payment'"
@@ -161,6 +161,12 @@ async function handlePaymentDone() {
         {{ formatStatus(order.payment_status) }}
       </span>
     </template>
+
+    <div class="count-price">
+      <div class="summary-count">  {{ itemCount }} item<span v-if="itemCount > 1">s</span>  </div>
+      <div class="summary-price"> ${{ total }}</div>
+    </div>
+
   </div>
 </div>
 
@@ -302,6 +308,13 @@ async function handlePaymentDone() {
   margin: 0;
 }
 
+.order-placed {
+  font-size: 0.9rem;
+  margin-top: 10px;
+  margin-bottom: -5px;
+  color: grey;
+}
+
 /* header layout */
 .receipt-order-header {
   display: flex;
@@ -324,7 +337,7 @@ async function handlePaymentDone() {
 }
 
 .order-title-row {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 8px;
 }
@@ -341,8 +354,8 @@ async function handlePaymentDone() {
   flex-direction: column;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 40px;
   margin-top: 2px;
+  gap: 9px;
 }
 
 .count-price {
@@ -370,7 +383,8 @@ async function handlePaymentDone() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-top: 13px;
+  margin-top: 6px;
+  margin-left: 13px;
 }
 
 .status-green { background-color: #198754; }
@@ -394,7 +408,7 @@ async function handlePaymentDone() {
   margin-top: 16px;
 }
 .section-title {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: 700;
   margin-bottom: 16px;
 }
