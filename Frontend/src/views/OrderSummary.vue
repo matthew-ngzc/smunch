@@ -3,7 +3,10 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router' 
 import { useDeliveryStore } from '@/stores/delivery'
 import { useCartStore } from '@/stores/cart'
+import { useOrderStore } from '@/stores/order'
+import { useAuthStore } from '@/stores/auth'
 import ordertimeline from '../components/ordertimeline.vue'
+import { createOrder } from '@/services/orderFoodService' 
 
    // progress timeline
     const data = {
@@ -14,16 +17,78 @@ import ordertimeline from '../components/ordertimeline.vue'
     };
 
 const router = useRouter() 
-const delivery = useDeliveryStore()
-const cart = useCartStore()
+const deliveryStore = useDeliveryStore()
+const orderStore = useOrderStore()
+const cartStore = useCartStore()
+const authStore = useAuthStore() 
 
 const total = computed(() =>
-  cart.items.reduce((sum, item) => sum + item.quantity * item.price, 0) + 1 // Include $1.00 delivery fee
+  cartStore.items.reduce((sum, item) => sum + item.quantity * item.price, 0) + 1 // Include $1.00 delivery fee
 )
 
-const next = () => {
-  router.push({ name: 'payment' })
+const next = async () => {
+
+  const merchantId = orderStore.selectedMerchantId
+  const customerId = authStore.userId
+
+  const order_items = cartStore.items.map(item => ({
+    menu_item_id: item.id,
+    quantity: item.quantity,
+    customisations: item.customisations || {},
+    notes: item.notes || ''
+  }))
+
+  const payload = {
+    customer_id: customerId, 
+    merchant_id: merchantId,      
+    delivery_fee_cents: 100,
+    order_items,
+    building: deliveryStore.building,
+    room_type: deliveryStore.facilityType,
+    room_number: deliveryStore.floor,
+    delivery_time: new Date(`${deliveryStore.date}T${convertTo24Hr(deliveryStore.time)}:00Z`).toISOString()
+  }
+
+  try {
+    //TEST
+    console.log('Cart Items:', cartStore.items)
+    console.log('Full Payload:', payload)
+    console.log('Order Items Payload:', order_items)
+
+    const response = await createOrder(payload)
+    
+    orderStore.setOrderId(response.data.order.order_id)
+    orderStore.setPaymentDetails({
+      qrCode: response.data.qrCode,
+      paymentReference: response.data.payment_reference,
+      paynowNumber: response.data.paynow_number
+    })
+
+    await router.push({ name: 'payment' })
+    orderStore.setMerchantId(null)  // Reset merchant ID
+    // console.log(orderStore.selectedMerchantId)
+
+  } catch (error) {
+    console.error('Order submission failed:', error)
+    alert('Failed to submit order. Please try again.')
+  }
+  
 }
+
+// helper method
+function convertTo24Hr(timeStr) {
+  const [time, modifier] = timeStr.split(' ')
+  let [hours, minutes] = time.split(':')
+
+  if (modifier === 'PM' && hours !== '12') {
+    hours = String(parseInt(hours) + 12)
+  } else if (modifier === 'AM' && hours === '12') {
+    hours = '00'
+  }
+
+  return `${hours.padStart(2, '0')}:${minutes}`
+}
+
 </script>
 
 <template>
@@ -51,7 +116,7 @@ const next = () => {
             
           </div>
           <!--  loop through each item in cart and present info -->
-          <div v-for="item in cart.items" :key="item.id" class="item-row">
+          <div v-for="item in cartStore.items" :key="item.id" class="item-row">
             <div class="name">{{ item.name }}</div>
             <div class="right-text"> 
               <div class="qty">{{ item.quantity }}</div>
@@ -81,9 +146,9 @@ const next = () => {
         <h2>Delivery details</h2>
 
         <div class="delivery-details">
-          <p><strong>Location</strong><br />{{ delivery.building }} {{ delivery.floor }} - {{ delivery.facilityType }}</p>
-          <p><strong>Date</strong><br />{{ delivery.date }}</p>
-          <p><strong>Time</strong><br />{{ delivery.time }}</p>
+          <p><strong>Location</strong><br />{{ deliveryStore.building }} {{ deliveryStore.floor }} - {{ deliveryStore.facilityType }}</p>
+          <p><strong>Date</strong><br />{{ deliveryStore.date }}</p>
+          <p><strong>Time</strong><br />{{ deliveryStore.time }}</p>
         </div>
       </div>
 
