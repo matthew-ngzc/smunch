@@ -401,8 +401,8 @@ async function handlePaymentDone() {
   
 }
 .refresh-icon {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   cursor: pointer;
   transition: transform 0.3s ease;
   transform: translateY(3px); /* always applied */
