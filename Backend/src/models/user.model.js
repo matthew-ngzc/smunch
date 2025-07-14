@@ -93,6 +93,32 @@ export async function createUserOrThrow(payload) {
   return data;
 }
 
+
+/**
+ * Updates an existing user's profile in the database.
+ *
+ * @param {number} userId - The ID of the user to update
+ * @param {object} updates - A partial update map with any of the fields: profile_picture_url, bio, hashed_password, etc.
+ * @returns {Promise<object>} - The updated user object
+ * @throws {Error} - If update fails or user not found
+ */
+export async function updateUserProfileOrThrow(userId = 0, updates = {}){
+  if (userId === 0 || Object.keys(updates).length === 0){
+    const err = new Error('Invalid input:: user_id and at least 1 update field required');
+    err.status = 400;
+    throw err;
+  }
+  const {data, error} = await supabase
+    .from('users')
+    .update(updates)
+    .eq('user_id', userId)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
+
 /**
  * Updates the last_login timestamp of a user.
  *
