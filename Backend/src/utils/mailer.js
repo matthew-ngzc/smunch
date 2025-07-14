@@ -1,22 +1,10 @@
-
-// import { Resend } from 'resend';
-// const resend = new Resend(process.env.RESEND_API_KEY);
-
-// export const sendVerificationEmail = async (to, token) => {
-//   const link = `${process.env.FRONTEND_URL}/verify?token=${token}`;
-
-//   await resend.emails.send({
-//     from: 'SMUNCH <onboarding@resend.dev>',
-//     to,
-//     subject: 'Verify your SMUNCH account',
-//     html: `<p>Welcome to SMUNCH! Click <a href="${link}">here</a> to verify your account. This link expires in 1 hour.</p>`
-//   });
-// };
-
-
 //Using Gmail account
 import nodemailer from 'nodemailer';
 import dotenv from "dotenv";
+import { 
+  getPasswordChangeHtml,
+  getReceiptHtml,
+  getVerificationEmailHtml } from './emailHtmls.js';
 
 dotenv.config();
 
@@ -54,18 +42,16 @@ transporter.verify((error, success) => {
  * @param {'user'|'merchant'} options.type - Type of signup ('user' or 'merchant')
  * @returns {Promise} - Resolves when the email is sent successfully
  */
-export const sendVerificationEmail = async ({ to, token, role} ) => {
-  console.log('[DEBUG]', process.env.SMUNCH_EMAIL, process.env.SMUNCH_APP_PASS);
-
+export const sendVerificationEmail = async ({ to, name, token, role} ) => {
   const path = role === 'merchant' ? 'merchant/verify-signup' : 'verify';
-  //const link = `${process.env.BACKEND_URL}/api/auth/verify?token=${token}`;
   const link = `${process.env.FRONTEND_URL}/api/auth/${path}?token=${token}`;
-  const displayType = role === 'merchant' ? 'Merchant' : 'User';
+  const accountType = role === 'merchant' ? 'Merchant' : 'User';
+  const html = getVerificationEmailHtml({ link, accountType, name});
   return transporter.sendMail({
     from: '"SMUNCH" <smunch.dev@gmail.com>',
     to,
-    subject: 'Verify your SMUNCH Account',
-    html: `<p>Click <a href="${link}">here</a> to complete your ${displayType.toLowerCase()} signup. Link expires in 1 hour.</p>`,
+    subject: 'Welcome to SMUNCH! Just one more step',
+    html
   });
 };
 
@@ -76,11 +62,54 @@ export const sendVerificationEmail = async ({ to, token, role} ) => {
  * @param {string} htmlBody - The HTML content of the email
  * @returns {Promise<void>}
  */
-export async function sendReceiptEmail(to, receiptHtml) {
+export async function sendReceiptEmail(to, order) {
+  const receiptHtml = getReceiptHtml(order);
   return transporter.sendMail({
     from: '"SMUNCH" <smunch.dev@gmail.com>',
     to,
     subject: 'Payment Received! Your SMUNCH Order is Confirmed',
     html: receiptHtml
+  });
+}
+
+
+/**
+ * Sends a notification email to the user if their password was changed.
+ *
+ * @param {string} to - Recipient's email
+ * @param {string} name - Recipient's name
+ * @param {Date} changeDate - Date/time when the password was changed
+ * @returns {Promise<void>}
+ */
+export async function sendPasswordChangeNotification(to, name, changeDate = new Date()) {
+  const formattedDate = changeDate.toLocaleString('en-SG', { timeZone: 'Asia/Singapore' });
+  const html = getPasswordChangeHtml({ name, formattedDate });
+
+  return transporter.sendMail({
+    from: '"SMUNCH" <smunch.dev@gmail.com>',
+    to,
+    subject: 'Your SMUNCH Password Was Changed',
+    html,
+  });
+}
+
+
+
+/**
+ * Sends a password reset email to the user with a reset link.
+ *
+ * @param {string} to - Recipient's email
+ * @param {string} link - Password reset URL
+ * @param {string} [name='Smunchie'] - Name of the user
+ * @returns {Promise<void>}
+ */
+export async function sendResetPasswordEmail(to, link, name = 'Smunchie') {
+  const html = getResetPasswordHtml({ link, name });
+
+  return transporter.sendMail({
+    from: '"SMUNCH" <smunch.dev@gmail.com>',
+    to,
+    subject: 'Reset your SMUNCH password',
+    html
   });
 }

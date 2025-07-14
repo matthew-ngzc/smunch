@@ -1,6 +1,5 @@
 import { getFullOrderByIdOrThrow } from '../models/order.model.js';
 import { getUserByIdOrThrow } from '../models/user.model.js';
-import { generateReceiptHtml} from '../services/receipt.service.js';
 import { sendReceiptEmail } from '../utils/mailer.js';
 import {
     generatePaymentReference,
@@ -73,14 +72,11 @@ export const confirmPaymentAndSendReceipt = async (req, res, next) => {
       });
     }
 
-    // Generate receipt content
-    const html = await generateReceiptHtml(order);
-
     // Fetch user email
     const {email} = await getUserByIdOrThrow(order.customer_id, "email");
     if (!email) return res.status(404).json({ message: 'User email not found' });
     // Send the email
-    await sendReceiptEmail(email, html);
+    await sendReceiptEmail(email, order);
 
     res.status(200).json({ message: 'Receipt email sent successfully' });
   } catch (err) {

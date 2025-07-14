@@ -5,7 +5,9 @@ import {
     verifyAndCreateUser,
     requestMerchantSignup,
     verifyMerchantSignupToken,
-    completeMerchantSignup
+    completeMerchantSignup,
+    forgotPassword,
+    resetPassword
 } from '../controllers/auth.controller.js';
 import { rateLimit } from '../middlewares/rateLimit.middleware.js';
 
@@ -21,5 +23,17 @@ router.get('/verify', verifyAndCreateUser); // verify signup token and create us
 router.post('/merchant/request-signup', rateLimit({ keyPrefix: 'rate:merchant-signup', maxAttempts: 5, windowSeconds: 30 * 60 }), requestMerchantSignup);      // Step 1
 router.get('/merchant/verify-signup', verifyMerchantSignupToken);    // Step 2
 router.post('/merchant/complete-signup', completeMerchantSignup);    // Step 3
+
+// forgot password routes
+// POST /api/auth/forgot-password
+// Rate limited to 5 attempts per 15 minutes
+router.post(
+  '/forgot-password', 
+  rateLimit({ keyPrefix: 'rate:forgot-password', maxAttempts: 5, windowSeconds: 15 * 60 }),
+  forgotPassword
+);
+
+// POST /api/auth/reset-password
+router.post('/reset-password', resetPassword);
 
 export default router;

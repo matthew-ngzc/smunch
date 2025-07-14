@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import redis from '../lib/redisClient.js';
 import { v4 as uuidv4 } from 'uuid';
-import { sendVerificationEmail } from '../utils/mailer.js';
+import { sendResetPasswordEmail, sendVerificationEmail } from '../utils/mailer.js';
 import {
   getUserByEmailOrThrow,
   isEmailTakenOrThrow,
@@ -13,6 +13,7 @@ import { getMerchantByEmailOrThrow, updateMerchantByIdOrThrow } from '../models/
 import { supabase } from '../lib/supabaseClient.js';
 import { verifyTurnstileToken } from '../utils/turnstile.js';
 import { validateEmailFormat, validateMerchantSignupInput, validateUserSignupInput } from '../utils/auth.utils.js';
+import { updateUserProfile } from './user.controller.js';
 
 
 
@@ -123,7 +124,7 @@ export const signup = async (req, res, next) => {
     const token = jwt.sign({ redisKey, role: 'user' }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     //Send verification email
-    await sendVerificationEmail({ to: email, token, role: 'user'});
+    await sendVerificationEmail({ to: email, name, token, role: 'user'});
 
     res.status(200).json({ message: 'Verification email sent. Please check your inbox.' });
   } catch (err) {
@@ -579,3 +580,181 @@ export const login = async (req, res, next) => {
   }
 };
 
+
+/** SWAGGER DOCS
+ * @swagger
+ * /api/auth/forgot-password:
+ *   post:
+ *     summary: Request password reset
+ *     description: |
+ *       Allows a user to request a password reset link via email.  
+ *       The email will contain a secure link (valid for 15 minutes) to reset their password.
+ *       
+ *       If the email is not registered, an error is returned.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: student@smu.edu.sg
+ *     responses:
+ *       200:
+ *         description: Reset link sent
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Password reset link sent. Please check your inbox.
+ *       400:
+ *         description: Missing email field
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Email is required
+ *       404:
+ *         description: Email not found in user database
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "User with email = student@smu.edu.sg does not exist"
+ *               code: "NOT_FOUND_USER"
+ */
+/**
+ * POST /api/auth/forgot-password
+ * Body:
+ *   - email: Registered email address (required)
+ *
+ * No auth header required.
+ *
+ * Checks if a user exists with the provided email.
+ * If valid, sends a reset-password link via email that is valid for 15 minutes.
+ * The link includes a JWT token that must be passed to /api/auth/reset-password to complete the flow.
+ * 
+ */
+export const forgotPassword = async (req, res, next) => {
+  try{
+    //extrct email from body to send the link to
+    const {email} = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required'});
+
+    // check if user exists, and if yes get the user id and put into redis
+    const user = await getUserByEmailOrThrow(email);
+    const token = jwt.sign({ email }, process.env.JWT_SECRET, {expiresIn: '15m'});
+
+    const link = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+
+    // send email
+    await sendResetPasswordEmail(email, link, user.name);
+    res.status(200).json({ message: 'Password reset link sent. Please check your inbox.' });
+  } catch(err){
+    next(err);
+  }
+}
+
+
+/** SWAGGER DOCS
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     summary: Reset account password using email token
+ *     description: |
+ *       Resets a user's password by validating a token sent to their email.  
+ *       Only the password field will be updated.  
+ *       Password must meet strength requirements and will be hashed before saving.  
+ *       
+ *       If successful, a password change confirmation email is sent.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token, password]
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: JWT token received from email link
+ *                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *               password:
+ *                 type: string
+ *                 description: New password (must meet strength requirements)
+ *                 example: NewSecurePass123!
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               user:
+ *                 user_id: 1
+ *                 email: student@smu.edu.sg
+ *                 name: Alice Tan
+ *                 bio: Coffee lover, SMU IS student
+ *                 profile_picture_url: https://cdn.smunch.sg/avatars/alice.jpg
+ *                 role: user
+ *       400:
+ *         description: Invalid or missing input
+ *         content:
+ *           application/json:
+ *             examples:
+ *               missing_fields:
+ *                 summary: Token or password missing
+ *                 value:
+ *                   message: "Token and new password are required"
+ *               weak_password:
+ *                 summary: Password does not meet strength requirements
+ *                 value:
+ *                   message: "Password must contain at least 8 characters including 1 number and 1 uppercase letter"
+ *       401:
+ *         description: Expired or invalid token
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Invalid or expired token"
+ *       404:
+ *         description: Email not found in user database
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "User with email = student@smu.edu.sg does not exist"
+ *               code: "NOT_FOUND_USER"
+ */
+export const resetPassword = async (req, res, next) => {
+  try {
+    // extract
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ message: 'Token and new password are required' });
+    }
+
+    // decode jwt to get email
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { email } = decoded;
+
+    const user = await getUserByEmailOrThrow(email);
+
+    // Create a mock request object with the expected structure
+    const mockReq = {
+      user: {
+        user_id: user.user_id,
+        email: user.email,
+        name: user.name,
+      },
+      body: {
+        password,
+      }
+    };
+
+    // Reuse the update profile method in user.controller
+    await updateUserProfile(mockReq, res, next);
+  } catch (err) {
+    next(err);
+  }
+};

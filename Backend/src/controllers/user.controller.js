@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
-import { updateUserProfileOr, updateUserProfileOrThrow, updateUserProfilePicture } from '../models/user.model.js';
+import { updateUserProfileOrThrow, updateUserProfilePicture } from '../models/user.model.js';
 import { validatePasswordStrength } from '../utils/auth.utils.js';
+import { sendPasswordChangeNotification } from '../utils/mailer.js';
 
 
 /** 
@@ -37,7 +38,7 @@ export const updateUserProfilePictureUrl = async (req, res, next) => {
  *       **Possible fields to update:**
  *       - `profile_picture`: URL to a new profile image (stored as `profile_picture_url` in the database)
  *       - `bio`: Short text bio (max ~150 characters recommended)
- *       - `password`: New password (must pass strength validation and will be hashed)
+ *       - `password`: New password (must pass strength validation and will be hashed). If resetting password, a notification email will be sent to the user
  * 
  *       Password updates must meet strength requirements and will be hashed before saving.
  *     tags: [Users]
@@ -106,6 +107,9 @@ export const updateUserProfile = async (req, res, next) => {
     // extract information from body
     const userId = req.user.user_id;
 
+    let passwordChanged = false;
+    const password_changed_at = new Date();
+
     // changes to make
     const updates = {};
     const fields = [ 'profile_picture', 'bio', 'password' ];
@@ -119,6 +123,9 @@ export const updateUserProfile = async (req, res, next) => {
           if (!valid) return res.status(400).json({ message });
           // hashing
           updates.hashed_password = await bcrypt.hash(password, 10);
+          // add time
+          updates.password_changed_at = password_changed_at;
+          passwordChanged = true;
         } 
         // every other field just add in
         else {
@@ -134,7 +141,12 @@ export const updateUserProfile = async (req, res, next) => {
 
     // update in db
     const updatedUser = await updateUserProfileOrThrow(userId, updates);
-    res.status(200).json({ user: updatedUser });
+
+    // send email if the password was changed
+    if (passwordChanged){
+      await sendPasswordChangeNotification(updatedUser.email, updatedUser.name, updatedUser.password_changed_at);
+    }
+    return res.status(200).json({ user: updatedUser });
   }catch (err){
     next(err);
   }

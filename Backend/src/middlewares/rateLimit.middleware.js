@@ -1,6 +1,6 @@
 import redis from "../lib/redisClient.js";
 
-export function rateLimit({ keyPrefix = 'rate: signup', maxAttempts = 5, windowSeconds = 60 }) {
+export function rateLimit({ keyPrefix = 'rate:signup', maxAttempts = 5, windowSeconds = 60 }) {
     return async (req, res, next) => {
         try {
             // Skip rate limiting in development mode
