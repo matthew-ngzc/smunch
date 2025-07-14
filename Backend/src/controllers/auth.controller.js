@@ -12,6 +12,7 @@ import {
 import { getMerchantByEmailOrThrow, updateMerchantByIdOrThrow } from '../models/merchant.model.js';
 import { supabase } from '../lib/supabaseClient.js';
 import { verifyTurnstileToken } from '../utils/turnstile.js';
+import { validateEmailFormat, validateMerchantSignupInput, validateUserSignupInput } from '../utils/auth.utils.js';
 
 
 
@@ -70,7 +71,6 @@ import { verifyTurnstileToken } from '../utils/turnstile.js';
  *             example:
  *               message: Account already exists
  */
-
 /**
  * POST /api/auth/signup
  * Body:
@@ -83,36 +83,29 @@ import { verifyTurnstileToken } from '../utils/turnstile.js';
  * Starts the signup process by verifying the email is allowed and not taken,
  * and then sends a verification email containing a JWT token.
  * Account is only created after verification.
- * TODO: password strength validation  //Regan: Done in FE to some extent
- * TODO: email format validation  //Regan: Done in FE to some extent
- * TODO: phone number format validation  //Regan : Done in FE to some extent
+ * DONE: password strength validation  
+ * DONE: email format validation  
+ * DONE: phone number format validation  
  * DONE: rate limit signup attempts
- * TODO: add reCAPTCHA to prevent spam
- * TODO: prevent sql injection in email/password
+ * DONE: add reCAPTCHA to prevent spam
  */
 export const signup = async (req, res, next) => {
   try {
-    // const { email, name, phoneNo, password } = req.body;
-    // TODO: if using captcha replace above line with this
+    // remove captcha_token if cancelling captcha for signup
     const { email, name, phoneNo, password, captcha_token } = req.body;
-    // check if all fields are provided
-    if (!email || !name || !phoneNo || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
 
+    // field validation
+    const {valid, message} = await validateUserSignupInput({email, name, phoneNo, password});
+    if (!valid) return res.status(400).json({message});
+
+    // captcha validation
     if (!captcha_token) {
       return res.status(400).json({ message: 'Missing CAPTCHA token' });
     }
-
     const userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
     const isValidCaptcha = await verifyTurnstileToken(captcha_token, userIp);
     if (!isValidCaptcha) {
       return res.status(400).json({ message: 'CAPTCHA verification failed' });
-    }
-
-    //only allow SMU emails
-    if (!email.endsWith('smu.edu.sg')) {
-      return res.status(400).json({ message: 'Only SMU emails allowed' });
     }
 
     //prevent duplicate accounts
@@ -120,7 +113,7 @@ export const signup = async (req, res, next) => {
       return res.status(409).json({ message: 'Account already exists' });
     }
 
-    // TODO: store everything in redis, only put signupId in jwt token, which is the key in redis
+    // store everything in redis, only put signupId in jwt token, which is the key in redis
     const signupId = uuidv4(); // generate unique signup ID. This is the key in redis, put this into jwt
     const redisKey = `signup:${signupId}`;
     // store in user detail in redis for 1 hour
@@ -137,14 +130,6 @@ export const signup = async (req, res, next) => {
     next(err);
   }
 };
-// export async function signup(req, res, next) {
-//   const { email, password } = req.body;
-//   const { data, error } = await supabase.auth.signUp({
-//     email: email,
-//     password: password,
-//   })
-//   res.status(200).json({ message: 'Verification email sent. Please check your inbox.' });
-// }
 
 
 /** SWAGGER DOCS
@@ -200,7 +185,7 @@ export const verifyAndCreateUser = async (req, res, next) => {
     //extract user details from token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    //TODO: fetch (email, name, role) from jwt, (phoneNo, password) from redis
+    // fetch (email, name, role) from jwt, (phoneNo, password) from redis
     const { redisKey, role } = decoded;
 
     //fetch user details from redis
@@ -282,14 +267,17 @@ export const verifyAndCreateUser = async (req, res, next) => {
  * else tells them to contact us via email for onboarding. Admin needs to create the merchant and add the email to ensure no fake merchants
  * and then sends a verification email containing a JWT token based on (email, merchant_id, name, role).
  * Account is not created yet, only email verified
- * TODO: email format validation
- * TODO: rate limit signup attempts
+ * DONE: email format validation
+ * DONE: rate limit signup attempts
  * TODO: add reCAPTCHA to prevent spam
  */
 export const requestMerchantSignup = async (req, res, next) =>{
   // db check for email
   try {
     const { email } = req.body;
+    const {valid, message} = await validateEmailFormat({email},true);
+    if (!valid) return res.status(400).json({message});
+
     //if dont exist this method will throw NotFoundError
     const merchant = await getMerchantByEmailOrThrow(email, 'merchant_id, name');
     // check if already linked to an account
@@ -445,6 +433,7 @@ export const verifyMerchantSignupToken = async (req, res, next) => {
  * - Token authenticity and expiry
  * - Email and merchant_id match DB record
  * - Email has not already been used
+ * DONE: field validation
  */
 export const completeMerchantSignup = async (req, res, next) => {
   try{
@@ -463,6 +452,10 @@ export const completeMerchantSignup = async (req, res, next) => {
     }
 
     const {email, merchant_id, name} = decoded;
+
+    // field validations
+    const {valid, message} = await validateMerchantSignupInput({phoneNo, password});
+    if (!valid) return res.status(400).json({message});
 
     // Recheck with db if email and name match
     const merchant = await getMerchantByEmailOrThrow(email, 'merchant_id, name');

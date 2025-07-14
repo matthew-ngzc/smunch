@@ -3,9 +3,16 @@ import { defineComponent, onMounted, ref } from 'vue'
 import { fetchAllMerchants } from '@/services/orderFoodService'
 import { useOrderStore } from '@/stores/order'
 import { useRouter } from 'vue-router'
+import DinoWeather from '@/components/DinoWeather.vue'
+import Filter from '@/components/Filter.vue'
+import Navbar from '@/components/Navbar.vue'
+import ChatBar from '@/components/ChatBar.vue'
 
 
 export default defineComponent({
+  components: {
+    ChatBar
+  },
   setup() {
     const merchants = ref([])
     const orderStore = useOrderStore()
@@ -36,10 +43,13 @@ export default defineComponent({
 
 <template>
   <div class="order-page">
-    <!-- New Search Bar -->
-    <div class="chat-search-bar">
+    <!-- Search Bar -->
+    <!-- <div class="chat-search-bar">
       <input type="text" placeholder="Order with SMUNCH.AI !" class="chat-input" />
       <button class="chat-send-btn">Send</button>
+    </div> -->
+    <div>
+      <ChatBar/>
     </div>
 
     <div class="order-content">
@@ -70,6 +80,7 @@ export default defineComponent({
 .order-page {
   padding: 30px;
   font-family: 'Inter', sans-serif;
+  padding-top: 120px; /* Ensures content is not hidden behind the fixed ChatBar */
 }
 
 .order-page h1 {
@@ -90,7 +101,7 @@ export default defineComponent({
   color: #134e4a;
 }
 
-/* New Chat-like Search Bar */
+/* New Chat-like Search Bar
 .chat-search-bar {
   display: flex;
   align-items: center;
@@ -138,7 +149,7 @@ export default defineComponent({
 .chat-send-btn:hover {
   background: #0d3d31;
   box-shadow: 0 4px 16px rgba(143,79,255,0.16);
-}
+} */
 
 .divider {
   border: none;             

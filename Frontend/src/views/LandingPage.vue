@@ -312,6 +312,18 @@ export default defineComponent({
   margin: 0 auto;
 }
 
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.footer-content > div {
+  flex: 1;
+  text-align: center;
+}
+
 .footer-links li {
   margin-bottom: 0.3rem;
 }

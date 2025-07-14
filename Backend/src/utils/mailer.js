@@ -70,7 +70,7 @@ export const sendVerificationEmail = async ({ to, token, role} ) => {
 };
 
 /**
- * Sends a confirmation email with the receipt PDF attached.
+ * Sends a confirmation email with the receipt attached.
  *
  * @param {string} to - The recipient's email address
  * @param {string} htmlBody - The HTML content of the email
