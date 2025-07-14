@@ -1,8 +1,8 @@
 <script lang="js">
 import { defineComponent, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-// import OrderIcon from '@/assets/order-icon.png'
-// import RunIcon from '@/assets/run-icon.png'
+import OrderIcon from '@/assets/order-icon.png'
+import RunIcon from '@/assets/run-icon.png'
 import { useAuthStore } from '@/stores/auth'
 import DinoWeather from '@/components/DinoWeather.vue'
 
@@ -43,8 +43,8 @@ export default defineComponent({
     
     return { 
       userName, 
-      // OrderIcon, 
-      // RunIcon, 
+      OrderIcon, 
+      RunIcon, 
       goToOrder, 
       goToRun,
       showWelcomeMessage,
@@ -71,11 +71,11 @@ export default defineComponent({
       <h1 class="greeting">Hi {{ userName || 'sexy' }}, what would you like to do today?</h1>
       <div class="options">
         <div class="card order" @click="goToOrder">
-          <img src="/public/dinousephone.png" alt="order icon" class="icon" />
+          <img src="../assets/order-icon.png" alt="order icon" class="icon" />
           <p>Order with SMUNCH!</p>
         </div>
         <div class="card run" @click="goToRun">
-          <img src="/public/dinoRun.png" alt="run icon" class="icon" />
+          <img src="../assets/run-icon.png" alt="run icon" class="icon" />
           <p>Run with SMUNCH!</p>
         </div>
       </div>
@@ -192,8 +192,8 @@ export default defineComponent({
   color: #134e4a;
 }
 .icon {
-  width: 130px;
-  height: 130px;
+  width: 100px;
+  height: 100px;
   margin-bottom: 1.5rem;
   filter: drop-shadow(0 2px 8px rgba(44, 62, 80, 0.10));
 }
