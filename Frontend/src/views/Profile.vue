@@ -11,6 +11,12 @@
           <label for="bio">Bio</label>
           <textarea id="bio" v-model="bio" placeholder="Tell us about yourself..." rows="3"></textarea>
         </div>
+
+        <div>
+           <TelegramVerification />
+        </div>
+       
+
         <div class="input-group">
           <label for="currentPassword">Current Password</label>
           <input id="currentPassword" v-model="currentPassword" type="password" placeholder="Current password" />
@@ -34,8 +40,12 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import { storage } from '@/firebase/firebaseConfig';
 import axiosInstance from '@/utility/axiosInstance';
 import { useAuthStore } from '@/stores/auth';
+import TelegramVerification from '@/components/TelegramVerification.vue'
 
 export default {
+  components: {
+    TelegramVerification
+  },
   data() {
     return {
       bio: '',
@@ -94,23 +104,25 @@ export default {
   height: calc(100vh - 60px);
   background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
   display: flex;
-  align-items: center;
+  align-items: start;  
   justify-content: center;
-  overflow: hidden;
+  overflow: auto;       
   margin: 0;
-  padding: 0;
+  padding: 2rem 1rem;
 }
+
 .profile-card {
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 8px 32px rgba(44, 62, 80, 0.12);
   padding: 2.5rem 2rem 2rem 2rem;
-  max-width: 420px;
-  width: 100%;
+  max-width: 720px;
+  width: 90%;       /* increase from 100% to 90% of viewport width */
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
 .profile-card h2 {
   font-size: 2rem;
   font-weight: 800;
