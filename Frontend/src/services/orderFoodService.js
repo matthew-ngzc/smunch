@@ -67,3 +67,9 @@ export async function sendContactForm({ name, email, message }) {
 }
 
 
+// refresh and get user's order status 
+export async function getRefreshedOrders(orderId) {
+  return axiosInstance.get(`/api/orders/${orderId}/refresh-status`)
+}
+
+

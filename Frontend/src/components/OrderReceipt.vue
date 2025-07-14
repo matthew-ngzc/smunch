@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { formatDateTime as _formatDateTime, formatStatusClass, formatStatus } from '@/utility/orderHelpers'
-import { getPaymentQRCode, updatePaymentStatus } from '@/services/orderFoodService'
+import { getPaymentQRCode, updatePaymentStatus, getRefreshedOrders } from '@/services/orderFoodService'
 
 // define props passed into this component
 // 'order' contains all the order details
@@ -12,6 +12,35 @@ const props = defineProps({
   onClose: Function,
   showOrderStatus: Boolean // true for past orders, false/undefined for active
 })
+
+// to refresh each specific order
+const spinningOrderId = ref(null)
+
+async function refreshOrderStatus(orderId) {
+  if (!orderId || typeof orderId !== 'number') {
+    console.error('invalid orderId in refreshOrderStatus:', orderId)
+    return
+  }
+
+  spinningOrderId.value = orderId
+
+  try {
+    const res = await getRefreshedOrders(orderId)
+    const refreshed = res.data
+
+    // directly update the props.order values
+    props.order.payment_status = refreshed.payment_status
+    props.order.order_status = refreshed.order_status
+
+    await new Promise(resolve => setTimeout(resolve, 600)) // allow spin to show
+  } catch (err) {
+    console.error('refresh error:', err)
+  } finally {
+    spinningOrderId.value = null
+  }
+}
+
+
 
 // compute total item count by summing up quantities of all items in the order
 const itemCount = computed(() => {
@@ -107,10 +136,14 @@ async function handlePaymentDone() {
   } catch (e) {
     doneError.value = 'Failed to update payment status.'
   } finally {
-    doneLoading.value = false
-  }
+  setTimeout(() => {
+    spinningOrderId.value = null
+  }, 1000) // delay 500ms so it has time to visibly spin
+}
 }
 </script>
+
+
 <template>
   <div class="receipt-backdrop" @click.self="onClose">
     <div class="receipt-box">
@@ -142,25 +175,29 @@ async function handlePaymentDone() {
 
   <div class="order-summary-right">
 
+    <div class="status-row">
+      <img src="/refreshImage.png" alt="refresh" class="refresh-icon" :class="{ spinning: spinningOrderId === props.order.order_id }" @click="refreshOrderStatus(props.order.order_id)"/>
 
-    <span v-if="showOrderStatus" :class="['status-badge', getOrderStatusBadge(order).class]">
-      {{ getOrderStatusBadge(order).text }}
-    </span>
 
-    <template v-else>
-      <button
-        v-if="order.payment_status === 'awaiting_payment'"
-        class="status-badge status-grey payment-btn"
-        @click="handlePaymentClick"
-        :disabled="loadingPayment"
-      >
-        <span v-if="!loadingPayment">Click here to make payment</span>
-        <span v-else>Loading...</span>
-      </button>
-      <span v-else :class="['status-badge', formatStatusClass(order.payment_status)]">
-        {{ formatStatus(order.payment_status) }}
+      <span v-if="showOrderStatus" :class="['status-badge', getOrderStatusBadge(order).class]">
+        {{ getOrderStatusBadge(order).text }}
       </span>
-    </template>
+
+      <template v-else>
+        <button
+          v-if="order.payment_status === 'awaiting_payment'"
+          class="status-badge status-grey payment-btn"
+          @click="handlePaymentClick"
+          :disabled="loadingPayment"
+        >
+          <span v-if="!loadingPayment">Click here to make payment</span>
+          <span v-else>Loading...</span>
+        </button>
+        <span v-else :class="['status-badge', formatStatusClass(order.payment_status)]">
+          {{ formatStatus(order.payment_status) }}
+        </span>
+      </template>
+    </div>
 
     <div class="count-price">
       <div class="summary-count">  {{ itemCount }} item<span v-if="itemCount > 1">s</span>  </div>
@@ -358,6 +395,34 @@ async function handlePaymentDone() {
   gap: 9px;
 }
 
+.status-row {
+  display: flex;
+  align-items: center;
+  
+}
+.refresh-icon {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  transform: translateY(3px); /* always applied */
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: translateY(3px) rotate(0deg);
+  }
+  to {
+    transform: translateY(3px) rotate(360deg);
+  }
+}
+
+
+
 .count-price {
   display: flex;
   gap: 14px;
@@ -384,7 +449,7 @@ async function handlePaymentDone() {
   align-items: center;
   justify-content: center;
   margin-top: 6px;
-  margin-left: 13px;
+  margin-left: 6px;
 }
 
 .status-green { background-color: #198754; }

@@ -12,13 +12,22 @@ const currentPage = ref(1)
 const pageSize = 5
 const totalOrders = ref(0)
 
+
 async function fetchActiveOrders(page = 1) {
+
+  // currently logged in userid
   const userId = authStore.userId
+  // calculates how many orders to skip in pagination
   const offset = (page - 1) * pageSize
+
   try {
+    // makes the actual request to your backend
     const res = await getActiveOrders(userId, pageSize, offset)
+    // pulls out the list of orders and total order count from the response
     const orders = res.data.orders
     totalOrders.value = res.data.total || 0
+
+    // for every order, you make a separate call to fetch its merchant info
     const ordersWithMerchant = await Promise.all(
       orders.map(async (order) => {
         const merchantRes = await getMerchantInfoById(order.merchant_id)
@@ -26,6 +35,7 @@ async function fetchActiveOrders(page = 1) {
         return order
       })
     )
+    // store everything in reactive variable created earlier
     activeOrders.value = ordersWithMerchant
   } catch (error) {
     console.error('Failed to load active orders:', error)
