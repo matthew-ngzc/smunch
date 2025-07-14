@@ -23,6 +23,7 @@ dotenv.config();
  *   and an optional reason if denied.
  */
 export function isCorrectUser({ role, userId, order}) {
+    // admins are allowed
     if (role === 'admin') {
         return { allowed: true };
     }
@@ -63,30 +64,30 @@ export function isCorrectUser({ role, userId, order}) {
  *   with a reason if not allowed.
  */
 export function canUpdatePaymentStatus({ role, userId, order, newStatus }) {
+  // checks that is either admin, or the id matches if user
   const { allowed, reason } = isCorrectUser({ role, userId, order });
   if (!allowed) {
     return { allowed, reason };
   }
 
-  if (role !== 'user') {
-    return { allowed: false, reason: 'Only users or admins may update payment status.' };
-  }
-
-  if (order.customer_id !== userId) {
-    return { allowed: false, reason: 'You can only update your own orders.' };
-  }
-
-  if (order.payment_status !== PAYMENT_STATUSES[0]) {
+  // check that new payment status exists
+  if (!PAYMENT_STATUSES.includes(newStatus)) {
     return {
       allowed: false,
-      reason: `You can only update from '${PAYMENT_STATUSES[0]}'. Current status: '${order.payment_status}'.`,
+      reason: `Invalid payment status: '${newStatus}'. Allowed: ${PAYMENT_STATUSES.join(', ')}`
     };
   }
 
-  if (newStatus !== PAYMENT_STATUSES[1]) {
+  // admins can alr
+  if (role === 'admin') {
+    return { allowed: true };
+  }
+
+  // users need to check the before and after. Only can change from "awaiting payment" to "awaiting verification"
+  if (order.payment_status !== PAYMENT_STATUSES[0] || newStatus !== PAYMENT_STATUSES[1]) {
     return {
       allowed: false,
-      reason: `Users can only change status to '${PAYMENT_STATUSES[1]}'.`,
+      reason: `Users can only change status from '${PAYMENT_STATUSES[0]}' to '${PAYMENT_STATUSES[1]}'.`,
     };
   }
 
