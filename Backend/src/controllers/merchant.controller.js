@@ -20,14 +20,31 @@ import { MENU_ITEM_STATUS } from '../constants/enums.constants.js';
  *   get:
  *     summary: Get all merchants
  *     description: |
- *       Returns a list of all supported food merchants. Each merchant includes:
+ *       Returns a list of all supported food merchants.  
+ *       
+ *       You can optionally filter results. If u do not have this parameter it will return every merchant:
+ *       - `parent_merchant_id=null` → returns only top-level merchants (e.g. Koufu, Braek)
+ *       - `parent_merchant_id=5` → returns child merchants of merchant ID 5 (e.g. Koufu stalls)
+ *       
+ *       Each merchant includes:
  *       - merchant_id (integer)
  *       - name (string)
  *       - location (string or null)
  *       - contact_number (string or null)
  *       - image_url (string)
+ *       - parent_merchant_id (integer or null) — if this merchant is a child
+ *       - has_children (boolean) — whether this merchant has children
+ * 
  *       🔓 **Access**: Public — no login required
  *     tags: [Merchants]
+ *     parameters:
+ *       - in: query
+ *         name: parent_merchant_id
+ *         schema:
+ *           type: string
+ *         description: |
+ *           Filter by parent merchant ID.  
+ *           Use `parent_id=null` to fetch top-level merchants.
  *     responses:
  *       200:
  *         description: List of merchants
@@ -38,25 +55,55 @@ import { MENU_ITEM_STATUS } from '../constants/enums.constants.js';
  *                 name: Braek
  *                 location: Basement
  *                 contact_number: 91234567
- *                 image_url: https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.fastjobs.sg%2Fsingapore-jobs%2F%3Fcoyid%3D204605&psig=AOvVaw3cpA1bdzwgZybei93q9BOz&ust=1748849862598000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCNjWy8rbz40DFQAAAAAdAAAAABAE
+ *                 image_url: https://cdn.example.com/braek.jpg
+ *                 parent_merchant_id: null
+ *                 has_children: false
  *               - merchant_id: 5
  *                 name: Koufu
  *                 location: null
  *                 contact_number: null
- *                 image_url: "https://www.google.com/url?sa=i&url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FKoufu_%2528company%2529&psig=AOvVaw29E5Tk6cwedaIOtkli0Q2_&ust=1748850040947000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCMjd9KLcz40DFQAAAAAdAAAAABAe"
-*/
+ *                 image_url: https://cdn.example.com/koufu.jpg
+ *                 parent_merchant_id: null
+ *                 has_children: true
+ *               - merchant_id: 12
+ *                 name: Koufu - Mala
+ *                 location: null
+ *                 contact_number: null
+ *                 image_url: https://cdn.example.com/koufu-mala.jpg
+ *                 parent_merchant_id: 5
+ *                 has_children: false
+ */
 /**
  * GET /api/merchants
  * Fetches all merchants with basic public fields.
  */
 export const getAllMerchants = async (req, res, next) => {
   try {
-    const merchants = await getAllMerchantsOrThrow();
+    const { parent_id } = req.query;
+
+    let merchants;
+
+    if (parent_id === 'null') {
+      // Top-level merchants only
+      merchants = await getMerchantsByParentId(null);
+    } else if (parent_id !== undefined) {
+      // Filter by specific parent merchant ID
+      const parentIdInt = parseInt(parent_id);
+      if (isNaN(parentIdInt)) {
+        return res.status(400).json({ error: 'Invalid parent_id parameter' });
+      }
+      merchants = await getMerchantsByParentId(parentIdInt);
+    } else {
+      // No filter, return all
+      merchants = await getAllMerchantsOrThrow();
+    }
+
     res.json(merchants);
   } catch (err) {
     next(err);
   }
 };
+
 
 /** SWAGGER DOCS
  * @swagger
@@ -69,6 +116,9 @@ export const getAllMerchants = async (req, res, next) => {
  *       - location (string)
  *       - contact_number (string|null)
  *       - image_url (string)
+ *       - parent_merchant_id (integer|null)
+ *       - has_children (boolean)
+ * 
  *       🔓 **Access**: Public — no login required
  *     tags: [Merchants]
  *     parameters:
@@ -84,10 +134,13 @@ export const getAllMerchants = async (req, res, next) => {
  *         content:
  *           application/json:
  *             example:
+ *               merchant_id: 1
  *               name: Braek
  *               location: Basement
  *               contact_number: 91234567
- *               image_url: https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.fastjobs.sg%2Fsingapore-jobs%2F%3Fcoyid%3D204605&psig=AOvVaw3cpA1bdzwgZybei93q9BOz&ust=1748849862598000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCNjWy8rbz40DFQAAAAAdAAAAABAE
+ *               image_url: https://cdn.example.com/braek.jpg
+ *               parent_merchant_id: null
+ *               has_children: false
  *       404:
  *         description: Merchant not found
  *         content:
@@ -316,12 +369,23 @@ export const addMerchant = async (req, res, next) => {
  *   put:
  *     summary: Update a merchant's details
  *     description: |
- *       🔒 **Access**: Must be logged in as the **merchant who owns this account** or **admin**
+ *       Updates the specified merchant’s information.  
+ *       
+ *       ✅ **Allowed fields**:
+ *       - `name` (string)
+ *       - `location` (string)
+ *       - `contact_number` (string)
+ *       - `image_url` (string)
+ *       - `payout_frequency` (string, must be one of: `daily`, `weekly`, `monthly`)
+ *       - `parent_merchant_id` (integer|null): Must be chosen from a list of existing merchants  
+ *         (the client should show a dropdown of valid options and supply only the selected merchant's ID)
+ *       
+ *       ❌ `has_children` cannot be updated directly. It is managed automatically by the backend.
  * 
- *       Updates the specified merchant’s information.
+ *       ⚠️ Setting `parent_merchant_id` to `null` will detach the merchant from any parent.
+ * 
+ *       🔐 **Access**: Admin only
  *     tags: [Merchants]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -338,21 +402,25 @@ export const addMerchant = async (req, res, next) => {
  *             properties:
  *               name:
  *                 type: string
+ *                 example: "Koufu - Mala"
  *               location:
  *                 type: string
+ *                 example: "SCIS Level 2"
  *               contact_number:
  *                 type: string
+ *                 example: "91234567"
  *               image_url:
  *                 type: string
+ *                 example: "https://cdn.example.com/koufu-mala.jpg"
  *               payout_frequency:
  *                 type: string
  *                 enum: [daily, weekly, monthly]
- *           example:
- *             name: "update merchant documentation"
- *             location: "CONNEX"
- *             contact_number: "98765432"
- *             image_url: "https://cdn.example.com/testing.png"
- *             payout_frequency: "monthly"
+ *                 example: weekly
+ *               parent_merchant_id:
+ *                 type: integer
+ *                 nullable: true
+ *                 example: 5
+ *                 description: Must be selected from a list of valid merchants.
  *     responses:
  *       200:
  *         description: Merchant updated successfully
@@ -361,18 +429,25 @@ export const addMerchant = async (req, res, next) => {
  *             example:
  *               merchant:
  *                 merchant_id: 8
- *                 name: "update merchant documentation"
- *                 location: "CONNEX"
- *                 contact_number: "98765432"
- *                 image_url: "https://cdn.example.com/testing.png"
- *                 created_at: "2025-06-19T17:19:40.983147"
- *                 payout_frequency: "monthly"
+ *                 name: "Koufu - Mala"
+ *                 location: "SCIS Level 2"
+ *                 contact_number: "91234567"
+ *                 image_url: "https://cdn.example.com/koufu-mala.jpg"
+ *                 payout_frequency: "weekly"
+ *                 parent_merchant_id: 5
+ *                 has_children: false
+ *       400:
+ *         description: Invalid update attempt
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Cannot update restricted fields: has_children"
  *       404:
  *         description: Merchant not found
  *         content:
  *           application/json:
  *             example:
- *               error: "Merchant with ID 1 does not exist"
+ *               error: "Merchant with ID 8 does not exist"
  *               code: "NOT_FOUND_MERCHANT"
  */
 /**
@@ -394,8 +469,22 @@ export const updateMerchant = async (req, res, next) => {
     }
     await getMerchantByIdOrThrow(merchantId); // validate existence
 
-    const updatedMerchant = await updateMerchantByIdOrThrow(merchantId, req.body);
-    res.json({ merchant: updatedMerchant });
+    // check what fields they are updating. Cannot update has_children
+    const allowedFields = [
+      'name', 'location', 'contact_number',
+      'image_url', 'payout_frequency', 'parent_merchant_id'
+    ];
+
+    // copy into updates hashmap to ensure that only updating the allowed fields
+    const updates = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    }
+
+    const updatedMerchant = await updateMerchantByIdOrThrow(merchantId, updates);
+    return res.status(200).json({ merchant: updatedMerchant });
   } catch (err) {
     next(err);
   }

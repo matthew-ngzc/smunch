@@ -11,12 +11,43 @@ import { DuplicateError, NotFoundError } from '../utils/error.utils.js';
 export async function getAllMerchantsOrThrow() {
   const { data, error } = await supabase
     .from('merchants')
-    .select('merchant_id, name, location, contact_number, image_url')
+    .select('merchant_id, name, location, contact_number, image_url, parent_merchant_id, has_children')
     .order('merchant_id', {ascending: true});
 
   if (error) throw error;
   return data;
 }
+
+/**
+ * Retrieves merchants filtered by `parent_merchant_id`.
+ *
+ * - If `parentId` is `null`, it returns top-level merchants (i.e. where parent_merchant_id IS NULL).
+ * - Otherwise, it returns all merchants that are children of the specified parent.
+ *
+ * Used to fetch stall listings for grouped merchants like Koufu.
+ *
+ * @param {number|null} parentId - The ID of the parent merchant, or null for top-level
+ * @returns {Promise<object[]>} - An array of merchant objects
+ * @throws {Error} - If the query fails
+ */
+export async function getMerchantsByParentIdOrThrow(parentId) {
+  let query = supabase
+    .from('merchants')
+    .select('merchant_id, name, location, contact_number, image_url, parent_merchant_id, has_children')
+    .order('merchant_id', { ascending: true });
+
+  if (parentId === null) {
+    query = query.is('parent_merchant_id', null);
+  } else {
+    query = query.eq('parent_merchant_id', parentId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data;
+}
+
 
 /**
  * Fetches a merchant by ID and throws if not found.
@@ -54,7 +85,6 @@ export async function getMerchantByIdOrThrow(merchantId, fields = 'merchant_id')
     name: "Alice's Cafe",
     email: "alice@example.com"
  * }
-
  */
 export async function getMerchantByEmailOrThrow(email, fields = 'merchant_id') {
   const { data, error } = await supabase
