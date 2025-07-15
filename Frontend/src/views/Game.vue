@@ -574,7 +574,6 @@ function closeGame() {
   width: 100px;
   height: 100px;
   object-fit: contain;
-  margin-bottom: 1.5rem;
   display: block;
 }
 
