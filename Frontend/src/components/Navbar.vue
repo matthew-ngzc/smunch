@@ -3,6 +3,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import coins from '@/assets/smunch_coin.jpg';
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -65,8 +66,13 @@ const logout = () => {
     </div>
 
     <div class="navbar-right" v-if="auth.token">
-        <!-- bell icon -->
-        <!-- <img :src="bellIcon" class="bell" alt="bell" /> -->
+        <!-- coins display -->
+        <div class="coins-display">
+          <div class="coin-icon">
+            <img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="coin-image" />
+          </div>
+          <span class="coins-count">{{ auth.coins }}</span>
+        </div>
 
          <div class="profile-wrapper" @click="toggleMenu">
           <div class="icon-circle">
@@ -191,6 +197,37 @@ const logout = () => {
   align-items: center;
   gap: 20px;
   
+}
+
+/* coins display */
+.coins-display {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  background-color: white;
+  padding: 3px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: visible;
+}
+
+.coin-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: -5px 0;
+}
+
+.coin-image {
+  width: 40px; /* Larger coin */
+  height: 40px; /* Larger coin */
+  object-fit: contain;
+}
+
+.coins-count {
+  font-weight: bold;
+  color: #000;
+  font-size: 18px;
 }
 
 /* bell icon */

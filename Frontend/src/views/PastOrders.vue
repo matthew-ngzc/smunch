@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import OrderReceipt from '@/components/OrderReceipt.vue'
 import { formatDateTime, formatStatusBadge } from '@/utility/orderHelpers'
 import InfoPopup from '@/components/InfoPopup.vue'
-
+import coins from '@/assets/smunch_coin.jpg';
 
 const authStore = useAuthStore()
 const pastOrders = ref([])
@@ -110,6 +110,11 @@ function nextPage() {
                 <div class="top-summary">
                   <span>{{ getItemCount(order) }} item<span v-if="getItemCount(order) > 1">s</span></span>
                   <div class="order-price">${{ (order.total_amount_cents / 100).toFixed(2) }}</div>
+                  <!-- Coin reward for completed orders -->
+                  <div v-if="order.order_status === 'completed'" class="coin-reward">
+                    <span class="coin-text">+1</span>
+                    <img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="coin-icon-small" />
+                  </div>
                 </div>
                 <span class="status-badge" :class="getOrderStatusBadge(order).class">
                   {{ getOrderStatusBadge(order).text }}
@@ -241,6 +246,26 @@ function nextPage() {
   font-size: 18px;
   font-weight: bold;
   margin-top: 2px;
+}
+
+/* Coin reward styling */
+.coin-reward {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  margin-top: 4px;
+}
+
+.coin-text {
+  font-size: 16px;
+  font-weight: bold;
+  color: #198754;
+}
+
+.coin-icon-small {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
 }
 
 .status-badge {

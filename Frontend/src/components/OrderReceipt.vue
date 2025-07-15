@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { formatDateTime as _formatDateTime, formatStatusClass, formatStatus } from '@/utility/orderHelpers'
 import { getPaymentQRCode, updatePaymentStatus, getRefreshedOrders } from '@/services/orderFoodService'
+import coins from '@/assets/smunch_coin.jpg';
 
 // define props passed into this component
 // 'order' contains all the order details
@@ -202,6 +203,11 @@ async function handlePaymentDone() {
     <div class="count-price">
       <div class="summary-count">  {{ itemCount }} item<span v-if="itemCount > 1">s</span>  </div>
       <div class="summary-price"> ${{ total }}</div>
+    </div>
+    <!-- Coin reward for completed orders in past orders view -->
+    <div v-if="showOrderStatus && order.order_status === 'completed'" class="coin-reward">
+      <span class="coin-text">+1</span>
+      <img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="coin-icon-small" />
     </div>
 
   </div>
@@ -436,6 +442,26 @@ async function handlePaymentDone() {
 }
 .summary-price {
   font-weight: 700;
+}
+
+/* Coin reward styling for receipt */
+.coin-reward {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: -3px;
+}
+
+.coin-text {
+  font-size: 16px;
+  font-weight: bold;
+  color: #198754;
+}
+
+.coin-icon-small {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
 }
 
 .status-badge {
