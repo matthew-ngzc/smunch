@@ -1,4 +1,5 @@
 import { ORDER_STATUSES, PAYMENT_STATUSES } from '../constants/enums.constants.js';
+import redis from '../lib/redisClient.js';
 import {
   createOrderOrThrow,
   updateOrderStatusOrThrow,
@@ -185,13 +186,24 @@ import { canUpdatePaymentStatus, isCorrectUser } from '../utils/auth.utils.js';
  */
 export const createOrder = async (req, res, next) => {
   try {
-    const jwtUserId = req.user.user_id;
+    const jwtUserId = req.user.id;
     const { customer_id } = req.body;
 
     // Only allow users to create orders for themselves
     if (jwtUserId !== customer_id) {
+      console.log(jwtUserId);
+      console.log(customer_id);
       return res.status(403).json({ message: 'You can only create orders for your own account.' });
     }
+
+    // redis double click debouncing (prevent double ordering)
+    const redisKey = `order:lock:${customer_id}`;
+    // 'NX' puts into redis only on the first time. If already have then returns null (indicating alr in redis)
+    const lock = await redis.set(redisKey, '1', 'NX', 'EX', 3); // expire in 3s
+    if (!lock){
+      return res.status(429).json({ message: 'Processing your last request, please do not submit again'});
+    }
+
     //create the order in the database
     const newOrder = await createOrderOrThrow(req.body);
     //if order creation failed, return error
