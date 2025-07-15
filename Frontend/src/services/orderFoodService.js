@@ -13,6 +13,11 @@ export async function fetchParentMerchants() {
   return axiosInstance.get('/api/merchants?parent_merchant_id=null')
 }
 
+// get child stalls for a parent merchant
+export async function getChildMerchants(parentId) {
+  return axiosInstance.get(`/api/merchants?parent_merchant_id=${parentId}`)
+}
+
 /* 
  * Fetch one menu of merchant by merchant_ID 
  */
