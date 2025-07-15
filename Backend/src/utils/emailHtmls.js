@@ -35,6 +35,22 @@ export function wrapWithEmailLayout(innerHtml) {
 }
 
 /**
+ * Generates an HTML test email for internal verification of the email system.
+ *
+ * @returns {string} - HTML string for testing email delivery
+ */
+export function getTestEmailHtml() {
+  const body = `
+    <h2>🛠 Internal Email Test</h2>
+    <p>Hey Smunchie,</p>
+    <p>This email is solely for internal testing purposes.</p>
+    <p>If you're seeing this and you're not part of the dev team, please let us know immediately through the Telegram bot. Thanks!</p>
+  `;
+
+  return wrapWithEmailLayout(body);
+}
+
+/**
  * Generates the HTML body for a SMUNCH account verification email.
  *
  * @param {Object} params - Email generation parameters
