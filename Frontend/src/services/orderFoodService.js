@@ -8,6 +8,10 @@ export async function fetchAllMerchants() {
   return axiosInstance.get('/api/merchants')
 }
 
+// get only merchants with parent id = null
+export async function fetchParentMerchants() {
+  return axiosInstance.get('/api/merchants?parent_merchant_id=null')
+}
 
 /* 
  * Fetch one menu of merchant by merchant_ID 

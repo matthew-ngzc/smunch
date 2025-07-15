@@ -1,12 +1,13 @@
 <script lang="js">
 import { defineComponent, onMounted, ref } from 'vue'
-import { fetchAllMerchants } from '@/services/orderFoodService'
+import { fetchAllMerchants, fetchParentMerchants } from '@/services/orderFoodService'
 import { useOrderStore } from '@/stores/order'
 import { useRouter } from 'vue-router'
 import DinoWeather from '@/components/DinoWeather.vue'
 import Filter from '@/components/Filter.vue'
 import Navbar from '@/components/Navbar.vue'
 import ChatBar from '@/components/ChatBar.vue'
+
 
 
 export default defineComponent({
@@ -27,7 +28,7 @@ export default defineComponent({
     onMounted(async () => {
       try {
         // function to get merchants from backend
-        const response = await fetchAllMerchants() // Adjust to your actual endpoint
+        const response = await fetchParentMerchants() // Adjust to your actual endpoint
         console.log(response)
         merchants.value = response.data
       } catch (error) {

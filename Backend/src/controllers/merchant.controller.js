@@ -2,7 +2,8 @@ import {
   getAllMerchantsOrThrow,
   getMerchantByIdOrThrow,
   createMerchantOrThrow,
-  updateMerchantByIdOrThrow
+  updateMerchantByIdOrThrow,
+  getMerchantsByParentIdOrThrow
 } from '../models/merchant.model.js';
 
 import {
@@ -79,20 +80,20 @@ import { MENU_ITEM_STATUS } from '../constants/enums.constants.js';
  */
 export const getAllMerchants = async (req, res, next) => {
   try {
-    const { parent_id } = req.query;
+    const { parent_merchant_id } = req.query;
 
     let merchants;
 
-    if (parent_id === 'null') {
+    if (parent_merchant_id === 'null') {
       // Top-level merchants only
-      merchants = await getMerchantsByParentId(null);
-    } else if (parent_id !== undefined) {
+      merchants = await getMerchantsByParentIdOrThrow(null);
+    } else if (parent_merchant_id !== undefined) {
       // Filter by specific parent merchant ID
-      const parentIdInt = parseInt(parent_id);
+      const parentIdInt = parseInt(parent_merchant_id);
       if (isNaN(parentIdInt)) {
-        return res.status(400).json({ error: 'Invalid parent_id parameter' });
+        return res.status(400).json({ error: 'Invalid parent_merchant_id parameter' });
       }
-      merchants = await getMerchantsByParentId(parentIdInt);
+      merchants = await getMerchantsByParentIdOrThrow(parentIdInt);
     } else {
       // No filter, return all
       merchants = await getAllMerchantsOrThrow();

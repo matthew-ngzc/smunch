@@ -23,7 +23,6 @@ router.post('/', authenticateToken, requireRole('user', 'admin'), createOrder);
 // Update order status
 // PUT /api/orders/:orderId/status
 // Must be logged in as admin
-// TODO: allow users to change status from delivered to completed (add a button in active orders the receipt)
 router.put('/:orderId/order-status', authenticateToken, requireRole('admin'), updateOrderStatus);
 
 // Update payment status of an order
