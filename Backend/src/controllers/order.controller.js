@@ -181,7 +181,6 @@ import { canUpdatePaymentStatus, isCorrectUser } from '../utils/auth.utils.js';
  *   payment_reference: string,   // e.g., SMUNCH-42-1
  *   paynow_number: string        // e.g., '91234567'
  * }
- * TODO: check the jwt against the customer_id
  */
 export const createOrder = async (req, res, next) => {
   try {
