@@ -59,11 +59,11 @@ export function wrapWithEmailLayout(innerHtml) {
  * 💙 Made for SMU students, by SMU students
  * -----------------------------------------------------
  */
-export function getVerificationEmailHtml({ link, displayType, name = 'Smunchie' }) {
+export function getVerificationEmailHtml({ link, accountType, name = 'Smunchie' }) {
   const body = `
     <h2>Welcome to SMUNCH 🎉</h2>
     <p>Hey ${name},</p>
-    <p>Thanks for signing up! Just one last step — <a href="${link}">click here</a> to verify your ${displayType.toLowerCase()} account.</p>
+    <p>Thanks for signing up! Just one last step — <a href="${link}">click here</a> to verify your ${accountType.toLowerCase()} account.</p>
     <p>This link will expire in 1 hour for your security. If you didn’t request this, feel free to ignore this email.</p>
   `;
 
