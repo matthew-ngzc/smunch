@@ -11,7 +11,7 @@ import { generatePayNowQRCode } from '../services/payment.service.js';
 import { canUpdatePaymentStatus, isCorrectUser } from '../utils/auth.utils.js';
 
 
-/** SWAGGER DOCS
+/**
  * @swagger
  * /api/orders:
  *   post:
@@ -22,6 +22,25 @@ import { canUpdatePaymentStatus, isCorrectUser } from '../utils/auth.utils.js';
  *       - a Base64-encoded PayNow QR code,
  *       - a payment reference string (e.g., SMUNCH-84-1),
  *       - and the PayNow mobile number.
+ *       
+ *       🔒 **Access**:  
+ *       ✅ Logged-in users only  
+ *       🚫 Users can only create orders for themselves. The `customer_id` in the request body **must** match the user ID from the JWT.
+ *
+ *       📝 Required fields in request body:
+ *       * `customer_id`: integer — must match your own user ID
+ *       * `merchant_id`: integer — must be a valid merchant
+ *       * `delivery_fee_cents`: integer
+ *       * `building`: string — e.g. "SCIS"
+ *       * `room_type`: string — e.g. "Seminar Room"
+ *       * `room_number`: string — e.g. "2-2"
+ *       * `delivery_time`: ISO 8601 timestamp — e.g. "2025-07-18T12:00:00Z"
+ *       * `order_items`: array of items, each with:
+ *         - `menu_item_id`: integer
+ *         - `quantity`: integer
+ *         - `customisations`: object (optional)
+ *         - `notes`: string (optional)
+ *
  *     tags: [Orders]
  *     requestBody:
  *       required: true
@@ -64,6 +83,10 @@ import { canUpdatePaymentStatus, isCorrectUser } from '../utils/auth.utils.js';
  *             customer_id: 1
  *             merchant_id: 5
  *             delivery_fee_cents: 100
+ *             building: SCIS
+ *             room_type: Seminar Room
+ *             room_number: 2-7
+ *             delivery_time: "2025-07-18T12:00:00Z"
  *             order_items:
  *               - menu_item_id: 25
  *                 quantity: 2
@@ -71,10 +94,6 @@ import { canUpdatePaymentStatus, isCorrectUser } from '../utils/auth.utils.js';
  *                 notes: hello
  *               - menu_item_id: 26
  *                 quantity: 1
- *             building: sob
- *             room_type: Seminar Room
- *             room_number: 2-7
- *             delivery_time: "2025-06-05T12:00:00Z"
  *     responses:
  *       201:
  *         description: Order created and payment details returned
@@ -87,16 +106,16 @@ import { canUpdatePaymentStatus, isCorrectUser } from '../utils/auth.utils.js';
  *                 total_amount_cents: 520
  *                 food_amount_cents: 420
  *                 delivery_fee_cents: 100
- *                 payment_reference: SMUNCH-84-1
+ *                 payment_reference: SMUNCH84
  *                 payment_status: awaiting_payment
  *                 order_status: created
  *                 customer_confirmed: false
  *                 customer_confirmed_at: null
  *                 created_at: "2025-06-19T16:25:12.357568"
- *                 building: sob
+ *                 building: SCIS
  *                 room_type: Seminar Room
  *                 room_number: 2-7
- *                 delivery_time: "2025-06-05T12:00:00"
+ *                 delivery_time: "2025-07-18T12:00:00Z"
  *                 merchant_id: 5
  *                 items:
  *                   - order_item_id: 23
@@ -117,8 +136,20 @@ import { canUpdatePaymentStatus, isCorrectUser } from '../utils/auth.utils.js';
  *                     customisations: null
  *                     created_at: "2025-06-19T16:25:12.476407"
  *               qrCode: "data:image/png;base64,..."
- *               payment_reference: SMUNCH-84-1
+ *               payment_reference: SMUNCH84
  *               paynow_number: "96773374"
+ *       400:
+ *         description: Invalid input (e.g. non-existent merchant or menu item)
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Invalid merchant_id: merchant does not exist"
+ *       403:
+ *         description: Authenticated user is not allowed to create order for another user
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "You can only create orders for your own account."
  */
 /**
  * POST /api/orders
@@ -154,7 +185,14 @@ import { canUpdatePaymentStatus, isCorrectUser } from '../utils/auth.utils.js';
  */
 export const createOrder = async (req, res, next) => {
   try {
-    //create the otder in the database
+    const jwtUserId = req.user.user_id;
+    const { customer_id } = req.body;
+
+    // Only allow users to create orders for themselves
+    if (jwtUserId !== customer_id) {
+      return res.status(403).json({ message: 'You can only create orders for your own account.' });
+    }
+    //create the order in the database
     const newOrder = await createOrderOrThrow(req.body);
     //if order creation failed, return error
     if (!newOrder) {
@@ -162,14 +200,13 @@ export const createOrder = async (req, res, next) => {
     }
 
     //extract data we need to create the PayNow QR code
-    const { order_id, customer_id, total_amount_cents } = newOrder;
+    const { order_id, total_amount_cents } = newOrder;
     const amountDollars = (Number(total_amount_cents) / 100).toFixed(2);
 
     //generate the PayNow QR code
     const {qrCodeDataURL, paymentReference, paynowNumber} = await generatePayNowQRCode({
       amount: amountDollars,
       orderId: order_id,
-      customerId: customer_id
     });
     //if QR code generation failed, return error
     if (!qrCodeDataURL) {
@@ -177,7 +214,7 @@ export const createOrder = async (req, res, next) => {
     }
 
     //output order and qr code
-    res.status(201).json({
+    return res.status(201).json({
       order: newOrder,
       qrCode: qrCodeDataURL,
       payment_reference: paymentReference,
