@@ -25,26 +25,31 @@ export const useAuthStore = defineStore('auth', {
     token: sessionStorage.getItem('token') || null,
     userId: sessionStorage.getItem('userId') || null,
     userName: sessionStorage.getItem('userName') || null,
+    coins: Number(sessionStorage.getItem('coins')) || 0,
   }),
   actions: {
     login(token, userInfo) {
       this.token = token
       this.userId = userInfo?.user_id || null
       this.userName = userInfo?.name || null
+      this.coins = userInfo?.coins || 0
 
       sessionStorage.setItem('token', token)
       sessionStorage.setItem('userId', this.userId)
       sessionStorage.setItem('userName', this.userName)
+      sessionStorage.setItem('coins', this.coins.toString())
 
     },
     logout() {
       this.token = null
       this.userId = null
       this.userName = null
+      this.coins = 0
 
       sessionStorage.removeItem('token')
       sessionStorage.removeItem('userId')
       sessionStorage.removeItem('userName')
+      sessionStorage.removeItem('coins')
 
       // for supabase realtime 
       if (window.realtimeOrdersService) {
@@ -54,6 +59,11 @@ export const useAuthStore = defineStore('auth', {
     },
     isAuthenticated() {
       return !!this.token
+    },
+    updateCoins(newCoins) {
+      this.coins = newCoins
+      sessionStorage.setItem('coins', newCoins.toString())
     }
+
   }
 })

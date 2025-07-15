@@ -58,10 +58,10 @@ const done = async () => {
       <div class="steps">
         <p><strong>STEP 1:</strong><br />
         PayNow <strong>${{ total.toFixed(2) }}</strong> via QR or Mobile to <strong>{{ paynowNumber }} </strong>.<br />
-        Add transaction number in PayNow notes: <strong>{{ paymentReference }}</strong>.</p><br />
+        Enter your reference number <strong>{{ paymentReference }}</strong> in the PayNow comments.</p><br />
 
         <p><strong>STEP 2:</strong><br />
-        Send your payment screenshot to <strong>@smunchAdmin</strong> via telegram.</p><br />
+        Send your payment screenshot to <strong>@smunch_bot</strong> via telegram.</p><br />
 
         <p><strong>STEP 3:</strong><br />
         Press “done” once payment has been made!</p><br />
@@ -70,7 +70,7 @@ const done = async () => {
       <!-- QR Code -->
       <div class="qr-box">
         <img :src="qrCode" alt="PayNow QR Code" class="qr-image" />
-        <p class="qr-caption">Paynow recipient’s name: <strong>Smunch</strong></p>
+        <p class="qr-caption">Paynow recipient’s name: <strong>Matt</strong></p>
       </div>
     </div>
 
@@ -86,7 +86,7 @@ const done = async () => {
 <style scoped>
 .payment-container {
   max-width: 1500px;
-  width: 900px;
+  width: 1000px;
   margin: 30px auto;
   padding: 40px;
   background: #fff;
@@ -121,7 +121,7 @@ const done = async () => {
 
 .qr-box {
   text-align: center;
-  width: 180px;
+  width: 220px;
   margin-top: 40px;
   transform: translateX(-70px);
 }
@@ -134,7 +134,9 @@ const done = async () => {
 
 .qr-caption {
   font-size: 0.9rem;
-  margin-left: 48px;
+  margin-top: 6px;
+  margin-left: 20px;
+  text-align: center; 
 }
 
 .note {

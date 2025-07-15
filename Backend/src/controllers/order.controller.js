@@ -7,6 +7,7 @@ import {
   getFullOrdersByCustomerIdAndStatusOrThrow,
   getOrderCountByCustomerIdAndStatusOrThrow
 } from '../models/order.model.js';
+import { getUserByIdOrThrow } from '../models/user.model.js';
 import { generatePayNowQRCode } from '../services/payment.service.js';
 import { canUpdatePaymentStatus, isCorrectUser } from '../utils/auth.utils.js';
 
@@ -535,7 +536,27 @@ export const updatePaymentStatus = async (req, res, next) => {
  */
 export const getUserOrders = async (req, res, next) => {
   try {
+    // extracting params
     const { userId } = req.params;
+
+    //check that authorised to view. if not will throw error
+    const requesterId = req.user.id;
+    const role = req.user.role;
+    // create a dummy order so that can use the method "isCorrectUser"
+    const dummyOrder = { customer_id: parseInt(userId) }; // simulate order object
+    const { allowed, reason } = isCorrectUser({
+      role,
+      userId: requesterId,
+      order: dummyOrder
+    });
+    if (!allowed){
+      return res.status(403).json({ error: reason });
+    }
+
+    //validate user exists
+    await getUserByIdOrThrow(userId);
+
+    // fetching orders logic
     const { type, limit = 10, offset = 0 } = req.query;
     let statuses;
     if (type === 'active') {

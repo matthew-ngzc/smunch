@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { formatDateTime as _formatDateTime, formatStatusClass, formatStatus } from '@/utility/orderHelpers'
 import { getPaymentQRCode, updatePaymentStatus, getRefreshedOrders } from '@/services/orderFoodService'
+import coins from '@/assets/smunch_coin.jpg';
 
 // define props passed into this component
 // 'order' contains all the order details
@@ -203,6 +204,11 @@ async function handlePaymentDone() {
       <div class="summary-count">  {{ itemCount }} item<span v-if="itemCount > 1">s</span>  </div>
       <div class="summary-price"> ${{ total }}</div>
     </div>
+    <!-- Coin reward for completed orders in past orders view -->
+    <div v-if="showOrderStatus && order.order_status === 'completed'" class="coin-reward">
+      <span class="coin-text">+1</span>
+      <img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="coin-icon-small" />
+    </div>
 
   </div>
 </div>
@@ -257,10 +263,10 @@ async function handlePaymentDone() {
             <div class="payment-steps">
               <div class="payment-step"><b>STEP 1:</b><br>
                 PayNow <b>${{ total }}</b> via QR or Mobile to <b>{{ paymentData?.paynow_number }}</b>.<br>
-                Add transaction number in PayNow notes: <b>{{ paymentData?.payment_reference }}</b>.
+                Enter your reference number <strong>{{ paymentData.payment_reference }}</strong> in the PayNow comments.<br />
               </div>
               <div class="payment-step"><b>STEP 2:</b><br>
-                Send your payment screenshot to <b>@smunchAdmin</b> via telegram.
+                Send your payment screenshot to <b>@smunch_bot</b> via telegram.
               </div>
               <div class="payment-step"><b>STEP 3:</b><br>
                 Press “done” once payment has been made!
@@ -269,7 +275,7 @@ async function handlePaymentDone() {
 
             <div class="payment-qr-section">
               <img v-if="paymentData?.qrCode" :src="paymentData.qrCode" alt="PayNow QR" class="payment-qr" />
-              <div class="paynow-recipient">Paynow recipient’s Name: Smunch</div>
+              <div class="paynow-recipient">Paynow recipient’s name: Matt</div>
             </div>
           </div>
 
@@ -436,6 +442,26 @@ async function handlePaymentDone() {
 }
 .summary-price {
   font-weight: 700;
+}
+
+/* Coin reward styling for receipt */
+.coin-reward {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: -3px;
+}
+
+.coin-text {
+  font-size: 16px;
+  font-weight: bold;
+  color: #198754;
+}
+
+.coin-icon-small {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
 }
 
 .status-badge {
