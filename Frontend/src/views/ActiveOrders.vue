@@ -4,6 +4,7 @@ import { getActiveOrders, getMerchantInfoById } from '@/services/orderFoodServic
 import { useAuthStore } from '@/stores/auth'
 import OrderReceipt from '@/components/OrderReceipt.vue'
 import { formatDateTime, formatStatusClass, formatStatus } from '@/utility/orderHelpers'
+import InfoPopup from '@/components/InfoPopup.vue'
 
 const authStore = useAuthStore()
 const activeOrders = ref([])
@@ -12,6 +13,16 @@ const currentPage = ref(1)
 const pageSize = 5
 const totalOrders = ref(0)
 
+
+const showInfo = ref(false)
+function toggleInfo() {
+  showInfo.value = !showInfo.value
+}
+
+// click outside closes popup
+onMounted(() => {
+  window.addEventListener('click', () => (showInfo.value = false))
+})
 
 async function fetchActiveOrders(page = 1) {
 
@@ -91,7 +102,12 @@ function nextPage() {
 
 <template>
   <div class="orders-page">
-    <h2>Active orders</h2>
+
+      <div class="orders-header">
+      <h2>Active Orders</h2>
+      <InfoPopup />
+    </div>
+
     <ul class="orders-list">
       <li v-for="order in activeOrders" :key="order.order_id" class="order-card" @click="openReceipt(order)">
         <div class="order-content">
@@ -147,6 +163,16 @@ function nextPage() {
   font-weight: bold;
   margin-top: 20px;
   margin-bottom: 30px;
+  display: inline-block
+}
+
+
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  border: none;
 }
 
 .orders-list {

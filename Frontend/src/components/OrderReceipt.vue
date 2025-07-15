@@ -176,7 +176,7 @@ async function handlePaymentDone() {
   <div class="order-summary-right">
 
     <div class="status-row">
-      <img src="/refreshImage.png" alt="refresh" class="refresh-icon" :class="{ spinning: spinningOrderId === props.order.order_id }" @click="refreshOrderStatus(props.order.order_id)"/>
+      <img v-if="order.order_status !== 'completed' && order.order_status !== 'cancelled'" src="/refreshImage.png" alt="refresh" class="refresh-icon" :class="{ spinning: spinningOrderId === props.order.order_id }" @click="refreshOrderStatus(props.order.order_id)" />
 
 
       <span v-if="showOrderStatus" :class="['status-badge', getOrderStatusBadge(order).class]">
