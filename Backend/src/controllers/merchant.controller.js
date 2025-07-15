@@ -190,7 +190,7 @@ export const getAllMerchants = async (req, res, next) => {
 export const getMerchant = async (req, res, next) => {
   try {
     const { id: merchantId } = req.params;
-    const merchants = await getMerchantByIdOrThrow(merchantId, 'name, location, contact_number, image_url');
+    const merchants = await getMerchantByIdOrThrow(merchantId, 'name, location, contact_number, image_url, parent_merchant_id, has_children');
     res.json(merchants);
   } catch (err) {
     next(err);
