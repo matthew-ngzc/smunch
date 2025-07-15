@@ -312,3 +312,17 @@ export async function getOrderCountByCustomerIdAndStatusOrThrow(customerId, stat
     return count;
 }
 
+
+/**
+ * Fetches orders that are still awaiting payment or verification.
+ * Returns order_id, total_amount_cents, payment_reference, payment_screenshot_url.
+ */
+export async function getOrdersPendingPaymentCheck() {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('order_id, total_amount_cents, payment_reference, payment_screenshot_url, payment_status')
+    .in('payment_status', [PAYMENT_STATUSES[0], PAYMENT_STATUSES[1]]);
+
+  if (error) throw error;
+  return data;
+}

@@ -1,6 +1,5 @@
 
 // TODO: Update this url with banner. For now temporarily put the smunch logo
-<<<<<<< HEAD
 //const BANNER_URL = 'https://pqgoiterozsehcshikgm.supabase.co/storage/v1/object/sign/logo-related/banner.PNG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV82NjlkNDI4MS02Nzg4LTQ1MTYtOWRhZC1lNjBiMzdjMDZiYTUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsb2dvLXJlbGF0ZWQvYmFubmVyLlBORyIsImlhdCI6MTc1MjU4NzMyNiwiZXhwIjo0OTA2MTg3MzI2fQ.g_LutIs3wuRsifYt0QV77-8LF7C00xADl0GDYgBsK14.io/SMUNCH/smunch_logo.jpg';
 const BANNER_URL = 'https://ik.imagekit.io/SMUNCH/admin/smunch_email_banner.png?updatedAt=1752593887499';
 

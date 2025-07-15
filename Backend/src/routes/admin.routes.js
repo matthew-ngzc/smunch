@@ -1,5 +1,5 @@
 import express from 'express';
-import { addMerchant, testEmail } from '../controllers/admin.controller.js';
+import { addMerchant, getPendingPayments, testEmail } from '../controllers/admin.controller.js';
 import { requireRole } from '../middlewares/role.middleware.js';
 import { authenticateToken } from '../middlewares/auth.middleware.js';
 
@@ -17,6 +17,9 @@ router.post('/merchants', authenticateToken, requireRole('admin'), addMerchant);
  * POST /api/admin/email-test
  */
 router.get('/email-test', testEmail);
+
+
+router.get('/payments/pending', authenticateToken, requireRole('admin'), getPendingPayments);
 
 
 export default router;

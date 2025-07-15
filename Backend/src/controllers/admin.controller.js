@@ -1,5 +1,5 @@
 import { createMerchantOrThrow } from '../models/merchant.model.js';
-import { getTestEmailHtml } from '../utils/emailHtmls.js';
+import { getOrdersPendingPaymentCheck } from '../models/order.model.js';
 import { sendTestEmail } from '../utils/mailer.js';
 
 /**
@@ -157,3 +157,65 @@ export const testEmail = async (req, res, next) => {
     next(err);
   }
 }
+
+/**
+ * @swagger
+ * /api/admin/payments/pending:
+ *   get:
+ *     summary: Get all pending payments (admin only)
+ *     description: |
+ *       Retrieves a list of all orders where payment status is either `awaiting_payment` or `awaiting_verification`.
+ *       
+ *       🔒 **Access**:  
+ *       ✅ Admins
+ *       
+ *       Each transaction includes the following fields:
+ *       - `order_id`: Unique ID of the order
+ *       - `reference_number`: Payment reference (e.g., SMUNCH-42-1)
+ *       - `amount`: Total order amount in dollars (as a string)
+ *       - `payment_status`: The current status of payment (`awaiting_payment` or `awaiting_verification`)
+ *       - `payment_screenshot_url`: Screenshot URL uploaded by the customer (can be null)
+ *       - `paid`: Always `false` (to denote unpaid status)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of transactions that require manual verification
+ *         content:
+ *           application/json:
+ *             example:
+ *               transactions:
+ *                 - order_id: 42
+ *                   reference_number: "SMUNCH42"
+ *                   amount: "5.20"
+ *                   payment_status: "awaiting_payment"
+ *                   payment_screenshot_url: "https://cdn.example.com/screenshots/order-42.png"
+ *                   paid: false
+ *                 - order_id: 43
+ *                   reference_number: "SMUNCH43"
+ *                   amount: "4.80"
+ *                   payment_status: "awaiting_verification"
+ *                   payment_screenshot_url: null
+ *                   paid: false
+ *       500:
+ *         description: Server error while retrieving pending payments
+ */
+export const getPendingPayments = async (req, res, next) => {
+  try {
+    const rawOrders = await getOrdersPendingPaymentCheck();
+
+    const transactions = rawOrders.map(order => ({
+      order_id: order.order_id,
+      reference_number: order.payment_reference,
+      amount: (order.total_amount_cents / 100).toFixed(2),
+      payment_status: order.payment_status,
+      payment_screenshot_url: order.payment_screenshot_url || null,
+      paid: false
+    }));
+
+    return res.status(200).json({ transactions });
+  } catch (err) {
+    next(err);
+  }
+};
