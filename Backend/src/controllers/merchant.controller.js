@@ -2,7 +2,8 @@ import {
   getAllMerchantsOrThrow,
   getMerchantByIdOrThrow,
   createMerchantOrThrow,
-  updateMerchantByIdOrThrow
+  updateMerchantByIdOrThrow,
+  getMerchantsByParentIdOrThrow
 } from '../models/merchant.model.js';
 
 import {
@@ -85,14 +86,14 @@ export const getAllMerchants = async (req, res, next) => {
 
     if (parent_merchant_id === 'null') {
       // Top-level merchants only
-      merchants = await getMerchantsByParentId(null);
+      merchants = await getMerchantsByParentIdOrThrow(null);
     } else if (parent_merchant_id !== undefined) {
       // Filter by specific parent merchant ID
       const parentIdInt = parseInt(parent_merchant_id);
       if (isNaN(parentIdInt)) {
         return res.status(400).json({ error: 'Invalid parent_merchant_id parameter' });
       }
-      merchants = await getMerchantsByParentId(parentIdInt);
+      merchants = await getMerchantsByParentIdOrThrow(parentIdInt);
     } else {
       // No filter, return all
       merchants = await getAllMerchantsOrThrow();
