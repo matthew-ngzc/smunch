@@ -460,7 +460,7 @@ function closeGame() {
   text-align: center;
   font-size: 2.7rem;
   font-weight: 800;
-  color: #42272b;
+  color: #062122;
  
 }
 
@@ -468,7 +468,7 @@ function closeGame() {
 .title-text-right {
   display: flex;
   align-items: flex-start;
-  margin-top: 100px; /* ⬅️ shift text down without moving dino */
+  margin-top: 80px; /* ⬅️ shift text down without moving dino */
  
 }
 
@@ -484,9 +484,9 @@ function closeGame() {
 
 .dino-peek {
   position: absolute;
-  height: 470px;
+  height: 340px;
   object-fit: contain;
-  margin-bottom: -200px; /* nudges the dino into the cards */
+  margin-bottom: -80px; /* nudges the dino into the cards */
   pointer-events: none;
 }
 
@@ -522,12 +522,12 @@ function closeGame() {
   gap: 3rem;
   justify-content: center;
   align-items: center;
-  margin-top: 84px;
+  margin-top: 0px;
 }
 
 .game-card {
-  width: 270px;
-  height: 270px;
+  width: 200px;
+  height: 200px;
   border-radius: 22px;
   box-shadow: 0 8px 32px rgba(44, 62, 80, 0.12);
   cursor: pointer;
@@ -539,6 +539,7 @@ function closeGame() {
   background: rgba(255, 255, 255, 0.85);
   transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
   border: 1.5px solid #e0e0e0;
+  margin-bottom: 100px;
 }
 
 .game-card p {
@@ -570,8 +571,8 @@ function closeGame() {
 }
 
 .game-icon {
-  width: 150px;
-  height: 150px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
   margin-bottom: 1.5rem;
   display: block;
