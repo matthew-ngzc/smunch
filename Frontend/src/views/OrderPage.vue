@@ -17,6 +17,11 @@ export default defineComponent({
     const merchants = ref([])
     const orderStore = useOrderStore()
     const router = useRouter()
+    const isChatExpanded = ref(false)
+
+    const handleChatStateChange = (expanded) => {
+      isChatExpanded.value = expanded
+    }
 
 
     onMounted(async () => {
@@ -36,20 +41,20 @@ export default defineComponent({
     }
 
 
-    return { merchants, goToMerchant }
+    return { merchants, goToMerchant, isChatExpanded, handleChatStateChange }
   }
 })
 </script>
 
 <template>
-  <div class="order-page">
+  <div class="order-page" :class="{ faded: isChatExpanded }">
     <!-- Search Bar -->
     <!-- <div class="chat-search-bar">
       <input type="text" placeholder="Order with SMUNCH.AI !" class="chat-input" />
       <button class="chat-send-btn">Send</button>
     </div> -->
     <div>
-      <ChatBar/>
+      <ChatBar @chatStateChange="handleChatStateChange"/>
     </div>
 
     <div class="order-content">
@@ -81,6 +86,25 @@ export default defineComponent({
   padding: 30px;
   font-family: 'Inter', sans-serif;
   padding-top: 120px; /* Ensures content is not hidden behind the fixed ChatBar */
+  position: relative;
+}
+
+.order-page::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 998;
+  transition: opacity 0.3s ease;
+}
+
+.order-page.faded::before {
+  opacity: 1;
 }
 
 .order-page h1 {

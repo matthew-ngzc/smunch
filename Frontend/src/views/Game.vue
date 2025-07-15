@@ -318,7 +318,12 @@ function closeGame() {
 <template>
   <div class="game no-scroll">
     <div class="game-page">
-      <h1 class="game-title">Welcome to Smunch Game Zone</h1>
+      <div class="game-title-split">
+        <div class="title-text-left"><span>welcome to</span></div>
+        <img src="/dinoFaceForward.png" class="dino-peek" alt="dino" />
+        <div class="title-text-right"><span>smunch game zone!</span></div>
+      </div>
+
 
       <!-- CHOICE SCREEN -->
       <div v-if="!showWheel && !showPoker && !showEmojis" class="game-options">
@@ -444,6 +449,72 @@ function closeGame() {
 
 
 <style scoped>
+
+.game-title-split {
+  display: flex;
+  align-items: center; /* keeps things aligned at the base */
+  justify-content: center;
+  gap: 6rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+  text-align: center;
+  font-size: 2.7rem;
+  font-weight: 800;
+  color: #062122;
+ 
+}
+
+.title-text-left,
+.title-text-right {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 80px; /* ⬅️ shift text down without moving dino */
+ 
+}
+
+.title-text-left span,
+.title-text-right span {
+  display: inline-block;
+  line-height: 1.2;
+   margin-left: 170px;
+   font-weight: bold;
+   
+}
+
+
+.dino-peek {
+  position: absolute;
+  height: 340px;
+  object-fit: contain;
+  margin-bottom: -85px; /* nudges the dino into the cards */
+  pointer-events: none;
+  transition: transform 0.3s ease-in-out;
+}
+
+.game-title-split:hover .dino-peek {
+  animation: dinoAlive 1.8s ease-in-out;
+}
+
+
+@keyframes dinoAlive {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-4px) scale(1.02, 0.98) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-3px) scale(1.01, 0.99) rotate(2deg);
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+
 .game.no-scroll {
   position: fixed;
   top: 60px;
@@ -469,24 +540,18 @@ function closeGame() {
   padding-top: 80px;
 }
 
-.game-title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: #134e4a;
-  margin-bottom: 2.5rem;
-  text-align: center;
-}
 
 .game-options {
   display: flex;
   gap: 3rem;
   justify-content: center;
   align-items: center;
+  margin-top: 0px;
 }
 
 .game-card {
-  width: 270px;
-  height: 270px;
+  width: 200px;
+  height: 200px;
   border-radius: 22px;
   box-shadow: 0 8px 32px rgba(44, 62, 80, 0.12);
   cursor: pointer;
@@ -498,6 +563,7 @@ function closeGame() {
   background: rgba(255, 255, 255, 0.85);
   transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
   border: 1.5px solid #e0e0e0;
+  margin-bottom: 100px;
 }
 
 .game-card p {
@@ -532,7 +598,6 @@ function closeGame() {
   width: 100px;
   height: 100px;
   object-fit: contain;
-  margin-bottom: 1.5rem;
   display: block;
 }
 

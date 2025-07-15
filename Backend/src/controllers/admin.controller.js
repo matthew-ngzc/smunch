@@ -1,4 +1,6 @@
 import { createMerchantOrThrow } from '../models/merchant.model.js';
+import { getTestEmailHtml } from '../utils/emailHtmls.js';
+import { sendTestEmail } from '../utils/mailer.js';
 
 /**
  * @swagger
@@ -93,3 +95,65 @@ export const addMerchant = async (req, res, next) => {
     next(err);
   }
 };
+
+
+/**
+ * @swagger
+ * /api/admin/email-test:
+ *   post:
+ *     summary: Send a test email for internal validation
+ *     description: |
+ *       Sends a dummy email to the specified address using SMUNCH's email service.  
+ *       This is intended for internal use only to verify that email delivery is working.
+ *       
+ *       The content of the email explicitly states it's for dev testing purposes.
+ *       
+ *       ⚠️ If this email is received by someone outside the dev team, they are instructed to notify the team via Telegram.
+ *     tags: [Email]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - to
+ *             properties:
+ *               to:
+ *                 type: string
+ *                 format: email
+ *                 example: developer@smu.edu.sg
+ *                 description: The recipient email address to send the test to
+ *     responses:
+ *       200:
+ *         description: Test email sent successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Test email sent successfully
+ *       400:
+ *         description: Missing recipient email address
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Missing recipient email address
+ *       500:
+ *         description: Server error while attempting to send email
+ */
+/**
+ * Sends a test email to the specified email address.
+ *
+ * POST /api/admin/email-test
+ * Body: { to: string }
+ */
+export const testEmail = async (req, res, next) => {
+  try{
+    const {to} = req.body;
+    if (!to) return res.status(400).json({ message: 'Missing recipient email address' });
+
+    await sendTestEmail({to});
+    return res.status(200).json({ message: 'Test email sent successfully' });
+  }catch(err){
+    next(err);
+  }
+}
