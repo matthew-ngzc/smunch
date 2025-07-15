@@ -13,6 +13,8 @@ import {
   updateMenuItemByIdOrThrow
 } from '../models/menu.model.js';
 import { MENU_ITEM_STATUS } from '../constants/enums.constants.js';
+import redis from '../lib/redisClient.js';
+import { cache } from 'react';
 
 
 /** SWAGGER DOCS
@@ -83,23 +85,54 @@ export const getAllMerchants = async (req, res, next) => {
     const { parent_merchant_id } = req.query;
 
     let merchants;
+    let redisKey;
 
+    // Top-level merchants only
     if (parent_merchant_id === 'null') {
-      // Top-level merchants only
-      merchants = await getMerchantsByParentIdOrThrow(null);
+      //try redis
+      redisKey = 'merchants:parent:null';
+      const cachedMerchantList = await redis.get(redisKey);
+      //redis have, return straight
+      if (cachedMerchantList){
+        merchants = JSON.parse(cachedMerchantList);
+      }else{
+        // no choice ask db
+        merchants = await getMerchantsByParentIdOrThrow(null);
+        //put into redis
+        await redis.set(redisKey, JSON.stringify(merchants), 'EX', 300); // 5 min TTL
+      }
+      // children merchants (e.g. stalls within Koufu)
     } else if (parent_merchant_id !== undefined) {
       // Filter by specific parent merchant ID
       const parentIdInt = parseInt(parent_merchant_id);
       if (isNaN(parentIdInt)) {
         return res.status(400).json({ error: 'Invalid parent_merchant_id parameter' });
       }
-      merchants = await getMerchantsByParentIdOrThrow(parentIdInt);
+
+      // try redis
+      redisKey = `merchants:parent:${parentIdInt}`;
+      const cachedMerchantList = await redis.get(redisKey);
+      if (cachedMerchantList){
+        // parse
+        merchants = JSON.parse(cachedMerchantList);
+      }else{
+        // no choice hit db
+        merchants = await getMerchantsByParentIdOrThrow(parentIdInt);
+        //put into redis
+        await redis.set(redisKey, JSON.stringify(merchants), 'EX', 300);
+      }
     } else {
       // No filter, return all
-      merchants = await getAllMerchantsOrThrow();
+      redisKey = 'merchants:all';
+      const cachedMerchantList = await redis.get(redisKey);
+      if (cachedMerchantList){
+        merchants = JSON.parse(cachedMerchantList);
+      }else{
+        merchants = await getAllMerchantsOrThrow();
+        await redis.set(redisKey, JSON.stringify(merchants), 'EX', 300);
+      }
     }
-
-    res.json(merchants);
+    return res.status(200).json(merchants);
   } catch (err) {
     next(err);
   }
