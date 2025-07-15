@@ -13,6 +13,21 @@
 <script setup lang="js">
 import Navbar from './components/Navbar.vue'
 import { RouterLink, RouterView } from 'vue-router'
+import { useAuthStore } from '@/stores/auth' // for supabase realtime
+import { globalRealtimeManager } from '@/services/globalRealtimeManager' // for supabase realtime
+import { watch } from 'vue' // for supabase realtime
+
+// for supabase realtime 
+const authStore = useAuthStore()
+
+// Watch for authentication changes
+watch(() => authStore.isAuthenticated, (isAuthenticated) => {
+  if (isAuthenticated) {
+    globalRealtimeManager.initializeSubscriptions(authStore)
+  } else {
+    globalRealtimeManager.cleanupSubscriptions()
+  }
+}, { immediate: true })
 
 </script>
 

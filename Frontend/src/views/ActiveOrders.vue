@@ -1,6 +1,8 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { getActiveOrders, getMerchantInfoById } from '@/services/orderFoodService'
+import { realtimeOrdersService } from '@/services/realtimeOrdersService' // for supabase realtime
+import { onUnmounted } from 'vue'  // for supabase realtime
 import { useAuthStore } from '@/stores/auth'
 import OrderReceipt from '@/components/OrderReceipt.vue'
 import { formatDateTime, formatStatusClass, formatStatus } from '@/utility/orderHelpers'
@@ -11,6 +13,20 @@ const selectedOrder = ref(null)
 const currentPage = ref(1)
 const pageSize = 5
 const totalOrders = ref(0)
+
+// for supabase realtime
+const setupRealtimeSubscription = () => {
+  const userId = authStore.userId
+  realtimeOrdersService.subscribeToOrderChanges(userId, () => {
+    // Refetch orders when real-time change is detected
+    fetchActiveOrders(currentPage.value)
+  })
+}
+
+// for supabase realtime
+onUnmounted(() => {
+  realtimeOrdersService.unsubscribe()
+})
 
 
 async function fetchActiveOrders(page = 1) {
@@ -43,7 +59,8 @@ async function fetchActiveOrders(page = 1) {
 }
 
 onMounted(() => {
-  fetchActiveOrders(1)
+  fetchActiveOrders(1),
+  setupRealtimeSubscription() // for supabase realtime
 })
 
 function changePage(page) {

@@ -4,3 +4,4 @@ bootstrap
 cors 
 firebase
 vue-wheel-spinner
+@supabase/supabase-js
