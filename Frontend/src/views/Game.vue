@@ -454,7 +454,7 @@ function closeGame() {
   display: flex;
   align-items: center; /* keeps things aligned at the base */
   justify-content: center;
-  gap: 10rem;
+  gap: 6rem;
   margin-bottom: 3rem;
   flex-wrap: wrap;
   text-align: center;
@@ -486,8 +486,32 @@ function closeGame() {
   position: absolute;
   height: 340px;
   object-fit: contain;
-  margin-bottom: -80px; /* nudges the dino into the cards */
+  margin-bottom: -85px; /* nudges the dino into the cards */
   pointer-events: none;
+  transition: transform 0.3s ease-in-out;
+}
+
+.game-title-split:hover .dino-peek {
+  animation: dinoAlive 1.8s ease-in-out;
+}
+
+
+@keyframes dinoAlive {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-4px) scale(1.02, 0.98) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-3px) scale(1.01, 0.99) rotate(2deg);
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
 }
 
 
