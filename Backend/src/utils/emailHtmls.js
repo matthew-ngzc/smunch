@@ -1,6 +1,6 @@
 
 // TODO: Update this url with banner. For now temporarily put the smunch logo
-const BANNER_URL = 'https://ik.https://pqgoiterozsehcshikgm.supabase.co/storage/v1/object/sign/logo-related/banner.PNG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV82NjlkNDI4MS02Nzg4LTQ1MTYtOWRhZC1lNjBiMzdjMDZiYTUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsb2dvLXJlbGF0ZWQvYmFubmVyLlBORyIsImlhdCI6MTc1MjU4NzMyNiwiZXhwIjo0OTA2MTg3MzI2fQ.g_LutIs3wuRsifYt0QV77-8LF7C00xADl0GDYgBsK14.io/SMUNCH/smunch_logo.jpg';
+const BANNER_URL = 'https://pqgoiterozsehcshikgm.supabase.co/storage/v1/object/sign/logo-related/banner.PNG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV82NjlkNDI4MS02Nzg4LTQ1MTYtOWRhZC1lNjBiMzdjMDZiYTUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsb2dvLXJlbGF0ZWQvYmFubmVyLlBORyIsImlhdCI6MTc1MjU4NzMyNiwiZXhwIjo0OTA2MTg3MzI2fQ.g_LutIs3wuRsifYt0QV77-8LF7C00xADl0GDYgBsK14.io/SMUNCH/smunch_logo.jpg';
 
 /**
  * Wraps the inner email content with a standard SMUNCH layout.
@@ -32,6 +32,22 @@ export function wrapWithEmailLayout(innerHtml) {
       </div>
     </div>
   `;
+}
+
+/**
+ * Generates an HTML test email for internal verification of the email system.
+ *
+ * @returns {string} - HTML string for testing email delivery
+ */
+export function getTestEmailHtml() {
+  const body = `
+    <h2>🛠 Internal Email Test</h2>
+    <p>Hey Smunchie,</p>
+    <p>This email is solely for internal testing purposes.</p>
+    <p>If you're seeing this and you're not part of the dev team, please let us know immediately through the Telegram bot. Thanks!</p>
+  `;
+
+  return wrapWithEmailLayout(body);
 }
 
 /**

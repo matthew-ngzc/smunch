@@ -4,9 +4,12 @@ import dotenv from "dotenv";
 import { 
   getPasswordChangeHtml,
   getReceiptHtml,
+  getTestEmailHtml,
   getVerificationEmailHtml } from './emailHtmls.js';
 
 dotenv.config();
+
+const SMUNCH_FROM_ADDRESS = '"SMUNCH" <smunch.dev@gmail.com>';
 
 // 1. ENV validation — log and fail fast if missing
 if (!process.env.SMUNCH_EMAIL || !process.env.SMUNCH_APP_PASS) {
@@ -34,6 +37,24 @@ transporter.verify((error, success) => {
 });
 
 /**
+ * Sends a testing email, meant for devs
+ *
+ * @param {Object} options
+ * @param {string} options.to - The recipient's email address
+ * @returns {Promise} - Resolves when the email is sent successfully
+ */
+export const sendTestEmail = async ({ to }) => {
+  const html = getTestEmailHtml();
+
+  return transporter.sendMail({
+    from: SMUNCH_FROM_ADDRESS,
+    to,
+    subject: '🔧 Test Email from SMUNCH',
+    html
+  });
+}
+
+/**
  * Sends a verification email to the user or merchant with a link to verify their account.
  *
  * @param {Object} options
@@ -48,7 +69,7 @@ export const sendVerificationEmail = async ({ to, name, token, role} ) => {
   const accountType = role === 'merchant' ? 'Merchant' : 'User';
   const html = getVerificationEmailHtml({ link, accountType, name});
   return transporter.sendMail({
-    from: '"SMUNCH" <smunch.dev@gmail.com>',
+    from: SMUNCH_FROM_ADDRESS,
     to,
     subject: 'Welcome to SMUNCH! Just one more step',
     html
@@ -65,7 +86,7 @@ export const sendVerificationEmail = async ({ to, name, token, role} ) => {
 export async function sendReceiptEmail(to, order) {
   const receiptHtml = getReceiptHtml(order);
   return transporter.sendMail({
-    from: '"SMUNCH" <smunch.dev@gmail.com>',
+    from: SMUNCH_FROM_ADDRESS,
     to,
     subject: 'Payment Received! Your SMUNCH Order is Confirmed',
     html: receiptHtml
@@ -86,7 +107,7 @@ export async function sendPasswordChangeNotification(to, name, changeDate = new 
   const html = getPasswordChangeHtml({ name, formattedDate });
 
   return transporter.sendMail({
-    from: '"SMUNCH" <smunch.dev@gmail.com>',
+    from: SMUNCH_FROM_ADDRESS,
     to,
     subject: 'Your SMUNCH Password Was Changed',
     html,
@@ -107,7 +128,7 @@ export async function sendResetPasswordEmail(to, link, name = 'Smunchie') {
   const html = getResetPasswordHtml({ link, name });
 
   return transporter.sendMail({
-    from: '"SMUNCH" <smunch.dev@gmail.com>',
+    from: SMUNCH_FROM_ADDRESS,
     to,
     subject: 'Reset your SMUNCH password',
     html
