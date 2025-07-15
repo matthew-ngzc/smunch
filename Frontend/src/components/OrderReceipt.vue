@@ -263,10 +263,10 @@ async function handlePaymentDone() {
             <div class="payment-steps">
               <div class="payment-step"><b>STEP 1:</b><br>
                 PayNow <b>${{ total }}</b> via QR or Mobile to <b>{{ paymentData?.paynow_number }}</b>.<br>
-                Add transaction number in PayNow notes: <b>{{ paymentData?.payment_reference }}</b>.
+                Enter your reference number <strong>{{ paymentData.payment_reference }}</strong> in the PayNow comments.<br />
               </div>
               <div class="payment-step"><b>STEP 2:</b><br>
-                Send your payment screenshot to <b>@smunchAdmin</b> via telegram.
+                Send your payment screenshot to <b>@smunch_bot</b> via telegram.
               </div>
               <div class="payment-step"><b>STEP 3:</b><br>
                 Press “done” once payment has been made!
@@ -275,7 +275,7 @@ async function handlePaymentDone() {
 
             <div class="payment-qr-section">
               <img v-if="paymentData?.qrCode" :src="paymentData.qrCode" alt="PayNow QR" class="payment-qr" />
-              <div class="paynow-recipient">Paynow recipient’s Name: Smunch</div>
+              <div class="paynow-recipient">Paynow recipient’s name: Matt</div>
             </div>
           </div>
 

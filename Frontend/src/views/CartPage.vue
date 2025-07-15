@@ -164,6 +164,7 @@ export default defineComponent({
 <style scoped>
 
 .cart {
+  background-color: white;
   margin-top: 30px;
   border-radius: 50px;
   border-radius: 12px;
