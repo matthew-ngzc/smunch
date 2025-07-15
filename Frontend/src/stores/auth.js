@@ -45,6 +45,12 @@ export const useAuthStore = defineStore('auth', {
       sessionStorage.removeItem('token')
       sessionStorage.removeItem('userId')
       sessionStorage.removeItem('userName')
+
+      // for supabase realtime 
+      if (window.realtimeOrdersService) {
+        window.realtimeOrdersService.unsubscribe()
+      }
+      
     },
     isAuthenticated() {
       return !!this.token
