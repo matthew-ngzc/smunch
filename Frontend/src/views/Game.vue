@@ -318,7 +318,12 @@ function closeGame() {
 <template>
   <div class="game no-scroll">
     <div class="game-page">
-      <h1 class="game-title">Welcome to Smunch Game Zone</h1>
+      <div class="game-title-split">
+        <div class="title-text-left"><span>welcome to</span></div>
+        <img src="/dinoFaceForward.png" class="dino-peek" alt="dino" />
+        <div class="title-text-right"><span>smunch game zone!</span></div>
+      </div>
+
 
       <!-- CHOICE SCREEN -->
       <div v-if="!showWheel && !showPoker && !showEmojis" class="game-options">
@@ -444,6 +449,48 @@ function closeGame() {
 
 
 <style scoped>
+
+.game-title-split {
+  display: flex;
+  align-items: center; /* keeps things aligned at the base */
+  justify-content: center;
+  gap: 10rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+  text-align: center;
+  font-size: 2.7rem;
+  font-weight: 800;
+  color: #42272b;
+ 
+}
+
+.title-text-left,
+.title-text-right {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 100px; /* ⬅️ shift text down without moving dino */
+ 
+}
+
+.title-text-left span,
+.title-text-right span {
+  display: inline-block;
+  line-height: 1.2;
+   margin-left: 170px;
+   font-weight: bold;
+   
+}
+
+
+.dino-peek {
+  position: absolute;
+  height: 470px;
+  object-fit: contain;
+  margin-bottom: -200px; /* nudges the dino into the cards */
+  pointer-events: none;
+}
+
+
 .game.no-scroll {
   position: fixed;
   top: 60px;
@@ -469,19 +516,13 @@ function closeGame() {
   padding-top: 80px;
 }
 
-.game-title {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: #134e4a;
-  margin-bottom: 2.5rem;
-  text-align: center;
-}
 
 .game-options {
   display: flex;
   gap: 3rem;
   justify-content: center;
   align-items: center;
+  margin-top: 84px;
 }
 
 .game-card {
@@ -529,8 +570,8 @@ function closeGame() {
 }
 
 .game-icon {
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 150px;
   object-fit: contain;
   margin-bottom: 1.5rem;
   display: block;
