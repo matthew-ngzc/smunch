@@ -26,6 +26,7 @@ import FAQ from '../views/FAQ.vue'
 import About from '../views/About.vue'
 import Contact from '../views/Contact.vue'
 import Game from '../views/Game.vue'
+import Collections from '../views/Collections.vue'
 
 // REIWEN : this is a routes array and each route object has 3 properties
   const routes = [
@@ -48,7 +49,8 @@ import Game from '../views/Game.vue'
   { path: '/faq', name: 'faq', component: FAQ },
   { path: '/about', name: 'about', component: About },
   { path: '/contact', name: 'contact', component: Contact },
-  { path: '/game', name: 'game', component: Game }
+  { path: '/game', name: 'game', component: Game },
+  { path: '/collections', name: 'collections', component: Collections }
 ]
 
 
