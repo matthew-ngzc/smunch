@@ -123,7 +123,7 @@ function getCombinedStatus(order) {
   if (order.payment_status === 'awaiting_verification') return 'awaiting_verification'
   if (order.payment_status === 'payment_confirmed') {
     if (order.order_status === 'preparing') return 'preparing'
-    if (order.order_status === 'collected') return 'collected_by_runner'
+    if (order.order_status === 'collected_by_runner') return 'collected_by_runner'
     if (order.order_status === 'delivered') return 'delivered'
     if (order.order_status === 'completed') return 'completed'
     return 'payment_confirmed' // fallback

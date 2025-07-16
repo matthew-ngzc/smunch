@@ -39,7 +39,7 @@ const timelineData = computed(() => {
     currentStep = 2
   } else if (payment === 'payment_confirmed') {
     if (status === 'preparing') currentStep = 4
-    else if (status === 'collected') currentStep = 5
+    else if (status === 'collected_by_runner') currentStep = 5
     else if (status === 'delivered') currentStep = 6
     else if (status === 'completed') currentStep = 7
     else currentStep = 3 // payment confirmed but no order_status yet
@@ -59,7 +59,7 @@ function getCombinedStatus(order) {
   if (order.payment_status === 'awaiting_verification') return 'awaiting_verification'
   if (order.payment_status === 'payment_confirmed') {
     if (order.order_status === 'preparing') return 'preparing'
-    if (order.order_status === 'collected') return 'collected_by_runner'
+    if (order.order_status === 'collected_by_runner') return 'collected_by_runner'
     if (order.order_status === 'delivered') return 'delivered'
     if (order.order_status === 'completed') return 'completed'
     return 'payment_confirmed'
