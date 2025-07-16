@@ -13,29 +13,33 @@ export function formatLocation(order) {
 
 export function formatStatusClass(status) {
   return {
+    'refund_pending': 'status-grey',
+    'refund_completed': 'status-grey',
     'awaiting_payment': 'status-grey',
-    'payment_confirmed': 'status-green',
-    'awaiting_verification': 'status-yellow'
+    'awaiting_verification': 'status-grey',
+    'payment_confirmed': 'status-orange',
+    'preparing': 'status-yellow',
+    'collected_by_runner': 'status-yellow',
+    'delivered': 'status-green',
+    'completed': 'status-green',
+    'cancelled': 'status-red'
   }[status] || 'status-grey'
 }
 
 export function formatStatus(status) {
   switch (status) {
-    case 'awaiting_payment': return 'Awaiting Payment'
-    case 'payment_confirmed': return 'Payment Confirmed'
-    case 'awaiting_verification': return 'Awaiting Verification'
+    case 'refund_pending': return 'Refund pending'
+    case 'refund_completed': return 'Refund completed'
+    case 'awaiting_payment': return 'Awaiting payment'
+    case 'payment_confirmed': return 'Payment confirmed'
+    case 'awaiting_verification': return 'Awaiting verification'
+    case 'preparing': return 'Preparing'
+    case 'collected_by_runner': return 'Collected by runner'
+    case 'delivered': return 'Delivered'
+    case 'completed': return 'Completed'
+    case 'cancelled': return 'Cancelled'
     default: return status
   }
 }
 
-// for pastorders.vue 
-export function formatStatusBadge(status) {
-  switch (status) {
-    case 'completed':
-      return { text: 'Completed', class: 'status-green', msg: 'Order successfully delivered.' }
-    case 'cancelled':
-      return { text: 'Cancelled', class: 'status-red', msg: 'You cancelled this order.' }
-    default:
-      return { text: status, class: 'status-grey', msg: 'Status unknown.' }
-  }
-}
+

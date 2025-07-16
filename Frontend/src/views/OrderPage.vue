@@ -9,7 +9,6 @@ import Navbar from '@/components/Navbar.vue'
 import ChatBar from '@/components/ChatBar.vue'
 
 
-
 export default defineComponent({
   components: {
     ChatBar
@@ -253,6 +252,7 @@ export default defineComponent({
   position: relative;
   scroll-snap-align: start;
   overflow: hidden;
+  max-width: 100px;
 }
 .merchant-card:hover {
   transform: translateY(-4px) scale(1.045);

@@ -15,6 +15,8 @@ const currentPage = ref(1)
 const pageSize = 5
 const totalOrders = ref(0)
 
+
+
 // for supabase realtime
 const setupRealtimeSubscription = () => {
   const userId = authStore.userId
@@ -91,14 +93,14 @@ function closeReceipt() {
   selectedOrder.value = null
 }
 
-function getStatusMessage(status) {
-  switch (status) {
-    case 'awaiting_payment': return 'Payment not made.'
-    case 'payment_confirmed': return 'Payment confirmed. We will deliver your order to you.'
-    case 'awaiting_verification': return 'Order confirmed. Smunch will confirm your payment asap.'
-    default: return ''
-  }
-}
+// function getStatusMessage(status) {
+//   switch (status) {
+//     case 'awaiting_payment': return 'Payment not made.'
+//     case 'payment_confirmed': return 'Payment confirmed. We will deliver your order to you.'
+//     case 'awaiting_verification': return 'Order confirmed. Smunch will confirm your payment asap.'
+//     default: return ''
+//   }
+// }
 
 watch(selectedOrder, (newVal) => {
   document.body.style.overflow = newVal ? 'hidden' : 'auto'
@@ -115,6 +117,20 @@ function prevPage() {
 function nextPage() {
   if (currentPage.value < totalPages.value) changePage(currentPage.value + 1)
 }
+
+function getCombinedStatus(order) {
+  if (order.payment_status === 'awaiting_payment') return 'awaiting_payment'
+  if (order.payment_status === 'awaiting_verification') return 'awaiting_verification'
+  if (order.payment_status === 'payment_confirmed') {
+    if (order.order_status === 'preparing') return 'preparing'
+    if (order.order_status === 'collected') return 'collected_by_runner'
+    if (order.order_status === 'delivered') return 'delivered'
+    if (order.order_status === 'completed') return 'completed'
+    return 'payment_confirmed' // fallback
+  }
+  return 'awaiting_payment' // fallback
+}
+
 </script>
 
 <template>
@@ -146,16 +162,26 @@ function nextPage() {
                 <span>{{ getItemCount(order) }} item<span v-if="getItemCount(order) > 1">s</span></span>
                 <div class="order-price">${{ (order.total_amount_cents / 100).toFixed(2) }}</div>
               </div>
-              <span class="status-badge" :class="formatStatusClass(order.payment_status)">
-                {{ formatStatus(order.payment_status) }}
+              <span class="status-badge" :class="formatStatusClass(getCombinedStatus(order))">
+                {{ formatStatus(getCombinedStatus(order)) }}
               </span>
+
             </div>
           </div>
           </div>
         </div> 
       </li>
     </ul>
-    <div class="pagination">
+    <!-- Empty state for no orders -->
+    <div v-if="activeOrders.length === 0" class="empty-state">
+      <div class="empty-icon">🚀</div>
+      <h3>No Active Orders</h3>
+      <p>You don't have any active orders right now. Place an order to see it here!</p>
+      <router-link to="/order" class="empty-action-btn">Place Order</router-link>
+    </div>
+
+    <!-- Pagination - only show if there are orders -->
+    <div v-if="activeOrders.length > 0" class="pagination">
       <button class="page-btn nav-btn" :disabled="currentPage === 1" @click="prevPage">&#60;</button>
       <button
         v-for="page in paginationRange"
@@ -289,53 +315,120 @@ function nextPage() {
 }
 
 .status-green {
-  background-color: green;
+  background-color: #198754;
 }
 
 .status-grey {
   background-color: #555;
 }
 
+.status-orange {
+  background-color: #fd7e14;
+}
+
 .status-yellow {
-  background-color: gold;
+  background-color: #ffc107;
   color: black;
 }
 
+.status-red {
+  background-color: #dc3545;
+}
+
+/* Empty state styling */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  margin-top: 40px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 24px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.empty-action-btn {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #007a3d;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.empty-action-btn:hover {
+  background-color: #036232;
+}
+
+/* Pagination styling - smaller and at bottom */
 .pagination {
   display: flex;
-  gap: 8px;
-  margin-top: 24px;
+  gap: 4px;
   justify-content: center;
   align-items: center;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
 }
 .page-btn {
   background: #fff;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 8px 18px;
-  font-size: 1.2rem;
-  font-weight: 600;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
   color: #222;
   cursor: pointer;
-  transition: border 0.2s, color 0.2s, background 0.2s;
+  transition: all 0.2s;
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .page-btn.active {
-  border: 2px solid #6c3cff;
+  border: 1px solid #6c3cff;
   color: #6c3cff;
   background: #fff;
+  font-weight: 600;
 }
 .page-btn[disabled] {
   cursor: default;
   color: #bbb;
   background: #f3f3f3;
-  border: 2px solid #e0e0e0;
+  border: 1px solid #e0e0e0;
 }
 .page-btn.nav-btn {
-  font-size: 1.5rem;
-  padding: 8px 16px;
+  font-size: 16px;
+  padding: 6px 10px;
   color: #bbb;
   background: #f3f3f3;
-  border: 2px solid #e0e0e0;
+  border: 1px solid #e0e0e0;
 }
 .page-btn.nav-btn:not([disabled]) {
   color: #222;
