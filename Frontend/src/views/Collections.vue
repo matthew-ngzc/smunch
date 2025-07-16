@@ -11,7 +11,9 @@
 
     <!-- Dino Viewer with Arrows -->
     <div class="dino-display">
-      <button v-if="selectedIndex > 0" class="arrow-btn" @click="prevDino">←</button>
+      <button v-if="selectedIndex > 0" class="arrow-btn prev-arrow" @click="prevDino">
+        <img src="/public/left-arrow.png" alt="Previous" class="arrow-img" />
+      </button>
 
       <div class="dino-content">
         <img :src="dinoImages[selectedIndex]" :alt="dinoNames[selectedIndex]" class="dino-image" />
@@ -34,8 +36,8 @@
         </div>
       </div>
 
-      <button v-if="selectedIndex < dinoNames.length - 1" class="arrow-btn" @click="nextDino">
-        →
+      <button v-if="selectedIndex < dinoNames.length - 1" class="arrow-btn next-arrow" @click="nextDino">
+        <img src="/public/right-arrow.png" alt="Next" class="arrow-img" />
       </button>
     </div>
   </div>
@@ -47,11 +49,11 @@ import { ref } from 'vue'
 const letters = ['S', 'M', 'U', 'N', 'C', 'H']
 const dinoNames = ['Stark', 'Milo', 'Uno', 'Nina', 'Cody', 'Hatch']
 const dinoImages = [
-  '../public/stark.png',
-  '../public/milo.png',
-  '../public/uno.png',
-  '../public/cody.png',
-  '../public/hatch.png',
+  './public/stark.png',
+  './public/milo.png',
+  './public/uno.png',
+  './public/cody.png',
+  './public/hatch.png',
 ]
 const dinoCosts = [0, 100, 200, 300, 400, 500]
 
@@ -134,52 +136,67 @@ const nextDino = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5rem;
-  margin-top: 2rem;
+  gap: 8rem;
+  margin-top: 6rem;
   position: relative;
   min-height: 300px;
 }
 
 .arrow-btn {
-  font-size: 2.5rem;
-  background: #ffffff;
-  border: 2px solid #ddd;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #e9ecef;
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  width: 90px;
+  height: 90px;
   cursor: pointer;
-  color: #444;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
+  padding: 0;
 }
 
-.arrow-btn:first-child {
-  left: 2rem;
+.prev-arrow {
+  left: -3rem;
 }
 
-.arrow-btn:last-child {
-  right: 2rem;
+.next-arrow {
+  right: -3rem;
 }
 
 .arrow-btn:hover {
-  background: #f0f0f0;
-  transform: translateY(-50%) scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border-color: #dee2e6;
+}
+
+.arrow-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.arrow-img {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+  margin: 0;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .dino-content {
   text-align: center;
   width: 260px;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  margin: 0 auto;
+  position: relative;
+  left: 0;
+  top: 0;
+  transform: none;
+  z-index: 1;
 }
 
 .dino-image {
