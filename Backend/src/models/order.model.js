@@ -326,3 +326,23 @@ export async function getOrdersPendingPaymentCheck() {
   if (error) throw error;
   return data;
 }
+
+
+/**
+ * Bulk-updates payment and order status for all orders marked as paid.
+ * 
+ * @param {number[]} paidOrderIds - Array of order IDs to mark as paid
+ */
+export async function updatePaymentAndOrderStatusToPaid(paidOrderIds) {
+  if (!paidOrderIds || paidOrderIds.length === 0) return;
+
+  const { error } = await supabase
+    .from('orders')
+    .update({
+      payment_status: PAYMENT_STATUSES[2],
+      order_status: ORDER_STATUSES[1]
+    })
+    .in('order_id', paidOrderIds);
+
+  if (error) throw error;
+}

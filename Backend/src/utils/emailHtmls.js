@@ -156,6 +156,47 @@ export function getReceiptHtml(order) {
   return wrapWithEmailLayout(body);
 }
 
+
+
+/**
+ * Generates an HTML-formatted reminder email for unpaid orders.
+ *
+ * @param {object} order - The full order object (includes order_id, delivery location, and delivery time)
+ * @returns {string} - HTML string to be sent as the email body
+ *
+ * 📧 Example of how the email will look:
+ *
+ * -----------------------------------------------------
+ * Subject: ⏳ Reminder: Complete Your SMUNCH Payment
+ *
+ * 👋 Still Hungry?
+ *
+ * Hey there! We noticed you started a SMUNCH order but haven’t completed payment yet.
+ *
+ * Order ID: 187  
+ * Delivery: SCIS SR 2-1  
+ * Scheduled For: Jan 3, 2025, 12:00 PM
+ *
+ * Please make payment now to confirm your order.  
+ * If you don’t, we may not be able to include it in today’s batch.
+ *
+ * 💙 Made for SMU students, by SMU students.
+ * -----------------------------------------------------
+ */
+export function getReminderEmailHtml(order) {
+  const body = `
+    <h2>👋 Still Hungry?</h2>
+    <p>Hey there! We noticed you started a SMUNCH order but haven't completed payment yet.</p>
+    <p><strong>Order ID:</strong> ${order.order_id}<br>
+       <strong>Delivery:</strong> ${order.building} ${order.room_type} ${order.room_number}<br>
+       <strong>Scheduled For:</strong> ${new Date(order.delivery_time).toLocaleString('en-SG')}</p>
+    <p>Please make payment now to confirm your order. If you don't, we may not be able to include it in today's batch.</p>
+  `;
+
+  return wrapWithEmailLayout(body);
+}
+
+
 /**
  * Generates an HTML-formatted email to notify users of a password change.
  *
