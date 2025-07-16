@@ -15,6 +15,8 @@ const currentPage = ref(1)
 const pageSize = 5
 const totalOrders = ref(0)
 
+
+
 // for supabase realtime
 const setupRealtimeSubscription = () => {
   const userId = authStore.userId
@@ -115,6 +117,20 @@ function prevPage() {
 function nextPage() {
   if (currentPage.value < totalPages.value) changePage(currentPage.value + 1)
 }
+
+function getCombinedStatus(order) {
+  if (order.payment_status === 'awaiting_payment') return 'awaiting_payment'
+  if (order.payment_status === 'awaiting_verification') return 'awaiting_verification'
+  if (order.payment_status === 'payment_confirmed') {
+    if (order.order_status === 'preparing') return 'preparing'
+    if (order.order_status === 'collected') return 'collected_by_runner'
+    if (order.order_status === 'delivered') return 'delivered'
+    if (order.order_status === 'completed') return 'completed'
+    return 'payment_confirmed' // fallback
+  }
+  return 'awaiting_payment' // fallback
+}
+
 </script>
 
 <template>
@@ -146,9 +162,10 @@ function nextPage() {
                 <span>{{ getItemCount(order) }} item<span v-if="getItemCount(order) > 1">s</span></span>
                 <div class="order-price">${{ (order.total_amount_cents / 100).toFixed(2) }}</div>
               </div>
-              <span class="status-badge" :class="formatStatusClass(order.payment_status)">
-                {{ formatStatus(order.payment_status) }}
+              <span class="status-badge" :class="formatStatusClass(getCombinedStatus(order))">
+                {{ formatStatus(getCombinedStatus(order)) }}
               </span>
+
             </div>
           </div>
           </div>

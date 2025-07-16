@@ -98,7 +98,7 @@ import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore();
 
-const WEBHOOK_URL = 'http://localhost:5678/webhook/0a02177a-63bb-4ff9-bc1a-119b4a92331c';
+const WEBHOOK_URL = 'http://localhost:5678/webhook/0a02177a-63bb-4ff9-bc1a-119b4a92331c'
 
 const messages = reactive([
   { sender: 'bot', text: 'Hi there! I am Smunch. How can I assist you today?' }

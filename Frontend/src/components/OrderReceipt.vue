@@ -3,6 +3,8 @@ import { computed, ref } from 'vue'
 import { formatDateTime as _formatDateTime, formatStatusClass, formatStatus } from '@/utility/orderHelpers'
 import { getPaymentQRCode, updatePaymentStatus, getRefreshedOrders } from '@/services/orderFoodService'
 import coins from '@/assets/smunch_coin.jpg';
+import orderProgress from '../components/orderProgress.vue'
+
 
 // define props passed into this component
 // 'order' contains all the order details
@@ -13,6 +15,59 @@ const props = defineProps({
   onClose: Function,
   showOrderStatus: Boolean // true for past orders, false/undefined for active
 })
+
+
+const timelineData = computed(() => {
+  const steps = [
+    'Awaiting Payment',
+    'Awaiting Verification',
+    'Payment Confirmed',
+    'Preparing',
+    'Collected by Runner',
+    'Delivered',
+    'Completed'
+  ]
+
+  let currentStep = 0
+
+  const payment = props.order.payment_status
+  const status = props.order.order_status
+
+  if (payment === 'awaiting_payment') {
+    currentStep = 1
+  } else if (payment === 'awaiting_verification') {
+    currentStep = 2
+  } else if (payment === 'payment_confirmed') {
+    if (status === 'preparing') currentStep = 4
+    else if (status === 'collected') currentStep = 5
+    else if (status === 'delivered') currentStep = 6
+    else if (status === 'completed') currentStep = 7
+    else currentStep = 3 // payment confirmed but no order_status yet
+  }
+
+  return {
+    steps,
+    currentStep,
+    activeColor: '#3BB143',
+    passiveColor: '#ccc'
+  }
+})
+
+// to reflect order status
+function getCombinedStatus(order) {
+  if (order.payment_status === 'awaiting_payment') return 'awaiting_payment'
+  if (order.payment_status === 'awaiting_verification') return 'awaiting_verification'
+  if (order.payment_status === 'payment_confirmed') {
+    if (order.order_status === 'preparing') return 'preparing'
+    if (order.order_status === 'collected') return 'collected_by_runner'
+    if (order.order_status === 'delivered') return 'delivered'
+    if (order.order_status === 'completed') return 'completed'
+    return 'payment_confirmed'
+  }
+  return 'awaiting_payment'
+}
+
+
 
 // to refresh each specific order
 const spinningOrderId = ref(null)
@@ -194,9 +249,10 @@ async function handlePaymentDone() {
           <span v-if="!loadingPayment">Click here to make payment</span>
           <span v-else>Loading...</span>
         </button>
-        <span v-else :class="['status-badge', formatStatusClass(order.payment_status)]">
-          {{ formatStatus(order.payment_status) }}
+        <span v-else :class="['status-badge', formatStatusClass(getCombinedStatus(order))]">
+          {{ formatStatus(getCombinedStatus(order)) }}
         </span>
+
       </template>
     </div>
 
@@ -215,8 +271,13 @@ async function handlePaymentDone() {
 
       <hr class="divider" />
 
+      <!-- order Progress  -->
+    <orderProgress :data="timelineData" />
+
+
       <!-- receipt body -->
       <div class="receipt-body">
+        
         <div class="section-title">Order Summary</div>
 
         <div class="item-list">
