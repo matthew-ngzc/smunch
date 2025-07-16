@@ -94,6 +94,9 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch, nextTick, onUnmounted, computed } from 'vue';
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore();
 
 const WEBHOOK_URL = 'http://localhost:5678/webhook/0a02177a-63bb-4ff9-bc1a-119b4a92331c'
 
@@ -184,10 +187,14 @@ async function sendMessage() {
   const start = Date.now();
 
   try {
+
     const res = await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ chatInput: input.value })
+      body: JSON.stringify({
+      chatInput: input.value,
+      session_id: authStore.userId
+  })
     });
     const text = await res.text();
     const data = text ? JSON.parse(text) : {};
