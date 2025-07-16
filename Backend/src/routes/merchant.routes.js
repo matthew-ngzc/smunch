@@ -18,21 +18,21 @@ const router = express.Router();
  * GET /api/merchants
  * Anybody can access
  */
-router.get('/', getAllMerchants);
+router.get('/', authenticateToken, getAllMerchants);
 
 /**
  * Get specific merchant by ID
  * GET /api/merchants/:id
  * Anybody can access
  */
-router.get('/:id', getMerchant);
+router.get('/:id', authenticateToken, getMerchant);
 
 /**
  * Get a specific merchant's menu
  * GET /api/merchants/:id/menu
  * Anybody can access
  */
-router.get('/:id/menu', getMenu);
+router.get('/:id/menu', authenticateToken, getMenu);
 
 
 
