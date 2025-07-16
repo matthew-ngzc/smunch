@@ -378,10 +378,14 @@ export async function getOrdersForOneDayBeforeReminder(deliveryDateISO) {
   const start = DateTime.fromISO(deliveryDateISO, { zone: sgZone }).startOf('day').toJSDate();
   const end = DateTime.fromISO(deliveryDateISO, { zone: sgZone }).endOf('day').toJSDate();
 
+  console.log(start);
+  console.log(end);
+
   let { data, error } = await supabase
     .from('orders')
     .select(`
       order_id,
+      customer_id,
       delivery_time,
       building,
       room_type,
@@ -390,14 +394,16 @@ export async function getOrdersForOneDayBeforeReminder(deliveryDateISO) {
         email
       )
     `)
-    .in('payment_status', ['awaiting_payment', 'awaiting_verification'])
+    .in('payment_status', [PAYMENT_STATUSES[0], PAYMENT_STATUSES[1]])
     .gte('delivery_time', start.toISOString())
     .lte('delivery_time', end.toISOString())
     .is('reminder_1_day_before_sent_at', null);
 
   if (!data || data.length === 0){
-    console.log('[CRON] No orders found');
+    console.log('[CRON DEBUG] No orders found');
     data = [];
+  }else{
+    console.log(`[CRON DEBUG] ${data.length} orders found`);
   }
 
   if (error) throw error;

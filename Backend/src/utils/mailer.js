@@ -159,7 +159,8 @@ export async function sendReceiptEmail(to, order) {
 export async function sendReminderEmailOneDayBefore(user, order) {
   const html = getReminderEmailHtmlOneDayBefore(order, user.name || 'Smunchie');
 
-  await sendEmail({
+  return transporter.sendMail({
+    from: SMUNCH_FROM_ADDRESS,
     to: user.email,
     subject: '⏳ Reminder: Complete Your SMUNCH Order',
     html
@@ -178,7 +179,8 @@ export async function sendReminderEmailOneDayBefore(user, order) {
 export async function sendReminderEmailFinalCall(email, name = 'Smunchie', order) {
   const html = getReminderEmailHtmlFinalCall(order, name);
 
-  await sendEmail({
+  return transporter.sendMail({
+    from: SMUNCH_FROM_ADDRESS,
     to: email,
     subject: '🚨 Final Call: Complete Payment for Your SMUNCH Order',
     html

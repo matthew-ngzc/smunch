@@ -30,6 +30,7 @@ export async function runOneDayBeforeReminders() {
 
       await sendReminderEmailOneDayBefore(user, order);
       await updateOrderReminderTimestamp(order.order_id, 'reminder_1_day_before_sent_at');
+      console.log(`[Reminder Email 1-Day-Before] email sent succesfully for Order ${order.order_id}`);
     } catch (err) {
       console.error(`[Reminder Email 1-Day-Before] Failed for Order ${order.order_id}: ${err.message}`);
     }
