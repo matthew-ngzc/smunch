@@ -287,7 +287,7 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('/dinoSMUNCHING.png') no-repeat;
+  background: url('/Stark.png') no-repeat;
   background-size: cover;
   background-position: center;
   opacity: 0.07;

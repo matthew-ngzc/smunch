@@ -108,7 +108,7 @@ import { defineComponent, ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import Testimonials from '@/components/Testimonials.vue'
-import dinoSmunchIcon from '/dinoSMUNCHING.png'
+import dinoSmunchIcon from '/Stark.png'
 
 export default defineComponent({
   name: 'LandingPage',

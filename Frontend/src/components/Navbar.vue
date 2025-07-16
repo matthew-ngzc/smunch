@@ -42,8 +42,6 @@ const logout = () => {
   closeMenu();
   router.push({ path: '/', query: { logout: Date.now() } }); // Always triggers route change
 }
-
-
 </script>
 
 
@@ -63,6 +61,7 @@ const logout = () => {
       <router-link to="/order">order</router-link> 
       <router-link to="/run">run</router-link>
       <router-link to="/game">play</router-link>
+      <router-link to="/collections">collections</router-link>
     </div>
 
     <div class="navbar-right" v-if="auth.token">
