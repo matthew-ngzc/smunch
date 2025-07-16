@@ -14,8 +14,12 @@ export function formatLocation(order) {
 export function formatStatusClass(status) {
   return {
     'awaiting_payment': 'status-grey',
-    'payment_confirmed': 'status-green',
-    'awaiting_verification': 'status-yellow'
+    'payment_confirmed': 'status-orange',
+    'awaiting_verification': 'status-grey',
+    'preparing': 'status-yellow',
+    'collected_by_runner': 'status-yellow',
+    'delivered': 'status-green',
+    'completed': 'status-dark-green'
   }[status] || 'status-grey'
 }
 
@@ -24,6 +28,10 @@ export function formatStatus(status) {
     case 'awaiting_payment': return 'Awaiting Payment'
     case 'payment_confirmed': return 'Payment Confirmed'
     case 'awaiting_verification': return 'Awaiting Verification'
+    case 'preparing': return 'Preparing order'
+    case 'collected_by_runner': return 'Collected by Runner'
+    case 'delivered': return 'Delivered'
+    case 'completed': return 'Completed'
     default: return status
   }
 }
