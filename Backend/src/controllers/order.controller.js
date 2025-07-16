@@ -186,13 +186,11 @@ import { canUpdatePaymentStatus, isCorrectUser } from '../utils/auth.utils.js';
  */
 export const createOrder = async (req, res, next) => {
   try {
-    const jwtUserId = req.user.id;
-    const { customer_id } = req.body;
+    const jwtUserId = Number(req.user.id);
+    const customer_id  = Number(req.body.customer_id);
 
     // Only allow users to create orders for themselves
     if (jwtUserId !== customer_id) {
-      console.log(jwtUserId);
-      console.log(customer_id);
       return res.status(403).json({ message: 'You can only create orders for your own account.' });
     }
 
