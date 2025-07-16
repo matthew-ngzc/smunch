@@ -1,12 +1,11 @@
 // routes/health.routes.js
 import express from 'express';
 import { supabase } from '../lib/supabaseClient.js';
-import { getRainStatus } from '../controllers/weather.controller.js';
 import { sendContactEmail } from '../controllers/contact.controller.js';
 
 const router = express.Router();
 
-router.get('/health', async (req, res) => {
+router.get('/', async (req, res) => {
   const { error } = await supabase.rpc('version'); // or any trivial query
   if (error) {
     return res.status(500).json({ message: 'Supabase not connected' });
@@ -14,7 +13,6 @@ router.get('/health', async (req, res) => {
   res.json({ message: 'Server is up and Supabase is connected' });
 });
 
-router.get('/weather/rain-status', getRainStatus);
-router.post('/contact', sendContactEmail);
+router.post('/', sendContactEmail);
 
 export default router;
