@@ -50,3 +50,11 @@ export const MENU_ITEM_STATUS = {
   OUT_OF_STOCK: 'out of stock',
   REMOVED: 'removed'
 };
+
+export const DELIVERY_TIMINGS = {
+  '08:15': { label: 'Breakfast', hour: 8, minute: 15 },
+  '12:00': { label: 'Lunch', hour: 12, minute: 0 },
+  '15:30': { label: 'Tea Break', hour: 15, minute: 30 },
+  '19:00': { label: 'Dinner', hour: 19, minute: 0 }
+};
+

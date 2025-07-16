@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import { 
   getPasswordChangeHtml,
   getReceiptHtml,
+  getReminderEmailHtmlFinalCall,
+  getReminderEmailHtmlOneDayBefore,
   getTestEmailHtml,
   getVerificationEmailHtml } from './emailHtmls.js';
 
@@ -54,6 +56,10 @@ export const sendTestEmail = async ({ to }) => {
   });
 }
 
+// ============================================================================
+// 🔐 AUTHENTICATION FUNCTIONS
+// ============================================================================
+
 /**
  * Sends a verification email to the user or merchant with a link to verify their account.
  *
@@ -77,24 +83,6 @@ export const sendVerificationEmail = async ({ to, name, token, role} ) => {
 };
 
 /**
- * Sends a confirmation email with the receipt attached.
- *
- * @param {string} to - The recipient's email address
- * @param {string} htmlBody - The HTML content of the email
- * @returns {Promise<void>}
- */
-export async function sendReceiptEmail(to, order) {
-  const receiptHtml = getReceiptHtml(order);
-  return transporter.sendMail({
-    from: SMUNCH_FROM_ADDRESS,
-    to,
-    subject: 'Payment Received! Your SMUNCH Order is Confirmed',
-    html: receiptHtml
-  });
-}
-
-
-/**
  * Sends a notification email to the user if their password was changed.
  *
  * @param {string} to - Recipient's email
@@ -114,8 +102,6 @@ export async function sendPasswordChangeNotification(to, name, changeDate = new 
   });
 }
 
-
-
 /**
  * Sends a password reset email to the user with a reset link.
  *
@@ -134,3 +120,69 @@ export async function sendResetPasswordEmail(to, link, name = 'Smunchie') {
     html
   });
 }
+
+
+
+// ============================================================================
+// 🛒 ORDER-RELATED FUNCTIONS
+// ============================================================================
+
+
+
+/**
+ * Sends a confirmation email with the receipt attached.
+ *
+ * @param {string} to - The recipient's email address
+ * @param {string} htmlBody - The HTML content of the email
+ * @returns {Promise<void>}
+ */
+export async function sendReceiptEmail(to, order) {
+  const receiptHtml = getReceiptHtml(order);
+  return transporter.sendMail({
+    from: SMUNCH_FROM_ADDRESS,
+    to,
+    subject: 'Payment Received! Your SMUNCH Order is Confirmed',
+    html: receiptHtml
+  });
+}
+
+/**
+ * Sends a 1-day-before reminder email to the user for an unpaid order.
+ *
+ * This is typically called by the nightly cron job that runs around 9:00 PM,
+ * for orders scheduled to be delivered the next day.
+ *
+ * @param {object} user - User object containing at least `email` and `name`
+ * @param {object} order - Order object including order_id, delivery_time, room, etc.
+ * @returns {Promise<void>}
+ */
+export async function sendReminderEmailOneDayBefore(user, order) {
+  const html = getReminderEmailHtmlOneDayBefore(order, user.name || 'Smunchie');
+
+  await sendEmail({
+    to: user.email,
+    subject: '⏳ Reminder: Complete Your SMUNCH Order',
+    html
+  });
+}
+
+/**
+ * Sends a final-call reminder email 40 minutes before delivery time,
+ * alerting the user that their order is about to be excluded.
+ *
+ * @param {string} email - recipient's email address
+ * @param {string} name - recipient's name
+ * @param {object} order - Order object including order_id, delivery_time, room, etc.
+ * @returns {Promise<void>}
+ */
+export async function sendReminderEmailFinalCall(email, name = 'Smunchie', order) {
+  const html = getReminderEmailHtmlFinalCall(order, name);
+
+  await sendEmail({
+    to: email,
+    subject: '🚨 Final Call: Complete Payment for Your SMUNCH Order',
+    html
+  });
+}
+
+
