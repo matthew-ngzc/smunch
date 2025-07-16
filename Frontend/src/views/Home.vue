@@ -33,7 +33,7 @@ export default defineComponent({
         }, 3000)
       }
       try {
-        const res = await fetch('/api/health/weather/rain-status')
+        const res = await fetch('/api/weather/rain-status')
         if (res.ok) {
           weather.value = await res.json()
         }

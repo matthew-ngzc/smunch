@@ -5,11 +5,12 @@ import authRoutes from "./routes/auth.routes.js";
 import merchantRoutes from "./routes/merchant.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import contactRoutes from "./routes/contact.routes.js";
+import weatherRoutes from "./routes/weather.routes.js";
 import errorHandler from "./middlewares/error.middleware.js";
 import { swaggerSpec, swaggerUi } from './config/swagger.config.js';
 import cors from 'cors';
 import path from 'path';
-import healthRoutes from "./routes/health.routes.js";
 
 dotenv.config();
 
@@ -31,8 +32,9 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/merchants", merchantRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/health", healthRoutes);
-app.use('/uploads/profile-pictures', express.static(path.resolve('Backend/uploads/profile-pictures')));
+app.use("/api/contact", contactRoutes);
+app.use("/api/weather", weatherRoutes);
+// app.use('/uploads/profile-pictures', express.static(path.resolve('Backend/uploads/profile-pictures'))); // Testing in progress
 
 app.use(errorHandler);
 
