@@ -64,7 +64,18 @@ const cssStyle = computed(() => ({
 
           <div class="step-label">{{ step }}</div>
         </div>
-        <div class="step-line"></div>
+        <!-- line before the bubble -->
+<div
+  class="step-line step-line-left"
+  :class="{ 'step-done': index > 0 && index <= data.currentStep - 1 }"
+/>
+
+<!-- line after the bubble -->
+<div
+  class="step-line step-line-right"
+  :class="{ 'step-done': index < data.steps.length - 1 && index < data.currentStep - 1 }"
+/>
+
       </li>
     </ul>
   </div>
@@ -139,19 +150,37 @@ const cssStyle = computed(() => ({
   font-weight: bold;
 }
 
-.step-line {
+.step-line-left,
+.step-line-right {
   position: absolute;
   top: 32px;
-  left: 50%;
-  width: 100%;
+  width: 50%;
   height: 4px;
   background-color: var(--passive-color);
   z-index: 0;
   border-radius: 2px;
-  transform: translateX(50%);
 }
 
-.step:last-child .step-line {
+.step-line-left {
+  left: 0;
+  transform: translateX(-100%);
+}
+
+.step-line-right {
+  right: 0;
+  transform: translateX(100%);
+}
+
+.step-line-left.step-done,
+.step-line-right.step-done {
+  background-color: var(--active-color);
+}
+
+.step:first-child .step-line-left {
+  display: none;
+}
+
+.step:last-child .step-line-right {
   display: none;
 }
 
