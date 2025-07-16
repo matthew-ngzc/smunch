@@ -13,7 +13,7 @@ const props = defineProps({
 })
 
 const dinoImg = computed(() =>
-  props.raining ? '/dinoRain.png' : '/dinoSMUNCHING.png'
+  props.raining ? '/dinoRain.png' : '/Stark.png'
 )
 
 const bubbleText = computed(() => {

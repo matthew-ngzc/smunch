@@ -468,6 +468,12 @@ function closeGame() {
 .title-text-right {
   display: flex;
   align-items: flex-start;
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: #134e4a;
+  text-align: center;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
   margin-top: 80px; /* ⬅️ shift text down without moving dino */
  
 }

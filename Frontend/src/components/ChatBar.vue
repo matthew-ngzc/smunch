@@ -263,7 +263,7 @@ async function sendMessage() {
 .avatar {
   width: 60px;
   height: 60px;
-  background: url('/dinoSMUNCHING.png') center/cover;
+  background: url('/Stark.png') center/cover;
   border-radius: 9999px;
   display: flex;
   align-items: center;
