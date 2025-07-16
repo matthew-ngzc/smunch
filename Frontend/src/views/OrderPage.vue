@@ -1,6 +1,6 @@
 <script lang="js">
 import { defineComponent, onMounted, ref } from 'vue'
-import { fetchAllMerchants, fetchParentMerchants } from '@/services/orderFoodService'
+import { fetchParentMerchants, getChildMerchants, getMerchantInfoById } from '@/services/orderFoodService'
 import { useOrderStore } from '@/stores/order'
 import { useRouter } from 'vue-router'
 import DinoWeather from '@/components/DinoWeather.vue'
@@ -36,11 +36,29 @@ export default defineComponent({
       }
     })
 
-    const goToMerchant = (merchantId) => {
-      orderStore.setMerchantId(merchantId)
-      router.push({ name: 'orderMerchant', params: { id: merchantId } })
-    }
+    const goToMerchant = async (merchantId) => {
 
+    try {
+      // fetch merchant info (to check if it has children)
+      const res = await getMerchantInfoById(merchantId)
+      const merchant = res.data
+      console.log('merchant info:', merchant)
+
+
+      if (merchant.has_children) {
+        //  fetch and replace current merchant list with its children
+        const childRes = await getChildMerchants(merchantId)
+        merchants.value = childRes.data
+      } else {
+        // go to order page as usual
+        orderStore.setMerchantId(merchantId)
+        router.push({ name: 'orderMerchant', params: { id: merchantId } })
+      }
+
+    } catch (err) {
+      console.error('error handling merchant click:', err)
+    }
+  }
 
     return { merchants, goToMerchant, isChatExpanded, handleChatStateChange }
   }

@@ -13,9 +13,11 @@ import {
   updateMenuItemByIdOrThrow
 } from '../models/menu.model.js';
 import { MENU_ITEM_STATUS } from '../constants/enums.constants.js';
+import redis from '../lib/redisClient.js';
+import { cache } from 'react';
 
 
-/** SWAGGER DOCS
+/**
  * @swagger
  * /api/merchants:
  *   get:
@@ -23,9 +25,13 @@ import { MENU_ITEM_STATUS } from '../constants/enums.constants.js';
  *     description: |
  *       Returns a list of all supported food merchants.  
  *       
- *       You can optionally filter results. If u do not have this parameter it will return every merchant:
+ *       You can optionally filter results. If you do not include this parameter it will return every merchant:
  *       - `parent_merchant_id=null` → returns only top-level merchants (e.g. Koufu, Braek)
  *       - `parent_merchant_id=5` → returns child merchants of merchant ID 5 (e.g. Koufu stalls)
+
+ *       ⚡ **Performance Note**:
+ *       This endpoint uses Redis caching to reduce database load and improve response speed.  
+ *       Cached responses are keyed by the `parent_merchant_id` value and expire every 5 minutes.
  *       
  *       Each merchant includes:
  *       - merchant_id (integer)
@@ -45,7 +51,7 @@ import { MENU_ITEM_STATUS } from '../constants/enums.constants.js';
  *           type: string
  *         description: |
  *           Filter by parent merchant ID.  
- *           Use `parent_id=null` to fetch top-level merchants.
+ *           Use `parent_merchant_id=null` to fetch top-level merchants.
  *     responses:
  *       200:
  *         description: List of merchants
@@ -83,23 +89,54 @@ export const getAllMerchants = async (req, res, next) => {
     const { parent_merchant_id } = req.query;
 
     let merchants;
+    let redisKey;
 
+    // Top-level merchants only
     if (parent_merchant_id === 'null') {
-      // Top-level merchants only
-      merchants = await getMerchantsByParentIdOrThrow(null);
+      //try redis
+      redisKey = 'merchants:parent:null';
+      const cachedMerchantList = await redis.get(redisKey);
+      //redis have, return straight
+      if (cachedMerchantList){
+        merchants = JSON.parse(cachedMerchantList);
+      }else{
+        // no choice ask db
+        merchants = await getMerchantsByParentIdOrThrow(null);
+        //put into redis
+        await redis.set(redisKey, JSON.stringify(merchants), 'EX', 300); // 5 min TTL
+      }
+      // children merchants (e.g. stalls within Koufu)
     } else if (parent_merchant_id !== undefined) {
       // Filter by specific parent merchant ID
       const parentIdInt = parseInt(parent_merchant_id);
       if (isNaN(parentIdInt)) {
         return res.status(400).json({ error: 'Invalid parent_merchant_id parameter' });
       }
-      merchants = await getMerchantsByParentIdOrThrow(parentIdInt);
+
+      // try redis
+      redisKey = `merchants:parent:${parentIdInt}`;
+      const cachedMerchantList = await redis.get(redisKey);
+      if (cachedMerchantList){
+        // parse
+        merchants = JSON.parse(cachedMerchantList);
+      }else{
+        // no choice hit db
+        merchants = await getMerchantsByParentIdOrThrow(parentIdInt);
+        //put into redis
+        await redis.set(redisKey, JSON.stringify(merchants), 'EX', 300);
+      }
     } else {
       // No filter, return all
-      merchants = await getAllMerchantsOrThrow();
+      redisKey = 'merchants:all';
+      const cachedMerchantList = await redis.get(redisKey);
+      if (cachedMerchantList){
+        merchants = JSON.parse(cachedMerchantList);
+      }else{
+        merchants = await getAllMerchantsOrThrow();
+        await redis.set(redisKey, JSON.stringify(merchants), 'EX', 300);
+      }
     }
-
-    res.json(merchants);
+    return res.status(200).json(merchants);
   } catch (err) {
     next(err);
   }
@@ -157,7 +194,7 @@ export const getAllMerchants = async (req, res, next) => {
 export const getMerchant = async (req, res, next) => {
   try {
     const { id: merchantId } = req.params;
-    const merchants = await getMerchantByIdOrThrow(merchantId, 'name, location, contact_number, image_url');
+    const merchants = await getMerchantByIdOrThrow(merchantId, 'name, location, contact_number, image_url, parent_merchant_id, has_children');
     res.json(merchants);
   } catch (err) {
     next(err);
@@ -165,17 +202,25 @@ export const getMerchant = async (req, res, next) => {
 };
 
 
-/** SWAGGER DOCS
+/**
  * @swagger
  * /api/merchants/{id}/menu:
  *   get:
  *     summary: Get menu for a specific merchant
  *     description: |
- *       Returns a list of all menu items offered by the merchant. Each item includes:
- *       - menu_item_id (integer)
- *       - name (string)
- *       - price_cents (integer)
- *       - type (string|null)
+ *       Returns a list of all menu items offered by the merchant.  
+ *       
+ *       Each item includes:
+ *       - `menu_item_id` (integer)
+ *       - `name` (string)
+ *       - `price_cents` (integer)
+ *       - `type` (string|null)
+
+ *       ⚡ **Performance Note**:  
+ *       This endpoint uses Redis caching to reduce load and improve speed.  
+ *       Cached responses are keyed using `menu:merchant:{id}` and expire after 5 minutes.  
+ *       The cache is invalidated automatically when menu items are added or updated.
+
  *       🔓 **Access**: Public — no login required
  *     tags: [Merchants]
  *     parameters:
@@ -210,9 +255,20 @@ export const getMerchant = async (req, res, next) => {
 export const getMenu = async (req, res, next) => {
   try {
     const { id: merchantId } = req.params;
-    await getMerchantByIdOrThrow(merchantId); // ensure merchant exists
-    const menuItems = await getMenuItemsByMerchantIdOrThrow(merchantId);
-    res.json(menuItems);
+    const redisKey = `menu:merchant:${merchantId}`;
+
+    let menuItems;
+    //check redis first
+    const cachedMenu = await redis.get(redisKey);
+    if (cachedMenu){
+      menuItems = JSON.parse(cachedMenu);
+    }else{
+      await getMerchantByIdOrThrow(merchantId); // ensure merchant exists
+      menuItems = await getMenuItemsByMerchantIdOrThrow(merchantId);
+      //put into redis
+      await redis.set(redisKey, JSON.stringify(menuItems), 'EX', 300);
+    }
+    return res.status(200).json(menuItems);
   } catch (err) {
     next(err);
   }
