@@ -232,6 +232,8 @@ export const getPendingPayments = async (req, res, next) => {
  *       - For `paid: true` items:  
  *         - Updates `payment_status` → `payment_confirmed`  
  *         - Updates `order_status` → `payment_verified`
+ * 
+ *       - For the request body, the only important fields are `order_id` and `paid`, but simply copy and pasting the output from the `payments/pending` endpoint and changing the `paid` to true will also work
  *       
  *       - Returns the new order list with pending payments
  *     tags: [Admin]
