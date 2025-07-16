@@ -34,7 +34,7 @@
           We’ll fetch your meal, you just hydrate.<br /><br />
           Skip the queue, avoid the heat,<br />
           Get your favourite bites without leaving your seat.<br /><br />
-          No fuss, no rush, no lunchtime race — SMUNCH brings your food, straight to your place.
+          No fuss, no rush, no lunch time race — SMUNCH brings your food, straight to your place.
           <span class="tagline-continued">By students, for students.</span>
         </p>
       </div>
