@@ -21,7 +21,7 @@ const app = express();
 const isDev = process.env.NODE_ENV === 'development';
 
 // Enable CORS
-app.use(cors())
+app.use(cors({origin: process.env.FRONTEND_URL}));
 app.set('trust proxy', true); // Trust proxy for rate limiting and IP extraction
 
 // Swagger documentation setup
