@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { updateUserProfileOrThrow, updateUserProfilePicture } from '../models/user.model.js';
 import { validatePasswordStrength } from '../utils/auth.utils.js';
 import { sendPasswordChangeNotification } from '../utils/mailer.js';
@@ -105,7 +106,12 @@ export const updateUserProfilePictureUrl = async (req, res, next) => {
 export const updateUserProfile = async (req, res, next) => {
   try{
     // extract information from body
-    const userId = req.user.user_id;
+    if (!req.user || (!req.user.user_id && !req.user.id)) {
+      return res.status(401).json({ message: 'User not authenticated properly' });
+    }
+    
+    // Handle both 'user_id' and 'id' field names from JWT token
+    const userId = req.user.user_id || req.user.id;
 
     let passwordChanged = false;
     const password_changed_at = new Date();
@@ -140,7 +146,12 @@ export const updateUserProfile = async (req, res, next) => {
     }
 
     // update in db
-    const updatedUser = await updateUserProfileOrThrow(userId, updates);
+    let updatedUser;
+    try {
+      updatedUser = await updateUserProfileOrThrow(userId, updates);
+    } catch (dbError) {
+      throw dbError;
+    }
 
     // send email if the password was changed
     if (passwordChanged){
@@ -148,6 +159,76 @@ export const updateUserProfile = async (req, res, next) => {
     }
     return res.status(200).json({ user: updatedUser });
   }catch (err){
+    console.error('Profile update error details:', err);
     next(err);
   }
 }
+
+/**
+ * @swagger
+ * /api/users/imagekit-auth:
+ *   get:
+ *     summary: Get ImageKit authentication parameters
+ *     description: Generates signature, token, and expire parameters needed for secure ImageKit uploads from frontend
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Authentication parameters generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   description: Unique token for this upload session
+ *                 expire:
+ *                   type: number
+ *                   description: Unix timestamp when token expires
+ *                 signature:
+ *                   type: string
+ *                   description: HMAC signature for authentication
+ *             example:
+ *               token: "7_1672531200"
+ *               expire: 1672531200
+ *               signature: "abc123def456789..."
+ *       401:
+ *         description: Unauthorized - authentication required
+ *       500:
+ *         description: ImageKit configuration missing
+ */
+export const getImageKitAuthParams = async (req, res, next) => {
+  try {
+    const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
+    
+    if (!privateKey) {
+      return res.status(500).json({ 
+        message: 'ImageKit configuration missing' 
+      });
+    }
+
+    // Generate token and expiry (ImageKit requires expire to be within 1 hour)
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    const uniqueId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const userIdForToken = req.user?.user_id || req.user?.id;
+    const token = userIdForToken ? `${userIdForToken}_${Date.now()}_${uniqueId}` : `default_${Date.now()}_${uniqueId}`;
+    const expire = currentTimestamp + 600; // 10 minutes from now (well within 1 hour limit)
+    
+    // Create signature
+    const signature = crypto
+      .createHmac('sha1', privateKey)
+      .update(token + expire)
+      .digest('hex');
+
+    res.json({
+      token,
+      expire,
+      signature
+    });
+  } catch (error) {
+    console.error('ImageKit auth error:', error);
+    next(error);
+  }
+};

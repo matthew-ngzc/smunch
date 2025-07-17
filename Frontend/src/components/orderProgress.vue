@@ -8,10 +8,8 @@ const props = defineProps({
   }
 })
 
-const data = readonly(
-  /** @type {{ steps: string[]; currentStep: number; activeColor: string; passiveColor: string }} */
-  props.data
-)
+const data = computed(() => props.data)
+
 
 const dinoVideos = [
   'dinoCashier.MP4',  // awaiting payment
@@ -25,9 +23,13 @@ const dinoVideos = [
 
 
 const cssStyle = computed(() => ({
-  '--active-color': data.activeColor,
-  '--passive-color': data.passiveColor
+  '--active-color': data.value.activeColor,
+  '--passive-color': data.value.passiveColor
 }))
+
+
+console.log('timeline props:', props.data)
+
 </script>
 
 <template>
@@ -65,16 +67,16 @@ const cssStyle = computed(() => ({
           <div class="step-label">{{ step }}</div>
         </div>
         <!-- line before the bubble -->
-<div
-  class="step-line step-line-left"
-  :class="{ 'step-done': index > 0 && index <= data.currentStep - 1 }"
-/>
+        <div
+          class="step-line step-line-left"
+          :class="{ 'step-done': index > 0 && index <= data.currentStep - 1 }"
+        />
 
-<!-- line after the bubble -->
-<div
-  class="step-line step-line-right"
-  :class="{ 'step-done': index < data.steps.length - 1 && index < data.currentStep - 1 }"
-/>
+        <!-- line after the bubble -->
+        <div
+          class="step-line step-line-right"
+          :class="{ 'step-done': index < data.steps.length - 1 && index < data.currentStep - 1 }"
+        />
 
       </li>
     </ul>

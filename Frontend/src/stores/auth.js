@@ -26,6 +26,7 @@ export const useAuthStore = defineStore('auth', {
     userId: sessionStorage.getItem('userId') || null,
     userName: sessionStorage.getItem('userName') || null,
     coins: Number(sessionStorage.getItem('coins')) || 0,
+    profilePicture: sessionStorage.getItem('profilePicture') || null,
   }),
   actions: {
     login(token, userInfo) {
@@ -45,11 +46,13 @@ export const useAuthStore = defineStore('auth', {
       this.userId = null
       this.userName = null
       this.coins = 0
+      this.profilePicture = null
 
       sessionStorage.removeItem('token')
       sessionStorage.removeItem('userId')
       sessionStorage.removeItem('userName')
       sessionStorage.removeItem('coins')
+      sessionStorage.removeItem('profilePicture')
 
       // for supabase realtime 
       if (window.realtimeOrdersService) {
@@ -63,6 +66,10 @@ export const useAuthStore = defineStore('auth', {
     updateCoins(newCoins) {
       this.coins = newCoins
       sessionStorage.setItem('coins', newCoins.toString())
+    },
+    setProfilePicture(profilePictureUrl) {
+      this.profilePicture = profilePictureUrl
+      sessionStorage.setItem('profilePicture', profilePictureUrl)
     }
 
   }

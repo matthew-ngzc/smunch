@@ -22,16 +22,22 @@ dotenv.config();
  * @param {function} next - Express next middleware function
  */
 export function authenticateToken(req, res, next){
+
     const authHeader = req.headers['authorization']; //get the headers
+    
     // the ? is in case no header, then wont crash
     const token = authHeader?.split(' ')[1]; //the header would look like "Bearer woeinowenron" so we want the 2nd part
 
     // Error handling : No Token
-    if (!token) return next(UnauthorizedError('Missing access token'));
+    if (!token) {
+        return next(UnauthorizedError('Missing access token'));
+    }
 
     // have token, check if valid
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) return next(UnauthorizedError('Invalid or expired token'));
+        if (err) {
+            return next(UnauthorizedError('Invalid or expired token'));
+        }
         req.user = decoded; //extract the user id from the token
         next(); // move on from this middleware
     })
