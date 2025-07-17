@@ -4,7 +4,6 @@ import { fetchParentMerchants, getChildMerchants, getMerchantInfoById } from '@/
 import { useOrderStore } from '@/stores/order'
 import { useRouter } from 'vue-router'
 import DinoWeather from '@/components/DinoWeather.vue'
-import Filter from '@/components/Filter.vue'
 import Navbar from '@/components/Navbar.vue'
 import ChatBar from '@/components/ChatBar.vue'
 
