@@ -1,7 +1,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { updateUserPassword } from '@/services/passwordService'
+import { resetUserPassword } from '@/services/passwordService'
 import { useRoute } from 'vue-router'
 
 // token from route
@@ -49,7 +49,7 @@ async function handleSubmit() {
   }
 
   try {
-    await updateUserPassword(password.value)
+    await resetUserPassword(password.value)
     success.value = 'password updated successfully!'
   } catch (err) {
     error.value = err.response?.data?.message || 'failed to update password'
@@ -61,11 +61,11 @@ async function handleSubmit() {
 
 <template>
   <div class="update-password-container">
-    <h2>set a new password</h2>
-    <p class="subtext">create a new password. ensure it differs from previous ones for security.</p>
+    <h2>Set a new password</h2>
+    <p class="subtext">Your new password must must include (8–128 characters) with at least one uppercase, one lowercase, a number, and a symbol.</p>
 
    <form @submit.prevent="handleSubmit">
-      <label for="password">password</label>
+      <label for="password">Password</label>
       <div class="input-wrapper">
         <input
           id="password"
@@ -77,7 +77,7 @@ async function handleSubmit() {
         />
       </div>
 
-      <label for="confirm">confirm password</label>
+      <label for="confirm">Confirm Password</label>
       <div class="input-wrapper">
         <input
           id="confirm"
@@ -101,10 +101,14 @@ async function handleSubmit() {
 
 <style scoped>
 .update-password-container {
-  max-width: 400px;
+  max-width: 700px;
   margin: auto;
-  padding: 40px 20px;
+  padding: 100px;
   text-align: left;
+  margin-top: 100px;
+  background: white;
+  box-shadow: 0 0 10px grey;
+  border-radius: 20px;
 }
 
 h2 {
@@ -138,7 +142,7 @@ input {
 
 button[type="submit"] {
   padding: 12px;
-  background: #4f46e5;
+  background: #0b7a6d;
   color: white;
   border: none;
   border-radius: 8px;
@@ -149,7 +153,7 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-  background: #4338ca;
+  background: #055551;
 }
 
 .input-error {

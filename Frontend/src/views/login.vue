@@ -57,12 +57,14 @@
                 </svg>
               </button>
 
-               <p class="forgot-password">
+              <p class="forgot-password">
                 <span class="forgot-password-link" @click="showPopup = true">Forgot your password?</span>
               </p>
 
-                <PasswordPopup v-if="showPopup" @close="showPopup = false" />
-
+              <PasswordPopup v-if="showPopup" @close="showPopup = false" />
+              
+              <!-- to check reset password page -->
+              <!-- <span class="forgot-password-link" @click="goToReset">forgot your password?</span> -->
 
             </div>
             <span :class="['error-msg', { show: passwordError }]">{{ passwordError }}</span>
@@ -129,6 +131,7 @@ export default {
     this.checkForLogoutSuccess();
   },
   methods: {
+    
     validateEmail() {
       if (!this.email.trim()) {
         this.emailError = 'Email is required.';
@@ -146,6 +149,11 @@ export default {
       this.emailError = '';
       return true;
     },
+
+    // to check reset password page  
+    // goToReset() {
+    //   this.$router.push('/reset-password') 
+    // },
 
     validatePassword() {
       if (!this.password) {

@@ -15,7 +15,6 @@
         <div>
            <TelegramVerification />
         </div>
-       
 
         <div class="input-group">
           <label for="currentPassword">Current Password</label>
