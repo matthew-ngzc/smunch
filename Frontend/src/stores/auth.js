@@ -35,12 +35,16 @@ export const useAuthStore = defineStore('auth', {
       this.userId = userInfo?.user_id || null
       this.userName = userInfo?.name || null
       this.coins = userInfo?.coins || 0
+      this.profilePicture = userInfo?.profile_picture || null
       this.dinoUnlocked = userInfo?.dinoUnlocked || null
 
       sessionStorage.setItem('token', token)
       sessionStorage.setItem('userId', this.userId)
       sessionStorage.setItem('userName', this.userName)
       sessionStorage.setItem('coins', this.coins.toString())
+      if (this.profilePicture) {
+        sessionStorage.setItem('profilePicture', this.profilePicture)
+      }
       sessionStorage.setItem('dinoUnlocked', this.dinoUnlocked)
     },
     logout() {

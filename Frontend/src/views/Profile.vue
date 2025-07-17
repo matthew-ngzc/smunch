@@ -158,9 +158,9 @@ export default {
         
         const response = await axiosInstance.put('/api/users/profile', payload)
 
-        // Update auth store with new profile picture
-        if (payload.profile_picture) {
-          useAuthStore().setProfilePicture(profilePictureUrl)
+        // Update auth store with profile picture from backend response
+        if (response.data.user.profile_picture_url) {
+          authStore.setProfilePicture(response.data.user.profile_picture_url)
         }
 
         // Reset form

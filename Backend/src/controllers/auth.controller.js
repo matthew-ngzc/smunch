@@ -518,7 +518,8 @@ export const completeMerchantSignup = async (req, res, next) => {
  *               jwt_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *               user_id: 1
  *               name: Alice Tan
- *               coins: 100
+ *               coins: 
+ *               profile_picture: https://cdn.smunch.sg/avatars/alice.jpg
  *       400:
  *         description: Missing credentials
  *         content:
@@ -572,7 +573,7 @@ export const login = async (req, res, next) => {
       console.warn(`[LOGIN] Failed to update last_login: ${err.message}`);
     }
 
-    res.status(200).json({ jwt_token: token , user_id: user.user_id, name: user.name, coins: user.coins });
+    res.status(200).json({ jwt_token: token , user_id: user.user_id, name: user.name, coins: user.coins, profile_picture: user.profile_picture });
   } catch (err) {
     if (err.status === 404) {
       return res.status(401).json({ message: 'Invalid email or password' });
