@@ -189,8 +189,31 @@ const dinoImages = [
 ]
 const dinoCosts = [0, 100, 200, 300, 400, 500]
 
-// Get unlocked index from auth store, default to 0 if no data
-const unlockedIndex = ref(authStore.dinoUnlocked ? parseInt(authStore.dinoUnlocked) : 0)
+// Make unlockedIndex reactive to auth store changes
+const unlockedIndex = computed(() => {
+  console.log('🔍 Computing unlockedIndex:', {
+    dinoUnlocked: authStore.dinoUnlocked,
+    dinoNames: dinoNames
+  })
+  
+  if (!authStore.dinoUnlocked || authStore.dinoUnlocked === 'null') {
+    console.log('📝 No dino unlocked, returning 0')
+    return 0
+  }
+  
+  // If it's a dinosaur name, find its index
+  const dinoIndex = dinoNames.findIndex(name => name === authStore.dinoUnlocked)
+  if (dinoIndex !== -1) {
+    console.log(`🦕 Found dino "${authStore.dinoUnlocked}" at index ${dinoIndex}`)
+    return dinoIndex
+  }
+  
+  // If it's a number, parse it
+  const parsedIndex = parseInt(authStore.dinoUnlocked)
+  const result = isNaN(parsedIndex) ? 0 : parsedIndex
+  console.log(`🔢 Parsed as number: ${parsedIndex}, returning: ${result}`)
+  return result
+})
 const selectedIndex = ref(0) // Which dino the user is viewing
 const showConfirmModal = ref(false)
 const showInsufficientBalanceModal = ref(false)
@@ -226,10 +249,12 @@ const confirmUnlock = () => {
   if (selectedIndex.value === unlockedIndex.value + 1) {
     authStore.updateCoins(authStore.coins - cost)
     justUnlockedIndex.value = unlockedIndex.value + 1
-    unlockedIndex.value++
     
     // Save unlocked dinos to auth store and sessionStorage
-    authStore.updateDinoUnlocked(unlockedIndex.value.toString())
+    // Store the dinosaur name instead of index to match backend format
+    const newUnlockedIndex = unlockedIndex.value + 1
+    const unlockedDinoName = dinoNames[newUnlockedIndex]
+    authStore.updateDinoUnlocked(unlockedDinoName)
 
     // Trigger spectacular animations
     showUnlockAnimation.value = true
@@ -245,7 +270,7 @@ const confirmUnlock = () => {
       justUnlockedIndex.value = -1
     }, 4500)
 
-    console.log('Unlock successful! New unlockedIndex:', unlockedIndex.value)
+    console.log('Unlock successful! New unlockedIndex:', newUnlockedIndex)
   }
 }
 
@@ -271,6 +296,7 @@ const canUnlockCurrentDino = computed(() => {
   console.log('Can unlock check:', {
     selectedIndex: selectedIndex.value,
     unlockedIndex: unlockedIndex.value,
+    authStoreDinoUnlocked: authStore.dinoUnlocked,
     isNextInSequence,
     canUnlock: isNextInSequence,
   })

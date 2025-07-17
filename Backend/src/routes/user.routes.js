@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticateToken } from '../middlewares/auth.middleware.js';
-import { updateUserProfile, updateUserProfilePictureUrl, getImageKitAuthParams } from '../controllers/user.controller.js';
+import { updateUserProfile, updateUserProfilePictureUrl, getImageKitAuthParams, updateUserCoinsAndDinoStatus } from '../controllers/user.controller.js';
 
 const router = express.Router();
 
@@ -15,6 +15,10 @@ router.post(
 // PUT /api/users/profile
 // Only updates fields provided in body (e.g. profile_picture, bio, password)
 router.put('/profile', authenticateToken, updateUserProfile);
+
+// Update user's coins and dinosaur unlock status
+// PUT /api/users/collections
+router.put('/collections', authenticateToken, updateUserCoinsAndDinoStatus);
 
 // Get ImageKit authentication parameters for secure uploads
 // GET /api/users/imagekit-auth

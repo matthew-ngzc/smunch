@@ -3,7 +3,8 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
-import coins from '@/assets/smunch_coin.jpg';
+import coins from '@/assets/smunch_coin.jpg'
+import axiosInstance from '@/utility/axiosInstance.js'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -36,7 +37,18 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-const logout = () => {
+const logout = async () => {
+  try {
+    // Save current coins and dino unlock status to backend before logging out
+    await axiosInstance.put('/api/users/collections', {
+      coins: auth.coins,
+      dinoUnlocked: auth.dinoUnlocked
+    });
+  } catch (error) {
+    console.warn('Failed to save collections data before logout:', error);
+    // Continue with logout even if API call fails
+  }
+  
   auth.logout();
   sessionStorage.setItem('justLoggedOut', 'true');
   closeMenu();
@@ -75,7 +87,8 @@ const logout = () => {
 
          <div class="profile-wrapper" @click="toggleMenu">
           <div class="icon-circle">
-            <svg xmlns="http://www.w3.org/2000/svg" width="23px" height="23px" viewBox="0 0 24 24">
+            <img v-if="auth.profilePicture" :src="auth.profilePicture" alt="Profile Picture" class="profile-pic" />
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="23px" height="23px" viewBox="0 0 24 24">
               <g fill="none" stroke="#0d3d31" stroke-linecap="round" stroke-width="2">
                 <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1"> </path>
                 <path d="M12 11c-2.21 0 -4 -1.79 -4 -4c0 -2.21 1.79 -4 4 -4c2.21 0 4 1.79 4 4c0 2.21 -1.79 4 -4 4Z"> </path>
@@ -95,7 +108,8 @@ const logout = () => {
       <div v-if="isOpen" class="profile-menu" ref="dropdown">
         <div class="menu-header">
           <div class="dropdown-icon-circle">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <img v-if="auth.profilePicture" :src="auth.profilePicture" alt="Profile Picture" class="dropdown-profile-pic" />
+            <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
               <g fill="none" stroke="#0d3d31" stroke-linecap="round" stroke-width="2">
                 <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1"/>
                 <path d="M12 11c-2.21 0 -4 -1.79 -4 -4c0 -2.21 1.79 -4 4 -4c2.21 0 4 1.79 4 4c0 2.21 -1.79 4 -4 4Z"/>
@@ -262,6 +276,14 @@ const logout = () => {
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
 }
 
+.profile-pic {
+  width: 37px;
+  height: 37px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #0d3d31;
+}
+
 .profile-menu {
   position: absolute;
   right: 0;
@@ -294,6 +316,14 @@ const logout = () => {
 .dropdown-icon-circle svg {
   width: 24px;
   height: 24px;
+}
+
+.dropdown-profile-pic {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #0d3d31;
 }
 
 .profile-menu hr {

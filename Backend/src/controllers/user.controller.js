@@ -166,6 +166,110 @@ export const updateUserProfile = async (req, res, next) => {
 
 /**
  * @swagger
+ * /api/users/collections:
+ *   put:
+ *     summary: Update user's coins and dinosaur unlock status
+ *     description: |
+ *       Updates the current user's coins and dinosaur unlock status.
+ *       Used by the Collections page when users unlock new dinosaurs.
+ *       
+ *       Both fields are optional - you can update just coins, just dino status, or both.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               coins:
+ *                 type: integer
+ *                 minimum: 0
+ *                 example: 200
+ *                 description: New coin balance
+ *               dinoUnlocked:
+ *                 type: string
+ *                 example: "Milo"
+ *                 description: Name of the latest unlocked dinosaur
+ *     responses:
+ *       200:
+ *         description: Collections data updated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               user:
+ *                 user_id: 16
+ *                 name: "regan"
+ *                 email: "regan@smu.edu.sg"
+ *                 coins: 200
+ *                 dino_unlocked: "Milo"
+ *       400:
+ *         description: Invalid input or no fields to update
+ *         content:
+ *           application/json:
+ *             examples:
+ *               no_fields:
+ *                 summary: No fields provided
+ *                 value:
+ *                   message: "No fields to update"
+ *               invalid_coins:
+ *                 summary: Invalid coin value
+ *                 value:
+ *                   message: "Coins must be a non-negative integer"
+ *       401:
+ *         description: Unauthorized — token missing or invalid
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Unauthorized"
+ */
+export const updateUserCoinsAndDinoStatus = async (req, res, next) => {
+  try {
+    // Extract user ID from JWT token
+    if (!req.user || (!req.user.user_id && !req.user.id)) {
+      return res.status(401).json({ message: 'User not authenticated properly' });
+    }
+    
+    // Handle both 'user_id' and 'id' field names from JWT token
+    const userId = req.user.user_id || req.user.id;
+    
+    const { coins, dinoUnlocked } = req.body;
+    
+    // Build updates object
+    const updates = {};
+    
+    // Validate and add coins if provided
+    if (coins !== undefined) {
+      if (!Number.isInteger(coins) || coins < 0) {
+        return res.status(400).json({ message: 'Coins must be a non-negative integer' });
+      }
+      updates.coins = coins;
+    }
+    
+    // Add dino unlock status if provided
+    if (dinoUnlocked !== undefined) {
+      updates.dino_unlocked = dinoUnlocked;
+    }
+    
+    // Check if there are any fields to update
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: 'No fields to update' });
+    }
+    
+    // Update in database
+    const updatedUser = await updateUserProfileOrThrow(userId, updates);
+    
+    return res.status(200).json({ user: updatedUser });
+  } catch (err) {
+    console.error('Collections update error details:', err);
+    next(err);
+  }
+};
+
+/**
+ * @swagger
  * /api/users/imagekit-auth:
  *   get:
  *     summary: Get ImageKit authentication parameters
