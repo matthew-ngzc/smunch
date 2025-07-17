@@ -29,14 +29,14 @@ function toggleInfo() {
 const statusList = [
   { label: 'Refund pending', color: 'grey', description: 'Refund for an order has been filed' },
   { label: 'Refund completed', color: 'grey', description: 'Refund for an order has processed' },
-  { label: 'Awaiting payment', color: 'grey', description: 'After an order is made' },
+  { label: 'Awaiting payment', color: 'grey', description: 'An order is awaiting payment' },
   { label: 'Awaiting verification', color: 'grey', description: 'After user makes payment' },
-  { label: 'Payment confirmed', color: 'orange', description: 'Once payment has went through' },
+  { label: 'Payment confirmed', color: 'orange', description: 'Payment for an order has processed' },
   { label: 'Preparing', color: 'yellow', description: 'Merchant is preparing the order' },
   { label: 'Collected by runner', color: 'yellow', description: 'Runner has collected the food' },
   { label: 'Delivered', color: 'green', description: 'Food has been delivered by runner' },
   { label: 'Completed', color: 'green', description: 'Food has been received by user' },
-  { label: 'Cancelled', color: 'red', description: 'Order has been cancelled by user' },
+  { label: 'Cancelled', color: 'red', description: 'Users order has been cancelled' },
 ]
 
 onMounted(() => {
@@ -71,7 +71,7 @@ onMounted(() => {
   top: 45px;
   right: 0;
   transform: translateX(10%);
-  width: 460px;
+  width: 466px;
   background: white;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
@@ -91,6 +91,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  white-space: nowrap;
 }
 
 .row {
