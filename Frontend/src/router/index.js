@@ -27,6 +27,7 @@ import About from '../views/About.vue'
 import Contact from '../views/Contact.vue'
 import Game from '../views/Game.vue'
 import Collections from '../views/Collections.vue'
+import ResetPassword from '../views/ResetPassword.vue'
 
 // REIWEN : this is a routes array and each route object has 3 properties
   const routes = [
@@ -50,7 +51,8 @@ import Collections from '../views/Collections.vue'
   { path: '/about', name: 'about', component: About },
   { path: '/contact', name: 'contact', component: Contact },
   { path: '/game', name: 'game', component: Game },
-  { path: '/collections', name: 'collections', component: Collections }
+  { path: '/collections', name: 'collections', component: Collections },
+  { path: '/reset-password', name: 'resetpassword', component: ResetPassword },
 ]
 
 

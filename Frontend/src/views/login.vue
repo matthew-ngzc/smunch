@@ -56,6 +56,14 @@
                   <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z"/>
                 </svg>
               </button>
+
+               <p class="forgot-password">
+                <span class="forgot-password-link" @click="showPopup = true">Forgot your password?</span>
+              </p>
+
+                <PasswordPopup v-if="showPopup" @close="showPopup = false" />
+
+
             </div>
             <span :class="['error-msg', { show: passwordError }]">{{ passwordError }}</span>
           </div>
@@ -97,8 +105,12 @@
 <script>
 import { useAuthStore } from '@/stores/auth'
 import axiosInstance from '@/utility/axiosInstance'
+import PasswordPopup from '@/components/passwordPopup.vue'
+
 
 export default {
+  components: { PasswordPopup },
+
   data() {
     return {
       email: '',
@@ -107,7 +119,9 @@ export default {
       passwordError: '',
       showPassword: false,
       showVerificationSuccess: false,
-      showLogoutSuccess: false
+      showLogoutSuccess: false,
+      showPopup: false
+
     };
   },
   mounted() {
@@ -253,6 +267,21 @@ export default {
   padding: 0;
   box-sizing: border-box;
 }
+
+.forgot-password-link {
+  cursor: pointer;
+  color: #cecdcd;
+  font-size: 0.85rem;
+  transition: color 0.3s ease;
+  margin-left: 236px;
+  margin-top: 20px; 
+}
+
+.forgot-password-link:hover {
+  color: #cccfce;
+  text-decoration-line: underline;
+}
+
 
 .login-container {
   height: 100vh;
@@ -452,7 +481,7 @@ export default {
 .password-toggle {
   position: absolute;
   right: 12px;
-  top: 50%;
+  top: 38%;
   transform: translateY(-50%);
   background: none;
   border: none;
