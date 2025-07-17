@@ -18,10 +18,43 @@ cron.schedule('0 21 * * *', async () => {
 // });
 
 // Schedule for the final payment reminder email for the 4 diff timeslots
-cron.schedule('35 7 * * *',     () => runFinalCallReminders('08:15'));  
-cron.schedule('20 11 * * *',    () => runFinalCallReminders('12:00'));
-cron.schedule('50 14 * * *',    () => runFinalCallReminders('15:30'));
-cron.schedule('20 18 * * *',    () => runFinalCallReminders('19:00')); 
+
+// cron.schedule('20 11 * * *',    () => runFinalCallReminders('12:00'));
+// cron.schedule('50 14 * * *',    () => runFinalCallReminders('15:30'));
+// cron.schedule('20 18 * * *',    () => runFinalCallReminders('19:00')); 
+
+// 8.15am
+cron.schedule('35 7 * * *', async () => {
+  try {
+    await runFinalCallReminders('08:15');
+  } catch (err) {
+    console.error('[CRON] [ERROR]', err.message, err.stack);
+  }
+});
+// 12.00pm
+cron.schedule('20 11 * * *', async () => {
+  try {
+    await runFinalCallReminders('12:00');
+  } catch (err) {
+    console.error('[CRON] [ERROR]', err.message, err.stack);
+  }
+});
+// 3.30pm
+cron.schedule('50 14 * * *', async () => {
+  try {
+    await runFinalCallReminders('15:30');
+  } catch (err) {
+    console.error('[CRON] [ERROR]', err.message, err.stack);
+  }
+});
+// 7.00pm
+cron.schedule('20 18 * * *', async () => {
+  try {
+    await runFinalCallReminders('19:00');
+  } catch (err) {
+    console.error('[CRON] [ERROR]', err.message, err.stack);
+  }
+});
 
 //* TESTING
 // cron.schedule('*/5 * * * * *', async () => {
