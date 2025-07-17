@@ -7,6 +7,7 @@ import { useOrderStore } from '@/stores/order'
 import { useAuthStore } from '@/stores/auth'
 import ordertimeline from '../components/ordertimeline.vue'
 import { createOrder } from '@/services/orderFoodService' 
+import { convertToUtcISOString } from '@/utility/orderHelpers'
 
    // progress timeline
     const data = {
@@ -37,6 +38,8 @@ const next = async () => {
     customisations: item.customisations || {},
     notes: item.notes || ''
   }))
+  
+  const delivery_time = convertToUtcISOString(deliveryStore.date, deliveryStore.time)
 
   const payload = {
     customer_id: customerId, 
@@ -45,8 +48,8 @@ const next = async () => {
     order_items,
     building: deliveryStore.building,
     room_type: deliveryStore.facilityType,
-    room_number: deliveryStore.floor,
-    delivery_time: new Date(`${deliveryStore.date}T${convertTo24Hr(deliveryStore.time)}:00Z`).toISOString()
+    room_number: deliveryStore.roomNumber,
+    delivery_time
   }
 
   try {
@@ -66,27 +69,12 @@ const next = async () => {
 
     await router.push({ name: 'payment' })
     orderStore.setMerchantId(null)  // Reset merchant ID
-    // console.log(orderStore.selectedMerchantId)
 
   } catch (error) {
     console.error('Order submission failed:', error)
     alert('Failed to submit order. Please try again.')
   }
   
-}
-
-// helper method
-function convertTo24Hr(timeStr) {
-  const [time, modifier] = timeStr.split(' ')
-  let [hours, minutes] = time.split(':')
-
-  if (modifier === 'PM' && hours !== '12') {
-    hours = String(parseInt(hours) + 12)
-  } else if (modifier === 'AM' && hours === '12') {
-    hours = '00'
-  }
-
-  return `${hours.padStart(2, '0')}:${minutes}`
 }
 
 </script>

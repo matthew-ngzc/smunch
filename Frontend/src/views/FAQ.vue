@@ -5,9 +5,9 @@
     </button>
     <div class="home-content">
       <div class="header-section">
-        <h1 class="greeting">Frequently Asked Questions</h1>
+      <h1 class="greeting">Frequently Asked Questions</h1>
         <p class="subtitle">Everything you need to know about SMUNCH</p>
-      </div>
+        </div>
       
       <div class="faq-container">
         <div class="faq-item" v-for="(faq, index) in faqs" :key="index" @click="toggleFaq(index)">
@@ -15,11 +15,11 @@
             <h2>{{ faq.question }}</h2>
             <div class="faq-icon" :class="{ 'rotated': activeFaq === index }">
               <span>+</span>
-            </div>
-          </div>
+        </div>
+        </div>
           <div class="faq-content" :class="{ 'expanded': activeFaq === index }">
             <p>{{ faq.answer }}</p>
-          </div>
+        </div>
         </div>
       </div>
     </div>
