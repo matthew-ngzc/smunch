@@ -2,7 +2,7 @@
   <div class="page">
 
     <div class="delivery-form-box">
-      <h2>📍 where should your food be delivered?</h2>
+      <h2>where should your food be delivered?</h2>
 
       <div class="contents"> 
 
@@ -29,6 +29,14 @@
             <option value="Level 3">3</option>
             <option value="Level 4">4</option>
           </select>
+        </div>
+
+        <!-- room number input -->
+        <div class="filters">
+          <label>room number</label>
+          <input type="text" v-model="roomNumber" />
+          <small style="color: #888;">e.g. 2-2, 2-3 or custom</small>
+          <div v-if="roomNumberError" class="room-number-error">{{ roomNumberError }}</div>
         </div>
 
         <!-- facility type dropdown -->
@@ -79,26 +87,15 @@
 
 import { ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
-// import { createOrder } from '@/services/orderFoodService' 
 import { useDeliveryStore } from '@/stores/delivery'
 import { storeToRefs } from 'pinia'
-// import { useCartStore } from '@/stores/cart'
-// import { useOrderStore } from '@/stores/order'
-// import { useAuthStore } from '@/stores/auth'
 
 const showValidationError = ref(false)
+const roomNumberError = ref('')
 const router = useRouter()
 const deliveryStore = useDeliveryStore()
 const { building, floor, facilityType, date, time } = storeToRefs(deliveryStore)
-// const cartStore = useCartStore()
-// const orderStore = useOrderStore()
-// const authStore = useAuthStore() 
-
-// const building = ref('')
-// const floor = ref('')
-// const facilityType = ref('')
-// const date = ref('')
-// const time = ref('')
+const roomNumber = ref(deliveryStore.roomNumber)
 
 watchEffect(() => {
   if (building.value && floor.value && facilityType.value && date.value && time.value) {
@@ -106,13 +103,44 @@ watchEffect(() => {
   }
 })
 
+// Watch floor and auto-update roomNumber
+watchEffect(() => {
+  if (floor.value) {
+    // Extract the number from the floor string (e.g., Level 2' -> '2)
+    const match = floor.value.match(/Level (\d+)/)
+    if (match) {
+      roomNumber.value = `${match[1]}-`
+      roomNumberError.value = '' // Clear error when floor changes
+    }
+  }
+})
+
+// Watch roomNumber to clear error when format becomes valid
+watchEffect(() => {
+  if (roomNumber.value && roomNumberError.value) {
+    const roomNumberPattern = /^\d+-\d+$/
+    if (roomNumberPattern.test(roomNumber.value.trim())) {
+      roomNumberError.value = '' // Clear error when format becomes valid
+    }
+  }
+})
+
 async function goToSummary() {
-  if (!building.value || !floor.value || !facilityType.value || !date.value || !time.value) {
+  // Check for valid room number format
+  if (roomNumber.value && !/^\d+-\d+$/.test(roomNumber.value.trim())) {
+    roomNumberError.value = 'Please enter a valid room number (e.g., 3-4, 2-5)'
+    return
+  }
+  
+  if (!building.value || !floor.value || !facilityType.value || !date.value || !time.value || !roomNumber.value) {
     showValidationError.value = true
     return
   }
 
   showValidationError.value = false
+  roomNumberError.value = ''
+  // Save roomNumber to store
+  deliveryStore.roomNumber = roomNumber.value
   router.push('/summary') 
 }
 
@@ -211,6 +239,13 @@ async function goToSummary() {
   text-align: center;
   font-weight: 500;
   border: 1px solid #ffb3b3;
+}
+
+.room-number-error {
+  color: #b30000;
+  font-size: 0.875rem; /* 14px */
+  margin-top: 4px;
+  font-weight: 500;
 }
 
 </style>

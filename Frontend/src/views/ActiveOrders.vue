@@ -5,7 +5,7 @@ import { realtimeOrdersService } from '@/services/realtimeOrdersService' // for 
 import { onUnmounted } from 'vue'  // for supabase realtime
 import { useAuthStore } from '@/stores/auth'
 import OrderReceipt from '@/components/OrderReceipt.vue'
-import { formatDateTime, formatStatusClass, formatStatus } from '@/utility/orderHelpers'
+import { formatDateTime, formatStatusClass, formatStatus, formatLocation } from '@/utility/orderHelpers'
 import InfoPopup from '@/components/InfoPopup.vue'
 
 const authStore = useAuthStore()
@@ -93,15 +93,6 @@ function closeReceipt() {
   selectedOrder.value = null
 }
 
-// function getStatusMessage(status) {
-//   switch (status) {
-//     case 'awaiting_payment': return 'Payment not made.'
-//     case 'payment_confirmed': return 'Payment confirmed. We will deliver your order to you.'
-//     case 'awaiting_verification': return 'Order confirmed. Smunch will confirm your payment asap.'
-//     default: return ''
-//   }
-// }
-
 watch(selectedOrder, (newVal) => {
   document.body.style.overflow = newVal ? 'hidden' : 'auto'
 })
@@ -123,7 +114,7 @@ function getCombinedStatus(order) {
   if (order.payment_status === 'awaiting_verification') return 'awaiting_verification'
   if (order.payment_status === 'payment_confirmed') {
     if (order.order_status === 'preparing') return 'preparing'
-    if (order.order_status === 'collected') return 'collected_by_runner'
+    if (order.order_status === 'collected_by_runner') return 'collected_by_runner'
     if (order.order_status === 'delivered') return 'delivered'
     if (order.order_status === 'completed') return 'completed'
     return 'payment_confirmed' // fallback
@@ -150,7 +141,7 @@ function getCombinedStatus(order) {
             <div class="order-text">
               <h3>Order {{ order.order_id }}</h3>
               <div class="order-meta">
-                <p>Destination: School of {{ order.building.charAt(0).toUpperCase() + order.building.slice(1) }},  {{ order.room_number.charAt(0).toUpperCase() + order.room_number.slice(1) }} {{ order.room_type.charAt(0).toUpperCase() + order.room_type.slice(1) }}</p>
+                <p>Destination: School of {{ formatLocation(order) }}</p>
                 <p>Merchant: {{ order.merchant.name }}</p>
                 <p>Delivery date & time: {{ formatDateTime(order.delivery_time) }}</p>
                 <small>Order placed on {{ formatDateTime(order.created_at) }}</small>
@@ -174,7 +165,6 @@ function getCombinedStatus(order) {
     </ul>
     <!-- Empty state for no orders -->
     <div v-if="activeOrders.length === 0" class="empty-state">
-      <div class="empty-icon">🚀</div>
       <h3>No Active Orders</h3>
       <p>You don't have any active orders right now. Place an order to see it here!</p>
       <router-link to="/order" class="empty-action-btn">Place Order</router-link>

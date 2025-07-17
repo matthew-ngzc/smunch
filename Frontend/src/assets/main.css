@@ -38,3 +38,18 @@ a,
     display: block;
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: light;
+    background-color: white;
+    color: black;
+  }
+
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+
+}
+

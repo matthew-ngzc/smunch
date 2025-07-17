@@ -157,6 +157,88 @@ export function getReceiptHtml(order) {
 }
 
 /**
+ * Generates a personalized HTML-formatted reminder email for unpaid orders
+ * to be sent 1 day before the delivery date (e.g., at 9:00 PM).
+ *
+ * @param {object} order - The full order object (includes order_id, delivery_time, etc.)
+ * @param {string} name - The user's display name
+ * @returns {string} - HTML string for the reminder email
+ *
+ * 📧 Example output:
+ * -----------------------------------------------------
+ * Subject: ⏳ Reminder: Complete Your SMUNCH Order
+ * 
+ * Hey Rachel,
+ * 
+ * We noticed you started a SMUNCH order but haven’t completed payment yet.
+ * 
+ * Order ID: 187  
+ * Delivery: SCIS SR 2-1  
+ * Scheduled For: Jan 3, 2025, 12:00 PM
+ * 
+ * To make sure your order gets included in tomorrow’s batch, please complete payment soon.
+ * -----------------------------------------------------
+ */
+export function getReminderEmailHtmlOneDayBefore(order, name = 'Smunchie') {
+  const deliveryTime = new Date(order.delivery_time).toLocaleString('en-SG', { timeZone: 'Asia/Singapore' });
+
+  const body = `
+    <h2>⏳ Just a reminder!</h2>
+    <p>Hey ${name},</p>
+    <p>We noticed you started a SMUNCH order but haven't completed payment yet.</p>
+    <p><strong>Order ID:</strong> ${order.order_id}</p>
+    <p><strong>Delivery:</strong> ${order.building} ${order.room_type} ${order.room_number}<br>
+       <strong>Scheduled For:</strong> ${deliveryTime}</p>
+    <p>To make sure your order gets included in tomorrow's batch, please complete payment soon.</p>
+  `;
+
+  return wrapWithEmailLayout(body);
+}
+
+
+/**
+ * Generates a personalized HTML-formatted reminder email for unpaid orders
+ * to be sent 40 minutes before delivery time as a final call.
+ *
+ * @param {object} order - The full order object (includes order_id, delivery_time, etc.)
+ * @param {string} name - The user's display name
+ * @returns {string} - HTML string for the final reminder email
+ *
+ * 📧 Example output:
+ * -----------------------------------------------------
+ * Subject: 🚨 Final Call: Complete Payment for Your SMUNCH Order
+ * 
+ * Hey Rachel,
+ * 
+ * Your SMUNCH order is about to be finalized, but payment is still pending.
+ * 
+ * Order ID: 187  
+ * Delivery: SCIS SR 2-1  
+ * Scheduled For: Jan 3, 2025, 12:00 PM
+ * 
+ * Please make payment immediately. If payment isn’t received within the next 5 minutes,
+ * we won’t be able to include your order in today’s delivery batch.
+ * -----------------------------------------------------
+ */
+export function getReminderEmailHtmlFinalCall(order, name = 'Smunchie') {
+  const deliveryTime = new Date(order.delivery_time).toLocaleString('en-SG', { timeZone: 'Asia/Singapore' });
+
+  const body = `
+    <h2>🚨 Final Call: Last Chance to Pay</h2>
+    <p>Hey ${name},</p>
+    <p>Your SMUNCH order is about to be finalized, but payment is still pending.</p>
+    <p><strong>Order ID:</strong> ${order.order_id}</p>
+    <p><strong>Delivery:</strong> ${order.building} ${order.room_type} ${order.room_number}<br>
+       <strong>Scheduled For:</strong> ${deliveryTime}</p>
+    <p>Please make payment immediately. If payment isn't received within the next 5 minutes,
+       we won't be able to include your order in today's delivery batch.</p>
+  `;
+
+  return wrapWithEmailLayout(body);
+}
+
+
+/**
  * Generates an HTML-formatted email to notify users of a password change.
  *
  * @param {Object} params

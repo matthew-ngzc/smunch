@@ -1,6 +1,8 @@
 import { createMerchantOrThrow } from '../models/merchant.model.js';
-import { getOrdersPendingPaymentCheck } from '../models/order.model.js';
-import { sendTestEmail } from '../utils/mailer.js';
+import { getFullOrderByIdOrThrow, updatePaymentAndOrderStatusToPaid } from '../models/order.model.js';
+import { getUserByIdOrThrow } from '../models/user.model.js';
+import { buildPendingTransactions } from '../services/payment.service.js';
+import { sendReceiptEmail, sendTestEmail } from '../utils/mailer.js';
 
 /**
  * @swagger
@@ -201,18 +203,120 @@ export const testEmail = async (req, res, next) => {
  *       500:
  *         description: Server error while retrieving pending payments
  */
+/**
+ * @route GET /api/admin/payments/pending
+ * @desc Get all orders that are still awaiting payment
+ * @access Admin only
+ */
 export const getPendingPayments = async (req, res, next) => {
   try {
-    const rawOrders = await getOrdersPendingPaymentCheck();
+    const transactions = await buildPendingTransactions();
+    return res.status(200).json({ transactions });
+  } catch (err) {
+    next(err);
+  }
+};
 
-    const transactions = rawOrders.map(order => ({
-      order_id: order.order_id,
-      reference_number: order.payment_reference,
-      amount: (order.total_amount_cents / 100).toFixed(2),
-      payment_status: order.payment_status,
-      payment_screenshot_url: order.payment_screenshot_url || null,
-      paid: false
-    }));
+
+/**
+ * @swagger
+ * /api/admin/payments/verify:
+ *   post:
+ *     summary: Verify payments and return updated pending list (admin only)
+ *     description: |
+ *       Admin confirms payment for selected orders.
+ *       
+ *       🔒 **Access**:  
+ *       ✅ Admins
+ *       
+ *       - For `paid: true` items:  
+ *         - Updates `payment_status` → `payment_confirmed`  
+ *         - Updates `order_status` → `payment_verified`
+ * 
+ *       - For the request body, the only important fields are `order_id` and `paid`, but simply copy and pasting the output from the `payments/pending` endpoint and changing the `paid` to true will also work
+ *       
+ *       - Returns the new order list with pending payments
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [updates]
+ *             properties:
+ *               updates:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required: [order_id, paid]
+ *                   properties:
+ *                     order_id:
+ *                       type: integer
+ *                     paid:
+ *                       type: boolean
+ *           example:
+ *             updates:
+ *               - order_id: 187
+ *                 paid: true
+ *     responses:
+ *       200:
+ *         description: Updated transaction list with verified payments reflected
+ *         content:
+ *           application/json:
+ *             example:
+ *               transactions:
+ *                 - order_id: 187
+ *                   reference_number: "SMUNCH187"
+ *                   amount: "4.20"
+ *                   payment_status: "awaiting_verification"
+ *                   payment_screenshot_url: null
+ *                   paid: true
+ *                 - ...
+ */
+/**
+ * @route POST /api/admin/payments/verify
+ * @desc Marks selected orders as paid and returns updated list of pending payments
+ * @access Admin only
+ */
+export const verifyPayments = async (req, res, next) => {
+  try {
+    const { updates } = req.body;
+    if (!Array.isArray(updates)) {
+      return res.status(400).json({ message: 'updates must be an array' });
+    }
+
+    // Step 1: Extract only paid=true
+    const paidOrderIds = [];
+
+    for (const { order_id, paid } of updates) {
+      if (paid === true) {
+        paidOrderIds.push(order_id);
+      }
+    }
+
+    // Step 2: Bulk update those marked as paid
+    await updatePaymentAndOrderStatusToPaid(paidOrderIds);
+
+    // Send receipts to those who have paid
+    for (const orderId of paidOrderIds){
+      try{
+
+        const order = await getFullOrderByIdOrThrow(orderId);
+        console.log(`order.customer_id: ${order.customer_id}`);
+
+        const user = await getUserByIdOrThrow(order.customer_id, 'user_id, email');
+
+        await sendReceiptEmail(user.email, order);
+      }catch(err){
+        console.error(`[EMAIL FAILURE] Could not send receipt for order ${orderId}:`, err.message);
+      }
+    }
+
+    // Step 3: Re-fetch the updated list
+    const transactions = await buildPendingTransactions();
 
     return res.status(200).json({ transactions });
   } catch (err) {

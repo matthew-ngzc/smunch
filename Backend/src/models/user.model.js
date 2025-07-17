@@ -34,7 +34,7 @@ export async function getUserByEmailOrThrow(email) {
  * @returns {Promise<object>} - The user object
  * @throws {Error} - If user is not found or query fails
  */
-export async function getUserByIdOrThrow(userId, fields = 'user_id') {
+export async function getUserByIdOrThrow(userId, fields = '*') {
   const { data, error } = await supabase
     .from('users')
     .select(fields)

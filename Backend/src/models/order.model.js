@@ -1,8 +1,9 @@
 import { supabase } from '../lib/supabaseClient.js';
-import { ORDER_STATUSES, PAYMENT_STATUSES } from '../constants/enums.constants.js';
+import { DELIVERY_TIMINGS, ORDER_STATUSES, PAYMENT_STATUSES } from '../constants/enums.constants.js';
 import { generatePaymentReference } from '../services/payment.service.js';
 import { NotFoundError } from '../utils/error.utils.js';
 import { getUserByIdOrThrow } from './user.model.js';
+import { DateTime } from 'luxon';
 
 /**
  * Creates a new order and its associated items.
@@ -325,4 +326,162 @@ export async function getOrdersPendingPaymentCheck() {
 
   if (error) throw error;
   return data;
+}
+
+
+/**
+ * Bulk-updates payment and order status for all orders marked as paid.
+ * 
+ * @param {number[]} paidOrderIds - Array of order IDs to mark as paid
+ */
+export async function updatePaymentAndOrderStatusToPaid(paidOrderIds) {
+  if (!paidOrderIds || paidOrderIds.length === 0) return;
+
+  const { error } = await supabase
+    .from('orders')
+    .update({
+      payment_status: PAYMENT_STATUSES[2],
+      order_status: ORDER_STATUSES[1]
+    })
+    .in('order_id', paidOrderIds);
+
+  if (error) throw error;
+}
+
+/**
+ * Retrieves all unpaid orders scheduled for the specified date (in SG time),
+ * used for sending the **1-day-before reminder**.
+ *
+ * This function is run at 9:00 PM SG time every night and targets orders
+ * scheduled for the following day (00:00 to 23:59:59.999 SGT).
+ *
+ * Uses Luxon to safely handle timezone conversion.
+ *
+ * Filters only:
+ * - payment_status = 'awaiting_payment'
+ * - reminder_1_day_before_sent_at is null (i.e. not yet reminded)
+ *
+ * Also fetches the customer's email via join on users table.
+ *
+ * @param {string} deliveryDateISO - A YYYY-MM-DD string (e.g. '2025-07-18')
+ *                                   representing the target delivery date
+ * @returns {Promise<object[]>} - Array of order objects with delivery details + user.email
+ * @throws {Error} - If Supabase query fails
+ *
+ * @example
+ * 🧪 Example usage:
+ *   const tomorrow = DateTime.now().setZone('Asia/Singapore').plus({ days: 1 }).toISODate();
+ *   const orders = await getOrdersForPhase1Reminder(tomorrow);
+ */
+export async function getOrdersForOneDayBeforeReminder(deliveryDateISO) {
+  const sgZone = 'Asia/Singapore';
+  const start = DateTime.fromISO(deliveryDateISO, { zone: sgZone }).startOf('day').toJSDate();
+  const end = DateTime.fromISO(deliveryDateISO, { zone: sgZone }).endOf('day').toJSDate();
+
+  console.log(start);
+  console.log(end);
+
+  let { data, error } = await supabase
+    .from('orders')
+    .select(`
+      order_id,
+      customer_id,
+      delivery_time,
+      building,
+      room_type,
+      room_number,
+      users (
+        email
+      )
+    `)
+    .in('payment_status', [PAYMENT_STATUSES[0], PAYMENT_STATUSES[1]])
+    .gte('delivery_time', start.toISOString())
+    .lte('delivery_time', end.toISOString())
+    .is('reminder_1_day_before_sent_at', null);
+
+  if (!data || data.length === 0){
+    console.log('[CRON DEBUG] No orders found');
+    data = [];
+  }else{
+    console.log(`[CRON DEBUG] ${data.length} orders found`);
+  }
+
+  if (error) throw error;
+  return data;
+}
+
+
+
+/**
+ * Retrieves orders scheduled for a specific delivery slot that still require a final reminder.
+ *
+ * @param {string} slot - One of the allowed DELIVERY_TIMINGS keys (e.g. '12:00')
+ * @returns {Promise<{ orders: object[], deliveryTimeISO: string }>}
+ */
+export async function getOrdersForFinalCallReminderBySlot(slot) {
+  const config = DELIVERY_TIMINGS[slot];
+  if (!config) throw new Error(`Invalid delivery slot: ${slot}`);
+
+  const now = DateTime.now().setZone('Asia/Singapore');
+  const deliveryTime = now.set({ hour: config.hour, minute: config.minute, second: 0, millisecond: 0 });
+  const deliveryTimeISO = deliveryTime.toISO();
+
+  let { data, error } = await supabase
+    .from('orders')
+    .select(`
+      order_id,
+      delivery_time,
+      building,
+      room_type,
+      room_number,
+      customer_id,
+      users (
+        email,
+        name
+      )
+    `)
+    .in('payment_status', ['awaiting_payment', 'awaiting_verification'])
+    .eq('delivery_time', deliveryTimeISO)
+    .is('reminder_40_mins_before_sent_at', null);
+
+  if (error) throw error;
+
+  console.log(data);
+
+  if (!data || data.length === 0){
+    console.log('[CRON] No orders found');
+    data = [];
+  }
+
+  return {
+    orders: data,
+    deliveryTimeISO
+  };
+}
+
+/**
+ * Updates a specific reminder timestamp column for an order.
+ *
+ * @param {number} orderId - ID of the order
+ * @param {string} columnName - The column to update (e.g. 'reminder_40_mins_before_sent_at')
+ * @returns {Promise<void>}
+ */
+export async function updateOrderReminderTimestamp(orderId, columnName) {
+  const validColumns = [
+    'reminder_1_day_before_sent_at',
+    'reminder_40_mins_before_sent_at'
+  ];
+
+  if (!validColumns.includes(columnName)) {
+    throw new Error(`Invalid reminder column: ${columnName}`);
+  }
+
+  const sgNowISO = DateTime.now().setZone('Asia/Singapore').toISO(); // includes +08:00
+
+  const { error } = await supabase
+    .from('orders')
+    .update({ [columnName]: sgNowISO })
+    .eq('order_id', orderId);
+
+  if (error) throw error;
 }

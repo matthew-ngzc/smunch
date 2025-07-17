@@ -10,6 +10,7 @@ import weatherRoutes from "./routes/weather.routes.js";
 import errorHandler from "./middlewares/error.middleware.js";
 import { swaggerSpec, swaggerUi } from './config/swagger.config.js';
 import cors from 'cors';
+import './cron/scheduler.js'; // for cron job
 import path from 'path';
 
 dotenv.config();

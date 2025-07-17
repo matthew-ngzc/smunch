@@ -3,7 +3,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { getPastOrders, getMerchantInfoById } from '@/services/orderFoodService'
 import { useAuthStore } from '@/stores/auth'
 import OrderReceipt from '@/components/OrderReceipt.vue'
-import { formatDateTime, formatStatusClass, formatStatus } from '@/utility/orderHelpers'
+import { formatDateTime, formatStatusClass, formatStatus, formatLocation } from '@/utility/orderHelpers'
 import InfoPopup from '@/components/InfoPopup.vue'
 import coins from '@/assets/smunch_coin.jpg';
 
@@ -104,7 +104,7 @@ function nextPage() {
                 <h3>Order {{ order.order_id }}</h3>
                 <div class="order-meta">
                   <p>Merchant: {{ order.merchant.name }}</p>
-                  <p>Delivery date & time: {{ formatDateTime(order.delivery_time) }}</p>
+                  <p>Delivery date & time: School of {{ formatLocation(order) }}</p>
                   <small>Order placed on {{ formatDateTime(order.created_at) }}</small>
                 </div>
               </div>
@@ -131,7 +131,6 @@ function nextPage() {
 
     <!-- Empty state for no orders -->
     <div v-if="pastOrders.length === 0" class="empty-state">
-      <div class="empty-icon">📋</div>
       <h3>No Order History</h3>
       <p>You haven't placed any orders yet. Start ordering to see your history here!</p>
       <router-link to="/order" class="empty-action-btn">Start Ordering</router-link>

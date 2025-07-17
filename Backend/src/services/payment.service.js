@@ -2,6 +2,8 @@ import QRCode from 'qrcode';
 import { CRC } from 'crc-full';
 import dotenv from "dotenv";
 import axios from 'axios';
+import { getOrdersPendingPaymentCheck } from '../models/order.model.js';
+import { formatCentsToDollars } from '../utils/payment.utils.js';
 //import {paynowGenerator} from 'paynow-generator';
 //import path from 'path';
 //import { fileURLToPath } from 'url';
@@ -208,6 +210,44 @@ export function generatePayNowPayload(
 
   return joined + '6304' + checksum;
 }
+
+/**
+ * Returns all orders pending payment ('awaiting_payment', 'awaiting_verification') with formatted structure.
+ * 
+ * Used by: admin dashboard, payment verification
+ * 
+ * Example return format:
+ * [
+ *   {
+ *     order_id: 187,
+ *     reference_number: "SMUNCH187",
+ *     amount: "4.20",
+ *     payment_status: "awaiting_payment",
+ *     payment_screenshot_url: null,
+ *     paid: false
+ *   },
+ *   {
+ *     order_id: 188,
+ *     reference_number: "SMUNCH188",
+ *     amount: "7.50",
+ *     payment_status: "awaiting_verification",
+ *     payment_screenshot_url: "https://cdn.example.com/screenshot.png",
+ *     paid: false
+ *   }
+ * ]
+ */
+export async function buildPendingTransactions() {
+  const rawOrders = await getOrdersPendingPaymentCheck();
+  return rawOrders.map(order => ({
+    order_id: order.order_id,
+    reference_number: order.payment_reference,
+    amount: formatCentsToDollars(order.total_amount_cents),
+    payment_status: order.payment_status,
+    payment_screenshot_url: order.payment_screenshot_url || null,
+    paid: false
+  }));
+}
+
 
 //-----------------------------------------------------------------------------------------------------------
 

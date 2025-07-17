@@ -1,8 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { formatDateTime as _formatDateTime, formatStatusClass, formatStatus } from '@/utility/orderHelpers'
 import { getPaymentQRCode, updatePaymentStatus, getRefreshedOrders } from '@/services/orderFoodService'
-import coins from '@/assets/smunch_coin.jpg';
+import { formatDateTime, formatStatusClass, formatStatus, formatLocation } from '@/utility/orderHelpers'
 import orderProgress from '../components/orderProgress.vue'
 
 
@@ -39,7 +38,7 @@ const timelineData = computed(() => {
     currentStep = 2
   } else if (payment === 'payment_confirmed') {
     if (status === 'preparing') currentStep = 4
-    else if (status === 'collected') currentStep = 5
+    else if (status === 'collected_by_runner') currentStep = 5
     else if (status === 'delivered') currentStep = 6
     else if (status === 'completed') currentStep = 7
     else currentStep = 3 // payment confirmed but no order_status yet
@@ -59,7 +58,7 @@ function getCombinedStatus(order) {
   if (order.payment_status === 'awaiting_verification') return 'awaiting_verification'
   if (order.payment_status === 'payment_confirmed') {
     if (order.order_status === 'preparing') return 'preparing'
-    if (order.order_status === 'collected') return 'collected_by_runner'
+    if (order.order_status === 'collected_by_runner') return 'collected_by_runner'
     if (order.order_status === 'delivered') return 'delivered'
     if (order.order_status === 'completed') return 'completed'
     return 'payment_confirmed'
@@ -120,24 +119,6 @@ function formatCustomisations(customisations) {
   return Object.entries(customisations).map(([key, value]) => `${key}: ${value}`);
 }
 
-// formats delivery location string nicely from building, room type, and room number
-function formatLocation(order) {
-  let loc = ''
-  if (order.building) loc += order.building.charAt(0).toUpperCase() + order.building.slice(1)
-  if (order.room_type) loc += ', ' + order.room_type.charAt(0).toUpperCase() + order.room_type.slice(1)
-  if (order.room_number) loc += ' ' + order.room_number
-  return loc.trim()
-}
-
-// format a datetime with or without time depending on showTime flag
-function formatDateTime(date, showTime) {
-  const d = new Date(date)
-  if (showTime) {
-    return d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase()
-  }
-  return d.toLocaleDateString('en-GB') + ', ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase()
-}
-
 // return display text and css class for order status badge
 function getOrderStatusBadge(order) {
   if (order.order_status === 'completed') {
@@ -192,10 +173,10 @@ async function handlePaymentDone() {
   } catch (e) {
     doneError.value = 'Failed to update payment status.'
   } finally {
-  setTimeout(() => {
-    spinningOrderId.value = null
-  }, 1000) // delay 500ms so it has time to visibly spin
-}
+    setTimeout(() => {
+      spinningOrderId.value = null
+    }, 1000) // delay 500ms so it has time to visibly spin
+  }
 }
 </script>
 
@@ -221,7 +202,7 @@ async function handlePaymentDone() {
     </div>
 
     <div class="order-meta">
-      <div>Destination: School of {{ order.building.charAt(0).toUpperCase() + order.building.slice(1) }},  {{ order.room_number.charAt(0).toUpperCase() + order.room_number.slice(1) }} {{ order.room_type.charAt(0).toUpperCase() + order.room_type.slice(1) }} </div>
+      <div>Destination: School of {{ formatLocation(order) }}</div>
       <div>Merchant: {{ order.merchant?.name || order.merchant_id }}</div>
       <div>Pick up time: {{ formatDateTime(order.delivery_time) }}</div>
       <div>Reference No. : {{ order.payment_reference }}</div>
