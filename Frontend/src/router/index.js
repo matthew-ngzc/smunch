@@ -54,7 +54,7 @@ import VerifyAccount from '../views/VerifyAccount.vue'
   { path: '/game', name: 'game', component: Game },
   { path: '/collections', name: 'collections', component: Collections },
   { path: '/reset-password', name: 'resetpassword', component: ResetPassword },
-  { path: '/verify-account', name: 'verifyaccount', component: VerifyAccount },
+  { path: '/verify-account', name: 'verifyaccount', component: VerifyAccount, meta: {hideNavbar: true} },
 ]
 
 

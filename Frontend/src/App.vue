@@ -16,6 +16,9 @@ import { RouterLink, RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth' // for supabase realtime
 import { globalRealtimeManager } from '@/services/globalRealtimeManager' // for supabase realtime
 import { watch } from 'vue' // for supabase realtime
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 // for supabase realtime 
 const authStore = useAuthStore()
@@ -35,7 +38,7 @@ watch(() => authStore.isAuthenticated, (isAuthenticated) => {
 <template>
   <div class="app-container"> 
     <!-- REIWEN: use your global Navbar component here -->
-     <Navbar v-if="!hideNavbar" />
+     <Navbar v-if="!route.meta.hideNavbar" />
   
     <main>
       <!-- REIWEN: This is where our route components will be dynamically injected -->
