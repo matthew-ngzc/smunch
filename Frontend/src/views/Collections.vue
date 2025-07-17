@@ -88,6 +88,19 @@
       </div>
     </div>
 
+    <!-- Insufficient Balance Modal -->
+    <div v-if="showInsufficientBalanceModal" class="modal-overlay" @click="closeInsufficientBalanceModal">
+      <div class="modal-content" @click.stop>
+        <h3 class="modal-title">Insufficient Balance</h3>
+        <p class="modal-message">
+          You need {{ dinoCosts[selectedIndex] }}<img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="modal-coin"/> to unlock this smunchy, but you only have {{ coins }}<img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="modal-coin"/>.
+        </p>
+        <div class="modal-buttons">
+          <button class="modal-btn modal-btn-no" @click="closeInsufficientBalanceModal">OK</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Spectacular Unlock Animation Overlay -->
     <div v-if="showUnlockAnimation" class="unlock-celebration-overlay">
       <!-- Confetti Particles -->
@@ -143,10 +156,11 @@ const dinoImages = [
 ]
 const dinoCosts = [0, 100, 200, 300, 400, 500]
 
-const coins = ref(2000)
+const coins = ref(20)
 const unlockedIndex = ref(0) // How many dinos are unlocked
 const selectedIndex = ref(0) // Which dino the user is viewing
 const showConfirmModal = ref(false)
+const showInsufficientBalanceModal = ref(false)
 const showUnlockAnimation = ref(false)
 const showLetterAnimation = ref(false)
 const justUnlockedIndex = ref(-1)
@@ -164,7 +178,19 @@ const confirmUnlock = () => {
     coins: coins.value,
     canUnlock: selectedIndex.value === unlockedIndex.value + 1
   })
-  if (coins.value >= cost && selectedIndex.value === unlockedIndex.value + 1) {
+  
+  // Close confirmation modal first
+  closeModal()
+  
+  // Check if user has sufficient balance
+  if (coins.value < cost) {
+    // Show insufficient balance modal
+    showInsufficientBalanceModal.value = true
+    return
+  }
+  
+  // Check if it's the next dino in sequence and proceed with unlock
+  if (selectedIndex.value === unlockedIndex.value + 1) {
     coins.value -= cost
     justUnlockedIndex.value = unlockedIndex.value + 1
     unlockedIndex.value++
@@ -185,11 +211,14 @@ const confirmUnlock = () => {
     
     console.log('Unlock successful! New unlockedIndex:', unlockedIndex.value)
   }
-  closeModal()
 }
 
 const closeModal = () => {
   showConfirmModal.value = false
+}
+
+const closeInsufficientBalanceModal = () => {
+  showInsufficientBalanceModal.value = false
 }
 
 const prevDino = () => {
@@ -200,18 +229,16 @@ const nextDino = () => {
   if (selectedIndex.value < dinoNames.length - 1) selectedIndex.value++
 }
 
-// Computed property to check if current dinosaur can be unlocked
+// Computed property to check if current dinosaur can be unlocked (only check sequence)
 const canUnlockCurrentDino = computed(() => {
-  const hasEnoughCoins = coins.value >= dinoCosts[selectedIndex.value]
   const isNextInSequence = selectedIndex.value === unlockedIndex.value + 1
   console.log('Can unlock check:', {
     selectedIndex: selectedIndex.value,
     unlockedIndex: unlockedIndex.value,
-    hasEnoughCoins,
     isNextInSequence,
-    canUnlock: hasEnoughCoins && isNextInSequence
+    canUnlock: isNextInSequence
   })
-  return hasEnoughCoins && isNextInSequence
+  return isNextInSequence
 })
 </script>
 

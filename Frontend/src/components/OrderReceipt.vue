@@ -1,7 +1,7 @@
 <script setup>
-import { computed, ref } from 'vue'
-import { getPaymentQRCode, updatePaymentStatus, getRefreshedOrders } from '@/services/orderFoodService'
+import { computed, ref, watch } from 'vue'
 import { formatDateTime, formatStatusClass, formatStatus, formatLocation } from '@/utility/orderHelpers'
+import { getPaymentQRCode, updatePaymentStatus, getRefreshedOrders } from '@/services/orderFoodService'
 import orderProgress from '../components/orderProgress.vue'
 
 
@@ -15,8 +15,18 @@ const props = defineProps({
   showOrderStatus: Boolean // true for past orders, false/undefined for active
 })
 
+const timelineData = ref(null)
 
-const timelineData = computed(() => {
+watch(
+  () => props.order,
+  (order) => {
+    if (order) updateTimeline()
+  },
+  { immediate: true }  // runs immediately if order already exists
+)
+
+
+function updateTimeline() {
   const steps = [
     'Awaiting Payment',
     'Awaiting Verification',
@@ -27,30 +37,34 @@ const timelineData = computed(() => {
     'Completed'
   ]
 
-  let currentStep = 0
+  let currentStep = 1
 
   const payment = props.order.payment_status
   const status = props.order.order_status
 
-  if (payment === 'awaiting_payment') {
-    currentStep = 1
-  } else if (payment === 'awaiting_verification') {
-    currentStep = 2
-  } else if (payment === 'payment_confirmed') {
+  if (payment === 'awaiting_payment') currentStep = 1
+  else if (payment === 'awaiting_verification') currentStep = 2
+  else if (payment === 'payment_confirmed') {
     if (status === 'preparing') currentStep = 4
     else if (status === 'collected_by_runner') currentStep = 5
     else if (status === 'delivered') currentStep = 6
     else if (status === 'completed') currentStep = 7
-    else currentStep = 3 // payment confirmed but no order_status yet
+    else currentStep = 3
   }
 
-  return {
+  timelineData.value = {
     steps,
     currentStep,
     activeColor: '#3BB143',
     passiveColor: '#ccc'
   }
+
+  watch(timelineData, () => {
+  console.log('timelineData updated:', timelineData.value)
 })
+
+}
+
 
 // to reflect order status
 function getCombinedStatus(order) {
@@ -86,6 +100,8 @@ async function refreshOrderStatus(orderId) {
     // directly update the props.order values
     props.order.payment_status = refreshed.payment_status
     props.order.order_status = refreshed.order_status
+
+    updateTimeline()
 
     await new Promise(resolve => setTimeout(resolve, 600)) // allow spin to show
   } catch (err) {
@@ -169,6 +185,7 @@ async function handlePaymentDone() {
     await updatePaymentStatus(props.order.order_id)
     // immediately reflect new payment status in UI
     props.order.payment_status = 'awaiting_verification'
+    updateTimeline() 
     closePaymentModal()
   } catch (e) {
     doneError.value = 'Failed to update payment status.'
@@ -250,11 +267,10 @@ async function handlePaymentDone() {
   </div>
 </div>
 
-      <hr class="divider" />
+    <hr class="divider" />
 
       <!-- order Progress  -->
     <orderProgress :data="timelineData" />
-
 
       <!-- receipt body -->
       <div class="receipt-body">
