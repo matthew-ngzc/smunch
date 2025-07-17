@@ -1,11 +1,15 @@
 <template>
   <div class="info-container">
-    <button class="info-btn" @click.stop="toggleInfo">
+    <div 
+      class="info-trigger" 
+      @mouseenter="showInfo = true"
+      @mouseleave="showInfo = false"
+    >
       <img src="/infoIcon.png" alt="info icon" class="info-icon" />
       <span>Order Status</span>
-    </button>
+    </div>
 
-    <div v-if="showInfo" class="info-popup" @click.stop>
+    <div v-if="showInfo" class="info-popup" @mouseenter="showInfo = true" @mouseleave="showInfo = false">
       <h3>Order Status</h3>
       <div class="info-content">
         <div class="row" v-for="(status, index) in statusList" :key="index">
@@ -19,12 +23,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 
 const showInfo = ref(false)
-function toggleInfo() {
-  showInfo.value = !showInfo.value
-}
 
 const statusList = [
   { label: 'Refund pending', color: 'grey', description: 'Refund for an order has been filed' },
@@ -38,10 +39,6 @@ const statusList = [
   { label: 'Completed', color: 'green', description: 'Food has been received by user' },
   { label: 'Cancelled', color: 'red', description: 'Users order has been cancelled' },
 ]
-
-onMounted(() => {
-  window.addEventListener('click', () => (showInfo.value = false))
-})
 </script>
 
 <style scoped>
@@ -49,7 +46,7 @@ onMounted(() => {
   position: relative;
 }
 
-.info-btn {
+.info-trigger {
   background: white;
   border-radius: 20px;
   padding: 5px 14px;
@@ -59,6 +56,12 @@ onMounted(() => {
   gap: 8px;
   font-size: 16px;
   border: 1px solid rgb(103, 98, 98);
+  transition: all 0.2s ease;
+}
+
+.info-trigger:hover {
+  background: #f8f9fa;
+  border-color: #6c757d;
 }
 
 .info-icon {
@@ -78,6 +81,18 @@ onMounted(() => {
   padding: 20px;
   z-index: 99;
   width: 470px;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(10%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(10%) translateY(0);
+  }
 }
 
 .info-popup h3 {
@@ -95,40 +110,40 @@ onMounted(() => {
 }
 
 .row {
-  display: grid;
-  grid-template-columns: 16px 173px 1fr;
+  display: flex;
   align-items: center;
   gap: 12px;
   line-height: 1.3;
   padding: 2px 0;
+  position: relative;
 }
-
 
 .dot {
+  position: relative;
   width: 10px;
   height: 10px;
-  min-width: 10px;
-  min-height: 10px;
-  aspect-ratio: 1 / 1; /* forces it to always be a square */
   border-radius: 50%;
   background-color: gray;
-  align-self: center;
-  justify-self: start;
+  display: inline-block;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  vertical-align: middle;
 }
-
-
-
 
 .status-text {
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 0 0 173px;
 }
 
 .status-desc {
   font-size: 13px;
   color: #444;
+  flex: 1;
 }
 
 .grey { background-color: #555; }

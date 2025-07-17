@@ -90,7 +90,7 @@
             </div>
             <div class="col-md-4 mb-3">
               <h5>Contact</h5>
-              <p>SMU Campus</p>
+              <!-- <p>SMU Campus</p> -->
               <p>Email: smunch.dev@gmail.com</p>
             </div>
           </div>

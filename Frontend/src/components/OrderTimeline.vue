@@ -94,7 +94,6 @@ const cssStyle = computed(() => ({
   text-transform: uppercase;
   color: var(--passive-color);
   transition: color .3s ease;
-  background-color: white;
 }
 
 .step-line {

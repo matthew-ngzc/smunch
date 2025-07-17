@@ -65,7 +65,7 @@ function showDinoPopup(merchant) {
   dinoTimeout.value = setTimeout(() => {
     dinoLoading.value = false
     showDino.value = false
-    if (dinoMerchant.value && dinoMerchant.value.merchant_id) {
+    if (dinoMerchant.value && dinoMerchant.value.merchant_id && dinoMerchant.value.has_children == false ) {
       router.push(`/order/${dinoMerchant.value.merchant_id}`)
     } else {
       router.push('/order')

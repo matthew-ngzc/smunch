@@ -5,7 +5,7 @@
     </button>
     <div class="home-content">
       <div class="header-section">
-        <h1 class="greeting">About Us</h1>
+      <h1 class="greeting">About Us</h1>
         <p class="subtitle">Connecting students, one delivery at a time</p>
       </div>
       
@@ -13,7 +13,7 @@
         <div class="mission-card">
           <div class="card-icon">🎯</div>
           <h2>Our Mission</h2>
-          <p>SMUNCH was created by students, for students, to make campus life easier and more connected. Our mission is to help students save time, earn money, and build community by making food delivery on campus simple and accessible.</p>
+        <p>SMUNCH was created by students, for students, to make campus life easier and more connected. Our mission is to help students save time, earn money, and build community by making food delivery on campus simple and accessible.</p>
         </div>
         
         <div class="values-grid">
