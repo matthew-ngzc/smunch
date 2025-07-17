@@ -8,6 +8,7 @@ import axiosInstance from '@/utility/axiosInstance.js'
 
 const auth = useAuthStore()
 const router = useRouter()
+const userName = auth.userName
 
 // handling dropdown closure 
 const isOpen = ref(false)
@@ -106,18 +107,32 @@ const logout = async () => {
 
     <!-- dropdown -->
       <div v-if="isOpen" class="profile-menu" ref="dropdown">
+        <!-- menu-header -->
         <div class="menu-header">
-          <div class="dropdown-icon-circle">
-            <img v-if="auth.profilePicture" :src="auth.profilePicture" alt="Profile Picture" class="dropdown-profile-pic" />
-            <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <div class="dropdown-user-info">
+            <img
+              v-if="auth.profilePicture"
+              :src="auth.profilePicture"
+              alt="Profile Picture"
+              class="dropdown-profile-pic"
+            />
+            <svg
+              v-else
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              class="dropdown-profile-icon"
+            >
               <g fill="none" stroke="#0d3d31" stroke-linecap="round" stroke-width="2">
                 <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1"/>
                 <path d="M12 11c-2.21 0 -4 -1.79 -4 -4c0 -2.21 1.79 -4 4 -4c2.21 0 4 1.79 4 4c0 2.21 -1.79 4 -4 4Z"/>
               </g>
             </svg>
+            <div class="msg"> Hi, {{ userName }}</div>
           </div>
+
           <div class="close" @click.stop="closeMenu">X</div>
         </div>
+
 
       <hr />
 
@@ -303,19 +318,19 @@ const logout = async () => {
   justify-content: space-between;
 }
 
-.dropdown-icon-circle {
+.dropdown-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+}
+
+.dropdown-profile-icon {
   width: 36px;
   height: 36px;
   background-color: #e0e0e0;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dropdown-icon-circle svg {
-  width: 24px;
-  height: 24px;
+  padding: 5px;
 }
 
 .dropdown-profile-pic {
@@ -325,6 +340,15 @@ const logout = async () => {
   object-fit: cover;
   border: 2px solid #0d3d31;
 }
+
+.msg {
+  font-size: 16px;
+  color: #0d3d31;
+  font-weight: bold;
+  margin-top: 2px;
+  margin-left: 5px;
+}
+
 
 .profile-menu hr {
   margin: 12px 0;

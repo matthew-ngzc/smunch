@@ -85,6 +85,7 @@ export default {
       defaultProfilePicture: 'https://ui-avatars.com/api/?name=User&background=0d3d31&color=fff&size=128',
     }
   },
+
   methods: {
     onProfilePictureChange(e) {
       const file = e.target.files[0]

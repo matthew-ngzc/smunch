@@ -159,10 +159,10 @@ export default defineComponent({
 
 
 .merchant-logo {
-  height: 100px;
+  height: 80px;
   margin-right: 20px;
   margin-left: 10px;
-  width: 120px;
+  width: 100px;
 }
 
 .texts {

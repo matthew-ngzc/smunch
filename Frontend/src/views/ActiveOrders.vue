@@ -16,7 +16,6 @@ const pageSize = 5
 const totalOrders = ref(0)
 
 
-
 // for supabase realtime
 const setupRealtimeSubscription = () => {
   const userId = authStore.userId
@@ -335,6 +334,7 @@ function getCombinedStatus(order) {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   margin-left: 20px;
   margin-right: 20px;
+  min-height: 600px;
 }
 
 .empty-icon {
@@ -347,15 +347,17 @@ function getCombinedStatus(order) {
   font-weight: bold;
   color: #333;
   margin-bottom: 12px;
+  
 }
 
 .empty-state p {
   font-size: 16px;
   color: #666;
   margin-bottom: 24px;
-  max-width: 400px;
+ 
   margin-left: auto;
   margin-right: auto;
+  margin-top: 30px;
 }
 
 .empty-action-btn {
@@ -367,6 +369,7 @@ function getCombinedStatus(order) {
   border-radius: 8px;
   font-weight: bold;
   transition: background-color 0.2s;
+  margin-top: 330px;
 }
 
 .empty-action-btn:hover {
