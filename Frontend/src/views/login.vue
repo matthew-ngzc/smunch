@@ -236,7 +236,13 @@ export default {
         const { jwt_token, user_id, name, coins, profile_picture, dino_unlocked } = response.data
 
         const authStore = useAuthStore()
-        authStore.login(jwt_token, { user_id, name, coins, profile_picture, dino_unlocked } )  
+        authStore.login(jwt_token, { 
+          user_id, 
+          name, 
+          coins, 
+          profile_picture, 
+          dinoUnlocked: dino_unlocked
+        })
 
         // Set flag to show welcome message
         sessionStorage.setItem('justLoggedIn', 'true')

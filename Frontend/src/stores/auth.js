@@ -47,14 +47,23 @@ export const useAuthStore = defineStore('auth', {
       this.profilePicture = userInfo?.profile_picture || null
       this.dinoUnlocked = userInfo?.dinoUnlocked || null
 
+      console.log('💾 Storing dino_unlocked:', this.dinoUnlocked)
+
       sessionStorage.setItem('token', token)
       sessionStorage.setItem('userId', this.userId)
       sessionStorage.setItem('userName', this.userName)
       sessionStorage.setItem('coins', this.coins.toString())
+      
       if (this.profilePicture) {
         sessionStorage.setItem('profilePicture', this.profilePicture)
       }
-      sessionStorage.setItem('dinoUnlocked', this.dinoUnlocked)
+      
+      // Handle dinoUnlocked properly in sessionStorage
+      if (this.dinoUnlocked === null) {
+        sessionStorage.removeItem('dinoUnlocked')
+      } else {
+        sessionStorage.setItem('dinoUnlocked', this.dinoUnlocked)
+      }
     },
     logout() {
       this.token = null
