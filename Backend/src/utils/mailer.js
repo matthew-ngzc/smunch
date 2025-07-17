@@ -7,7 +7,7 @@ import {
   getReminderEmailHtmlFinalCall,
   getReminderEmailHtmlOneDayBefore,
   getTestEmailHtml,
-  getVerificationEmailHtml } from './emailHtmls.js';
+  getVerificationEmailHtml, getResetPasswordHtml } from './emailHtmls.js';
 
 dotenv.config();
 
