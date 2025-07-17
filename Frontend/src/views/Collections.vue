@@ -156,7 +156,7 @@ const dinoImages = [
 ]
 const dinoCosts = [0, 100, 200, 300, 400, 500]
 
-const coins = ref(20)
+// const coins = ref(20)
 const unlockedIndex = ref(0) // How many dinos are unlocked
 const selectedIndex = ref(0) // Which dino the user is viewing
 const showConfirmModal = ref(false)
