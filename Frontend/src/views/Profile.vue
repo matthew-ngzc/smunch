@@ -36,16 +36,12 @@
 </template>
 
 <script>
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '@/firebase/firebaseConfig';
 import axiosInstance from '@/utility/axiosInstance';
 import { useAuthStore } from '@/stores/auth';
 import TelegramVerification from '@/components/TelegramVerification.vue'
 
 export default {
-  components: {
-    TelegramVerification
-  },
+  components: { TelegramVerification },
   data() {
     return {
       bio: '',
@@ -55,40 +51,132 @@ export default {
       profilePicturePreview: '',
       selectedProfilePictureFile: null,
       defaultProfilePicture: 'https://ui-avatars.com/api/?name=User&background=0d3d31&color=fff&size=128',
-    };
+    }
   },
   methods: {
     onProfilePictureChange(e) {
-      const file = e.target.files[0];
+      const file = e.target.files[0]
       if (file) {
-        this.selectedProfilePictureFile = file;
-        const reader = new FileReader();
+        this.selectedProfilePictureFile = file
+        const reader = new FileReader()
         reader.onload = (event) => {
-          this.profilePicturePreview = event.target.result;
-        };
-        reader.readAsDataURL(file);
+          this.profilePicturePreview = event.target.result
+        }
+        reader.readAsDataURL(file)
       }
     },
-    async handleProfileSave() {
+
+    async uploadToImageKit(file) {
       try {
-        let imageUrl = this.profilePicturePreview;
-        // Only upload if a new file is selected
-        if (this.selectedProfilePictureFile) {
-          const file = this.selectedProfilePictureFile;
-          const filePath = `profile-pictures/${Date.now()}_${file.name}`;
-          const fileRef = storageRef(storage, filePath);
-          await uploadBytes(fileRef, file);
-          imageUrl = await getDownloadURL(fileRef);
+        // Generate authentication parameters
+        const authParams = await this.getImageKitAuthParams()
+        
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('fileName', `profile_${Date.now()}_${file.name}`)
+        formData.append('publicKey', import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY)
+        formData.append('signature', authParams.signature)
+        formData.append('expire', authParams.expire.toString())
+        formData.append('token', authParams.token)
+        formData.append('folder', '/profile_pictures')
+        
+        const response = await fetch(`https://upload.imagekit.io/api/v1/files/upload`, {
+          method: 'POST',
+          body: formData
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+     
+          throw new Error(`ImageKit upload failed: ${errorData.message || response.statusText}`)
         }
 
-        await axiosInstance.post('/api/user/profile-picture-url', { imageUrl });
-        useAuthStore().setProfilePicture(imageUrl);
-        this.profilePicturePreview = imageUrl;
-        this.selectedProfilePictureFile = null;
-        alert('Profile picture updated!');
+        const data = await response.json()
+        return data.url
       } catch (error) {
-        alert('Failed to upload profile picture. Please check your internet connection and try again.');
-        console.error(error);
+      
+        throw error
+      }
+    },
+
+    async getImageKitAuthParams() {
+      try {
+        // Get authentication parameters from your backend
+        const response = await axiosInstance.get('/api/users/imagekit-auth')
+        return response.data
+      } catch (error) {
+   
+        throw new Error('Failed to authenticate with ImageKit')
+      }
+    },
+
+    async handleProfileSave() {
+      try {
+        let profilePictureUrl = this.profilePicturePreview
+
+        // Upload new profile picture if selected
+        if (this.selectedProfilePictureFile) {
+   
+          profilePictureUrl = await this.uploadToImageKit(this.selectedProfilePictureFile)
+       
+        }
+
+        // Validate password fields
+        if (this.newPassword && this.newPassword !== this.confirmPassword) {
+          alert('New password and confirmation do not match.')
+          return
+        }
+
+        // Prepare update payload - only include fields with actual values
+        const payload = {}
+
+        // Only include bio if it has content
+        if (this.bio && this.bio.trim() !== '') {
+          payload.bio = this.bio.trim()
+        }
+
+        // Only include profile picture if we have a new URL
+        if (profilePictureUrl && profilePictureUrl !== this.defaultProfilePicture) {
+          payload.profile_picture = profilePictureUrl
+        }
+
+        // Only include password if user wants to change it
+        if (this.newPassword && this.newPassword.trim() !== '') {
+          payload.password = this.newPassword
+        }
+
+        // Check if we have anything to update
+        if (Object.keys(payload).length === 0) {
+          alert('No changes to save.')
+          return
+        }
+
+        console.log('Updating profile with payload:', payload)
+        
+        // Check if user is authenticated
+        const authStore = useAuthStore()
+        
+        const response = await axiosInstance.put('/api/users/profile', payload)
+
+        // Update auth store with new profile picture
+        if (payload.profile_picture) {
+          useAuthStore().setProfilePicture(profilePictureUrl)
+        }
+
+        // Reset form
+        this.selectedProfilePictureFile = null
+        this.newPassword = ''
+        this.confirmPassword = ''
+        this.currentPassword = ''
+        
+        alert('Profile updated successfully!')
+      } catch (err) {
+        console.error('Profile update error:', err)
+        if (err.message.includes('ImageKit')) {
+          alert('Failed to upload profile picture. Please check your internet connection and try again.')
+        } else {
+          alert('Failed to update profile. Please try again.')
+        }
       }
     }
   }

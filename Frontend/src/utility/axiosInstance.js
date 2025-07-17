@@ -35,8 +35,13 @@ axiosInstance.interceptors.request.use(
   config => {
     const authStore = useAuthStore()
     const token = authStore.token
+    console.log('Axios interceptor - token from store:', token)
+    console.log('Axios interceptor - auth store:', authStore)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+      console.log('Axios interceptor - Authorization header set:', config.headers.Authorization)
+    } else {
+      console.log('Axios interceptor - No token found in auth store')
     }
     return config
   },

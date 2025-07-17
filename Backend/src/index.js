@@ -7,6 +7,7 @@ import orderRoutes from "./routes/order.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import weatherRoutes from "./routes/weather.routes.js";
+import userRoutes from "./routes/user.routes.js";
 import errorHandler from "./middlewares/error.middleware.js";
 import { swaggerSpec, swaggerUi } from './config/swagger.config.js';
 import cors from 'cors';
@@ -35,6 +36,7 @@ app.use("/api/merchants", merchantRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/weather", weatherRoutes);
+app.use("/api/users", userRoutes);
 // app.use('/uploads/profile-pictures', express.static(path.resolve('Backend/uploads/profile-pictures'))); // Testing in progress
 
 app.use(errorHandler);

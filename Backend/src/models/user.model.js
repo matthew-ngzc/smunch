@@ -103,19 +103,25 @@ export async function createUserOrThrow(payload) {
  * @throws {Error} - If update fails or user not found
  */
 export async function updateUserProfileOrThrow(userId = 0, updates = {}){
+  
   if (userId === 0 || Object.keys(updates).length === 0){
     const err = new Error('Invalid input:: user_id and at least 1 update field required');
     err.status = 400;
     throw err;
   }
+  
   const {data, error} = await supabase
     .from('users')
     .update(updates)
     .eq('user_id', userId)
     .select()
     .single();
+
   
-  if (error) throw error;
+  if (error) {
+    console.error('Supabase error details:', error);
+    throw error;
+  }
   return data;
 }
 
