@@ -1,8 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { formatDateTime as _formatDateTime, formatStatusClass, formatStatus } from '@/utility/orderHelpers'
-import { getPaymentQRCode, updatePaymentStatus, getRefreshedOrders } from '@/services/orderFoodService'
 import { formatDateTime, formatStatusClass, formatStatus, formatLocation } from '@/utility/orderHelpers'
+import { getPaymentQRCode, updatePaymentStatus, getRefreshedOrders } from '@/services/orderFoodService'
 import orderProgress from '../components/orderProgress.vue'
 
 
