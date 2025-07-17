@@ -572,7 +572,7 @@ export const login = async (req, res, next) => {
       console.warn(`[LOGIN] Failed to update last_login: ${err.message}`);
     }
 
-    res.status(200).json({ jwt_token: token , user_id: user.user_id, name: user.name, coins: user.coins });
+    res.status(200).json({ jwt_token: token , user_id: user.user_id, name: user.name, coins: user.coins, dino_unlocked: user.dino_unlocked });
   } catch (err) {
     if (err.status === 404) {
       return res.status(401).json({ message: 'Invalid email or password' });

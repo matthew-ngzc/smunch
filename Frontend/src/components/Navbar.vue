@@ -3,7 +3,8 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
-import coins from '@/assets/smunch_coin.jpg';
+import coins from '@/assets/smunch_coin.jpg'
+import axiosInstance from '@/utility/axiosInstance.js'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -36,7 +37,18 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-const logout = () => {
+const logout = async () => {
+  try {
+    // Save current coins and dino unlock status to backend before logging out
+    await axiosInstance.put('/api/users/collections', {
+      coins: auth.coins,
+      dinoUnlocked: auth.dinoUnlocked
+    });
+  } catch (error) {
+    console.warn('Failed to save collections data before logout:', error);
+    // Continue with logout even if API call fails
+  }
+  
   auth.logout();
   sessionStorage.setItem('justLoggedOut', 'true');
   closeMenu();
