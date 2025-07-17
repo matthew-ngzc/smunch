@@ -189,7 +189,6 @@ const dinoImages = [
 ]
 const dinoCosts = [0, 100, 200, 300, 400, 500]
 
-
 // Get unlocked index from auth store, default to 0 if no data
 const unlockedIndex = ref(authStore.dinoUnlocked ? parseInt(authStore.dinoUnlocked) : 0)
 const selectedIndex = ref(0) // Which dino the user is viewing
