@@ -4,13 +4,13 @@
 
     <!-- Display Word -->
     <div class="word-container">
-      <span 
-        v-for="(char, index) in letters" 
-        :key="index" 
+      <span
+        v-for="(char, index) in letters"
+        :key="index"
         class="letter"
-        :class="{ 
+        :class="{
           'locked-letter': index > unlockedIndex,
-          'just-unlocked': showLetterAnimation && index === justUnlockedIndex
+          'just-unlocked': showLetterAnimation && index === justUnlockedIndex,
         }"
       >
         {{ index <= unlockedIndex ? char : '?' }}
@@ -25,17 +25,27 @@
 
       <div class="dino-content">
         <div v-if="selectedIndex <= unlockedIndex" class="dino-image-container">
-          <img :src="dinoImages[selectedIndex]" :alt="dinoNames[selectedIndex]" class="dino-image" />
+          <img
+            :src="dinoImages[selectedIndex]"
+            :alt="dinoNames[selectedIndex]"
+            class="dino-image"
+          />
         </div>
         <div v-else-if="selectedIndex === unlockedIndex + 1" class="tease-container">
-          <img :src="dinoImages[selectedIndex]" :alt="dinoNames[selectedIndex]" class="dino-image tease-image" />
+          <img
+            :src="dinoImages[selectedIndex]"
+            :alt="dinoNames[selectedIndex]"
+            class="dino-image tease-image"
+          />
           <span class="tease-question-mark">?</span>
         </div>
         <div v-else class="mystery-container">
           <img src="/dinoEgg.png" alt="Dino Egg" class="egg-background" />
           <div class="mystery-mark">?</div>
         </div>
-        <p v-if="selectedIndex <= unlockedIndex" class="dino-name">{{ dinoNames[selectedIndex] }}</p>
+        <p v-if="selectedIndex <= unlockedIndex" class="dino-name">
+          {{ dinoNames[selectedIndex] }}
+        </p>
 
         <div v-if="selectedIndex <= unlockedIndex" class="dino-info">
           <p class="dino-description">{{ dinoDescriptions[selectedIndex] }}</p>
@@ -48,26 +58,27 @@
         </div>
 
         <div v-else-if="selectedIndex === unlockedIndex + 1" class="locked-state">
-          <button
-            class="unlock-btn"
-            :disabled="!canUnlockCurrentDino"
-            @click="unlockDino"
-          >
-            Unlock {{ dinoCosts[selectedIndex] }} <img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="button-coin" />
+          <button class="unlock-btn" :disabled="!canUnlockCurrentDino" @click="unlockDino">
+            Unlock {{ dinoCosts[selectedIndex] }}
+            <img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="button-coin" />
           </button>
         </div>
       </div>
 
-      <button v-if="selectedIndex < dinoNames.length - 1" class="arrow-btn next-arrow" @click="nextDino">
+      <button
+        v-if="selectedIndex < dinoNames.length - 1"
+        class="arrow-btn next-arrow"
+        @click="nextDino"
+      >
         <img src="/public/right-arrow.png" alt="Next" class="arrow-img" />
       </button>
     </div>
 
     <!-- Dino Page Indicator -->
     <div class="page-indicator">
-      <span 
-        v-for="(dino, index) in dinoNames" 
-        :key="index" 
+      <span
+        v-for="(dino, index) in dinoNames"
+        :key="index"
         class="indicator-dot"
         :class="{ active: index === selectedIndex }"
         @click="selectedIndex = index"
@@ -76,10 +87,11 @@
 
     <!-- Confirmation Modal -->
     <div v-if="showConfirmModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
+      <div class="modal-content smunch-modal" @click.stop>
         <h3 class="modal-title">Confirm Unlock</h3>
         <p class="modal-message">
-          Are you sure you want to unlock this smunchy for {{ dinoCosts[selectedIndex] }}<img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="modal-coin"/>?
+          Are you sure you want to unlock this smunchy for {{ dinoCosts[selectedIndex]
+          }}<img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="modal-coin" />?
         </p>
         <div class="modal-buttons">
           <button class="modal-btn modal-btn-no" @click="closeModal">No</button>
@@ -89,11 +101,19 @@
     </div>
 
     <!-- Insufficient Balance Modal -->
-    <div v-if="showInsufficientBalanceModal" class="modal-overlay" @click="closeInsufficientBalanceModal">
-      <div class="modal-content" @click.stop>
-        <h3 class="modal-title">Insufficient Balance</h3>
+    <div
+      v-if="showInsufficientBalanceModal"
+      class="modal-overlay"
+      @click="closeInsufficientBalanceModal"
+    >
+      <div class="modal-content smunch-modal" @click.stop>
+        <h3 class="modal-title">Oops! You’re Short on Coins</h3>
         <p class="modal-message">
-          You need {{ dinoCosts[selectedIndex] }}<img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="modal-coin"/> to unlock this smunchy, but you only have {{ coins }}<img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="modal-coin"/>.
+          Unlocking this smunchy costs 
+          <span class="cost-display">
+            {{ dinoCosts[selectedIndex] }}<img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="modal-coin" />
+          </span>
+          <br />Earn more coins to unlock it!
         </p>
         <div class="modal-buttons">
           <button class="modal-btn modal-btn-no" @click="closeInsufficientBalanceModal">OK</button>
@@ -105,20 +125,29 @@
     <div v-if="showUnlockAnimation" class="unlock-celebration-overlay">
       <!-- Confetti Particles -->
       <div class="confetti-container">
-        <div v-for="i in 50" :key="i" class="confetti-piece" :style="{ 
-          left: Math.random() * 100 + '%',
-          animationDelay: Math.random() * 3 + 's',
-          backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'][Math.floor(Math.random() * 6)]
-        }"></div>
+        <div
+          v-for="i in 50"
+          :key="i"
+          class="confetti-piece"
+          :style="{
+            left: Math.random() * 100 + '%',
+            animationDelay: Math.random() * 3 + 's',
+            backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'][
+              Math.floor(Math.random() * 6)
+            ],
+          }"
+        ></div>
       </div>
-      
+
       <!-- Success Message -->
       <div class="unlock-success-message">
         <div class="success-icon">🎉</div>
         <h2 class="success-title">SMUNCHY UNLOCKED!</h2>
-        <p class="success-subtitle">{{ dinoNames[justUnlockedIndex] }} has joined your collection!</p>
+        <p class="success-subtitle">
+          {{ dinoNames[justUnlockedIndex] }} has joined your collection!
+        </p>
       </div>
-      
+
       <!-- Spectacular Glow Effect -->
       <div class="unlock-glow-effect"></div>
     </div>
@@ -127,6 +156,10 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useAuthStore } from '../stores/auth.js'
+
+// Initialize auth store
+const authStore = useAuthStore()
 
 const letters = ['S', 'M', 'U', 'N', 'C', 'H']
 const dinoNames = ['Stark', 'Milo', 'Uno', 'Nicole', 'Charlotte', 'Hatch']
@@ -136,15 +169,15 @@ const dinoDescriptions = [
   'A wise and thoughtful smunchy who loves solving puzzles and mysteries.',
   'A creative and artistic smunchy who expresses herself through beautiful colors.',
   'A gentle and caring smunchy who loves helping others and spreading kindness.',
-  'A curious and intelligent smunchy who loves learning new things every day.'
+  'A curious and intelligent smunchy who loves learning new things every day.',
 ]
 const dinoFavoriteFoods = [
-  'Shake Shack\'s SmokeShack',
-  'Koufu\'s Kopi C Siew Dai',
+  "Shake Shack's SmokeShack",
+  "Koufu's Kopi C Siew Dai",
   'Huevos',
   'Chocolate Milk',
-  'Ben and Jerry\'s Ice Cream',
-  'Jollibee Fried Chicken'
+  "Ben and Jerry's Ice Cream",
+  'Jollibee Fried Chicken',
 ]
 const dinoImages = [
   './public/stark.png',
@@ -156,8 +189,9 @@ const dinoImages = [
 ]
 const dinoCosts = [0, 100, 200, 300, 400, 500]
 
-const coins = ref(20)
-const unlockedIndex = ref(0) // How many dinos are unlocked
+
+// Get unlocked index from auth store, default to 0 if no data
+const unlockedIndex = ref(authStore.dinoUnlocked ? parseInt(authStore.dinoUnlocked) : 0)
 const selectedIndex = ref(0) // Which dino the user is viewing
 const showConfirmModal = ref(false)
 const showInsufficientBalanceModal = ref(false)
@@ -175,40 +209,43 @@ const confirmUnlock = () => {
     selectedIndex: selectedIndex.value,
     unlockedIndex: unlockedIndex.value,
     cost: cost,
-    coins: coins.value,
-    canUnlock: selectedIndex.value === unlockedIndex.value + 1
+    coins: authStore.coins,
+    canUnlock: selectedIndex.value === unlockedIndex.value + 1,
   })
-  
+
   // Close confirmation modal first
   closeModal()
-  
+
   // Check if user has sufficient balance
-  if (coins.value < cost) {
+  if (authStore.coins < cost) {
     // Show insufficient balance modal
     showInsufficientBalanceModal.value = true
     return
   }
-  
+
   // Check if it's the next dino in sequence and proceed with unlock
   if (selectedIndex.value === unlockedIndex.value + 1) {
-    coins.value -= cost
+    authStore.updateCoins(authStore.coins - cost)
     justUnlockedIndex.value = unlockedIndex.value + 1
     unlockedIndex.value++
     
+    // Save unlocked dinos to auth store and sessionStorage
+    authStore.updateDinoUnlocked(unlockedIndex.value.toString())
+
     // Trigger spectacular animations
     showUnlockAnimation.value = true
     showLetterAnimation.value = true
-    
+
     // Hide animations after they complete
     setTimeout(() => {
       showUnlockAnimation.value = false
     }, 5000)
-    
+
     setTimeout(() => {
       showLetterAnimation.value = false
       justUnlockedIndex.value = -1
     }, 4500)
-    
+
     console.log('Unlock successful! New unlockedIndex:', unlockedIndex.value)
   }
 }
@@ -236,7 +273,7 @@ const canUnlockCurrentDino = computed(() => {
     selectedIndex: selectedIndex.value,
     unlockedIndex: unlockedIndex.value,
     isNextInSequence,
-    canUnlock: isNextInSequence
+    canUnlock: isNextInSequence,
   })
   return isNextInSequence
 })
@@ -254,7 +291,7 @@ const canUnlockCurrentDino = computed(() => {
 
 /* Title */
 .title {
-  font-size: 2.0rem;
+  font-size: 2rem;
   font-weight: 800;
   color: #134e4a;
   margin-bottom: 2rem;
@@ -393,7 +430,8 @@ const canUnlockCurrentDino = computed(() => {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: brightness(0) saturate(100%) invert(0) contrast(1000%) drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+  filter: brightness(0) saturate(100%) invert(0) contrast(1000%)
+    drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
   opacity: 0.6;
 }
 
@@ -748,7 +786,11 @@ const canUnlockCurrentDino = computed(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at center, rgba(102, 126, 234, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%);
+  background: radial-gradient(
+    circle at center,
+    rgba(102, 126, 234, 0.1) 0%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -792,12 +834,21 @@ const canUnlockCurrentDino = computed(() => {
 .success-title {
   font-size: 3rem;
   font-weight: 900;
-  background: linear-gradient(45deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #667eea 100%);
+  background: linear-gradient(
+    45deg,
+    #667eea 0%,
+    #764ba2 25%,
+    #f093fb 50%,
+    #f5576c 75%,
+    #667eea 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   background-size: 300% 300%;
-  animation: rainbowText 2s ease-in-out infinite, textGlow 2s ease-in-out infinite;
+  animation:
+    rainbowText 2s ease-in-out infinite,
+    textGlow 2s ease-in-out infinite;
   margin-bottom: 1rem;
   text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
   letter-spacing: 0.1em;
@@ -890,7 +941,11 @@ const canUnlockCurrentDino = computed(() => {
 }
 
 @keyframes iconBounce {
-  0%, 20%, 50%, 80%, 100% {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
     transform: translateY(0) scale(1);
   }
   40% {
@@ -914,7 +969,8 @@ const canUnlockCurrentDino = computed(() => {
 }
 
 @keyframes textGlow {
-  0%, 100% {
+  0%,
+  100% {
     filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.5));
   }
   50% {
@@ -923,7 +979,8 @@ const canUnlockCurrentDino = computed(() => {
 }
 
 @keyframes subtitlePulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.9;
     transform: scale(1);
   }
@@ -934,7 +991,8 @@ const canUnlockCurrentDino = computed(() => {
 }
 
 @keyframes glowPulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(-50%, -50%) scale(1);
     opacity: 0.3;
   }
@@ -997,5 +1055,83 @@ const canUnlockCurrentDino = computed(() => {
     transform: translateY(-60px) scale(0);
     opacity: 0;
   }
+}
+.smunch-modal {
+  padding: 1.5rem 2rem 1.5rem 2rem;
+  max-width: 340px;
+  min-width: 220px;
+  width: 90%;
+  min-height: unset;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  box-shadow: 0 10px 32px rgba(102, 126, 234, 0.10), 0 2px 8px rgba(44, 62, 80, 0.08);
+  border: 2px solid #e0e7ff;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cost-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 700;
+  font-size: 1.15em;
+  color: #f7c948;
+  background: #fffbe6;
+  border-radius: 8px;
+  padding: 2px 8px 2px 6px;
+  margin: 0 2px;
+}
+.smunch-modal .modal-message {
+  margin-bottom: 1.2rem;
+  font-size: 1.08rem;
+  line-height: 1.5;
+  color: #393f4a;
+}
+.smunch-modal .modal-title {
+  margin-bottom: 0.7rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2d3748;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.07);
+}
+.smunch-modal .modal-buttons {
+  margin-top: 0.7rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+.modal-btn {
+  padding: 0.7rem 1.7rem;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(.4,0,.2,1);
+  min-width: 100px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+  outline: none;
+  letter-spacing: 0.01em;
+}
+.modal-btn-yes {
+  background: linear-gradient(135deg, #38c172 0%, #2f855a 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(56, 193, 114, 0.13);
+}
+.modal-btn-yes:hover, .modal-btn-yes:focus {
+  background: linear-gradient(135deg, #2f855a 0%, #38c172 100%);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 6px 20px rgba(56, 193, 114, 0.18);
+}
+.modal-btn-no {
+  background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(229, 62, 62, 0.13);
+}
+.modal-btn-no:hover, .modal-btn-no:focus {
+  background: linear-gradient(135deg, #c53030 0%, #e53e3e 100%);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 6px 20px rgba(229, 62, 62, 0.18);
 }
 </style>

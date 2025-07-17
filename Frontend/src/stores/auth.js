@@ -27,6 +27,7 @@ export const useAuthStore = defineStore('auth', {
     userName: sessionStorage.getItem('userName') || null,
     coins: Number(sessionStorage.getItem('coins')) || 0,
     profilePicture: sessionStorage.getItem('profilePicture') || null,
+    dinoUnlocked: sessionStorage.getItem('dinoUnlocked') || null,
   }),
   actions: {
     login(token, userInfo) {
@@ -34,12 +35,13 @@ export const useAuthStore = defineStore('auth', {
       this.userId = userInfo?.user_id || null
       this.userName = userInfo?.name || null
       this.coins = userInfo?.coins || 0
+      this.dinoUnlocked = userInfo?.dinoUnlocked || null
 
       sessionStorage.setItem('token', token)
       sessionStorage.setItem('userId', this.userId)
       sessionStorage.setItem('userName', this.userName)
       sessionStorage.setItem('coins', this.coins.toString())
-
+      sessionStorage.setItem('dinoUnlocked', this.dinoUnlocked)
     },
     logout() {
       this.token = null
@@ -47,18 +49,19 @@ export const useAuthStore = defineStore('auth', {
       this.userName = null
       this.coins = 0
       this.profilePicture = null
+      this.dinoUnlocked = null
 
       sessionStorage.removeItem('token')
       sessionStorage.removeItem('userId')
       sessionStorage.removeItem('userName')
       sessionStorage.removeItem('coins')
       sessionStorage.removeItem('profilePicture')
+      sessionStorage.removeItem('dinoUnlocked')
 
       // for supabase realtime 
       if (window.realtimeOrdersService) {
         window.realtimeOrdersService.unsubscribe()
       }
-      
     },
     isAuthenticated() {
       return !!this.token
@@ -70,7 +73,13 @@ export const useAuthStore = defineStore('auth', {
     setProfilePicture(profilePictureUrl) {
       this.profilePicture = profilePictureUrl
       sessionStorage.setItem('profilePicture', profilePictureUrl)
-    }
-
+    },
+    updateDinoUnlocked(newDinoUnlocked) {
+      this.dinoUnlocked = newDinoUnlocked
+      sessionStorage.setItem('dinoUnlocked', newDinoUnlocked)
+    },
+    getDinoUnlocked() {
+      return this.dinoUnlocked
+    },
   }
 })
