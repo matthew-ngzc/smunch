@@ -9,6 +9,9 @@ export async function updateProfilePassword(password) {
     return axiosInstance.put('/api/users/profile', {password})
 }
 
-export async function resetUserPassword(password) {
-    return axiosInstance.put('/api/auth/reset-password', {password})
+
+export function resetUserPassword(password, token) {
+  return axiosInstance.post('/api/auth/reset-password', {
+    password, token
+  })
 }
