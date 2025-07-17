@@ -79,7 +79,7 @@
       <div class="modal-content" @click.stop>
         <h3 class="modal-title">Confirm Unlock</h3>
         <p class="modal-message">
-          Are you sure you want to unlock this dinosaur for {{ dinoCosts[selectedIndex] }}<img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="modal-coin"/>?
+          Are you sure you want to unlock this smunchy for {{ dinoCosts[selectedIndex] }}<img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="modal-coin"/>?
         </p>
         <div class="modal-buttons">
           <button class="modal-btn modal-btn-no" @click="closeModal">No</button>
@@ -118,12 +118,12 @@ import { ref, computed } from 'vue'
 const letters = ['S', 'M', 'U', 'N', 'C', 'H']
 const dinoNames = ['Stark', 'Milo', 'Uno', 'Nicole', 'Charlotte', 'Hatch']
 const dinoDescriptions = [
-  'A brave and adventurous dinosaur who loves exploring new territories.',
-  'A playful and energetic dinosaur who enjoys making friends with everyone.',
-  'A wise and thoughtful dinosaur who loves solving puzzles and mysteries.',
-  'A creative and artistic dinosaur who expresses herself through beautiful colors.',
-  'A gentle and caring dinosaur who loves helping others and spreading kindness.',
-  'A curious and intelligent dinosaur who loves learning new things every day.'
+  'A brave and adventurous smunchy who loves exploring new territories.',
+  'A playful and energetic smunchy who enjoys making friends with everyone.',
+  'A wise and thoughtful smunchy who loves solving puzzles and mysteries.',
+  'A creative and artistic smunchy who expresses herself through beautiful colors.',
+  'A gentle and caring smunchy who loves helping others and spreading kindness.',
+  'A curious and intelligent smunchy who loves learning new things every day.'
 ]
 const dinoFavoriteFoods = [
   'Shake Shack\'s SmokeShack',
@@ -302,6 +302,7 @@ const canUnlockCurrentDino = computed(() => {
   top: 50%;
   transform: translateY(-50%);
   padding: 0;
+  z-index: 10;
 }
 
 .prev-arrow {
@@ -330,6 +331,7 @@ const canUnlockCurrentDino = computed(() => {
   margin: 0;
   display: block;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  pointer-events: none;
 }
 
 .dino-content {
