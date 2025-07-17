@@ -24,9 +24,9 @@ cron.schedule('50 14 * * *',    () => runFinalCallReminders('15:30'));
 cron.schedule('20 18 * * *',    () => runFinalCallReminders('19:00')); 
 
 //* TESTING
-// cron.schedule('*/120 * * * * *', async () => {
+// cron.schedule('*/5 * * * * *', async () => {
 //   try {
-//     await runFinalCallReminders('12:00');
+//     await runFinalCallReminders('08:15');
 //   } catch (err) {
 //     console.error('[NODE-CRON] [ERROR]', err.message, err.stack);
 //   }

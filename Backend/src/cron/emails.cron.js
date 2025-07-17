@@ -13,8 +13,6 @@ import { DateTime } from 'luxon';
 
 // 1 day before reminder
 export async function runOneDayBeforeReminders() {
-  
-
   const sgNow = DateTime.now().setZone('Asia/Singapore');
   const tomorrow = sgNow.plus({ days: 1 });
   const deliveryDateISO = tomorrow.toISODate(); // → e.g. "2025-07-19"
