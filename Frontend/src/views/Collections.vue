@@ -53,10 +53,7 @@
             <p class="dino-favorite-food">Favorite Food: {{ dinoFavoriteFoods[selectedIndex] }}</p>
           </div>
 
-          <div v-if="selectedIndex <= unlockedIndex" class="dino-actions">
-            <button class="equip-btn">Equip</button>
-            <button class="play-btn">Play</button>
-          </div>
+
 
           <div v-else-if="selectedIndex === unlockedIndex + 1" class="locked-state">
             <button class="unlock-btn" :disabled="!canUnlockCurrentDino" @click="unlockDino">
@@ -616,15 +613,6 @@ const canUnlockCurrentDino = computed(() => {
 }
 
 /* Actions */
-.dino-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 0.5rem;
-}
-
-.equip-btn,
-.play-btn,
 .unlock-btn {
   padding: 0.5rem 1.2rem;
   border-radius: 10px;
@@ -633,19 +621,6 @@ const canUnlockCurrentDino = computed(() => {
   cursor: pointer;
   font-size: 0.9rem;
   transition: background 0.2s ease;
-}
-
-.equip-btn {
-  background: #d9edf7;
-  color: #31708f;
-}
-
-.play-btn {
-  background: #f7c948;
-  color: #7c5700;
-}
-
-.unlock-btn {
   background-color: #38c172;
   color: white;
 }
