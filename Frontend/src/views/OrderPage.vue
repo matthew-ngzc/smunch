@@ -17,13 +17,107 @@ export default defineComponent({
     const orderStore = useOrderStore()
     const router = useRouter()
     const isChatExpanded = ref(false)
+    const dailyChallenge = ref(null)
+    const challengeCompleted = ref(false)
 
     const handleChatStateChange = (expanded) => {
       isChatExpanded.value = expanded
     }
 
+    // Enhanced daily challenges with better variety and rewards
+    const challenges = [
+      { 
+        id: 1, 
+        title: "Merchant Explorer", 
+        description: "Discover a new flavor adventure", 
+        task: "Order from a merchant you've never tried before", 
+        reward: 75, 
+        icon: "🗺️",
+        color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        difficulty: "Easy"
+      },
+      { 
+        id: 2, 
+        title: "Early Riser", 
+        description: "Beat the breakfast rush", 
+        task: "Place your first order before 10:30 AM", 
+        reward: 50, 
+        icon: "🌅",
+        color: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+        difficulty: "Easy"
+      },
+      { 
+        id: 3, 
+        title: "Social Connector", 
+        description: "Spread the SMUNCH love", 
+        task: "Invite a friend to join SMUNCH community", 
+        reward: 150, 
+        icon: "🤝",
+        color: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+        difficulty: "Medium"
+      },
+      { 
+        id: 4, 
+        title: "Variety Seeker", 
+        description: "Embrace culinary diversity", 
+        task: "Order from 3 different merchants today", 
+        reward: 120, 
+        icon: "🎨",
+        color: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+        difficulty: "Medium"
+      },
+      { 
+        id: 5, 
+        title: "Weekend Warrior", 
+        description: "Make your weekend delicious", 
+        task: "Complete 2 orders this weekend", 
+        reward: 100, 
+        icon: "⚡",
+        color: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+        difficulty: "Easy"
+      },
+      { 
+        id: 6, 
+        title: "Dino Master", 
+        description: "Become a legendary collector", 
+        task: "Unlock 2 new dino characters", 
+        reward: 250, 
+        icon: "🦕",
+        color: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+        difficulty: "Hard"
+      },
+      { 
+        id: 7, 
+        title: "Game Champion", 
+        description: "Show your gaming prowess", 
+        task: "Win 3 arcade games in a row", 
+        reward: 200, 
+        icon: "🏆",
+        color: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
+        difficulty: "Hard"
+      }
+    ]
+    
+    const getDailyChallenge = () => {
+      const today = new Date().getDay() // 0-6 (Sunday-Saturday)
+      return challenges[today]
+    }
+    
+    const completeChallenge = () => {
+      if (!challengeCompleted.value) {
+        challengeCompleted.value = true
+        // Add visual feedback and coin animation
+        setTimeout(() => {
+          alert(`🎉 Amazing! Challenge "${dailyChallenge.value.title}" completed!\n\n💰 You earned ${dailyChallenge.value.reward} SMUNCH coins!\n🏅 Keep up the great work!`)
+        }, 300)
+      }
+    }
+
 
     onMounted(async () => {
+      // Set daily challenge
+      dailyChallenge.value = getDailyChallenge()
+      
       try {
         // function to get merchants from backend
         const response = await fetchParentMerchants() // Adjust to your actual endpoint
@@ -58,7 +152,7 @@ export default defineComponent({
     }
   }
 
-    return { merchants, goToMerchant, isChatExpanded, handleChatStateChange }
+    return { merchants, goToMerchant, isChatExpanded, handleChatStateChange, dailyChallenge, challengeCompleted, completeChallenge }
   }
 })
 </script>
@@ -66,6 +160,19 @@ export default defineComponent({
 <template>
   <div class="order-page-wrapper">
     <div class="order-page" :class="{ faded: isChatExpanded }">
+      <!-- Daily Challenge Rectangle -->
+      <div v-if="dailyChallenge" class="daily-challenge">
+        <div class="challenge-header">
+          <img src="/dinoPoint.png" alt="dino" class="challenge-icon" />
+          <span class="challenge-title">Daily Challenge</span>
+        </div>
+        <div class="challenge-task">{{ dailyChallenge.task }}</div>
+        <div class="challenge-reward">
+          <img src="../assets/smunch_coin.jpg" alt="coin" class="reward-coin" />
+          <span>{{ dailyChallenge.reward }} coins</span>
+        </div>
+      </div>
+
       <!-- ChatBar Component -->
       <div class="chat-container">
         <ChatBar @chatStateChange="handleChatStateChange"/>
@@ -171,6 +278,147 @@ export default defineComponent({
 
 .order-page.faded::before {
   opacity: 1;
+}
+
+/* Daily Challenge Rectangle */
+.daily-challenge {
+  position: fixed;
+  top: -80px;
+  left: 10px;
+  z-index: 999;
+  height: 130px;
+  width: 250px;
+  background: linear-gradient(135deg, #95b49e 0%, #609661 50%, #55c15c 100%);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  color: white;
+}
+
+.daily-challenge::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+  transform: rotate(45deg);
+  animation: shimmer 3s infinite;
+}
+
+.daily-challenge:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 50%, #f093fb 100%);
+}
+
+.challenge-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+.challenge-icon {
+  width: 40px;
+  height: 40px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  animation: iconBounce 2s ease-in-out infinite;
+}
+
+.challenge-title {
+  font-weight: 800;
+  color: #ffffff;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: goldShine 2s ease-in-out infinite;
+}
+
+.challenge-task {
+  color: #ffffff;
+  margin-bottom: 8px;
+  line-height: 1.3;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 2;
+}
+
+.challenge-reward {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.2);
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 2;
+  animation: rewardPulse 2s ease-in-out infinite;
+  font-size: 0.75rem;
+}
+
+.reward-coin {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+  animation: coinSpin 3s linear infinite;
+}
+
+/* Daily Challenge Animations */
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes goldShine {
+  0%, 100% { 
+    background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  50% { 
+    background: linear-gradient(45deg, #ffed4e, #fff, #ffed4e);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+}
+
+@keyframes coinSpin {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+
+@keyframes rewardPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 /* Chat Container */
@@ -502,6 +750,31 @@ export default defineComponent({
   .chat-container {
     top: 70px;
     right: 15px;
+  }
+  
+  .daily-challenge {
+    top: 10px;
+    left: 10px;
+    width: 180px;
+    padding: 10px;
+    font-size: 0.75rem;
+  }
+  
+  .challenge-task {
+    font-size: 0.7rem;
+  }
+  
+  .challenge-title {
+    font-size: 0.7rem;
+  }
+  
+  .challenge-reward {
+    font-size: 0.7rem;
+  }
+  
+  .challenge-icon {
+    width: 35px;
+    height: 35px;
   }
 }
 </style>

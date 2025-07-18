@@ -142,7 +142,6 @@ const logout = async () => {
 
 <style scoped>
 
-
 /* navbar hidden by default */
 .navbar-box {
   background-color: #0d3d31;
@@ -158,9 +157,7 @@ const logout = async () => {
   left: 0;
   width: 100%;
   z-index: 1000;
-  
 }
-
 
 /* left side: brand */
 .navbar-left {
@@ -168,11 +165,8 @@ const logout = async () => {
   display: flex;
   align-items: center;
   gap: 8px;             
-  color: #ffffff;  
-       
+  color: #ffffff;
 }
-
-
 
 /* left side: brand */
 .navbar-left a {
@@ -186,8 +180,6 @@ const logout = async () => {
   display: inline;
   background-color: transparent; 
 }
-
-
 
 /* edits the entire centre container, not the specific links yet  */
 .navbar-center {
@@ -208,14 +200,13 @@ const logout = async () => {
 }
 
 .navbar-center a:hover {
-  text-shadow: 4px 4px 5px#a9b5cd;                  /* grey on hover */
+  text-shadow: 4px 4px 5px#a9b5cd;  /* grey on hover */
 }
 
 .navbar-right {
   display: flex;
   align-items: center;
   gap: 20px;
-  
 }
 
 /* coins display */
@@ -272,13 +263,13 @@ const logout = async () => {
 .profile-wrapper svg {
   width: 34px;
   height: 34px;
-  object-fit: contain;      /* keeps aspect ratio */
+  object-fit: contain;
 }
 
 .icon-circle {
   width: 37px;
   height: 37px;
-  background-color: white; /* or any color */
+  background-color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -363,7 +354,6 @@ const logout = async () => {
   margin-left: 5px;
 }
 
-
 .profile-menu hr {
   margin: 12px 0;
   border: none;
@@ -396,6 +386,12 @@ const logout = async () => {
   font-size: 16px;
   font-weight: 500;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  letter-spacing: -0.01em;
 }
 
 /* Mobile responsive styles */
@@ -491,13 +487,6 @@ const logout = async () => {
     padding: 8px 10px;
   }
 }
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  letter-spacing: -0.01em;
-}
 
 .profile-menu li:last-child {
   margin-top: 8px;
@@ -538,9 +527,7 @@ const logout = async () => {
     width: 200px;
     right: 10px;
   }
-  
 
-  
   .dropdown-user-name {
     font-size: 13px;
   }

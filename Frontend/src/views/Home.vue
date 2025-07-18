@@ -17,12 +17,15 @@ export default defineComponent({
     const showWelcomeMessage = ref(false)
     const weather = ref(null)
     const weatherLoaded = ref(false)
+
     
     const goToOrder = () => { router.push('/order') }
     const goToRun = () => { router.push('/run') }
     
-    onMounted(async () => {
-      // Show welcome message if user just logged in
+
+    
+          onMounted(async () => {
+        // Show welcome message if user just logged in
       const justLoggedIn = sessionStorage.getItem('justLoggedIn')
       if (justLoggedIn === 'true') {
         showWelcomeMessage.value = true
@@ -44,22 +47,24 @@ export default defineComponent({
       weatherLoaded.value = true
     })
     
-    return { 
-      userName, 
-      OrderIcon, 
-      RunIcon, 
-      goToOrder, 
-      goToRun,
-      showWelcomeMessage,
-      weather,
-      weatherLoaded
-    }
+          return { 
+        userName, 
+        OrderIcon, 
+        RunIcon, 
+        goToOrder, 
+        goToRun,
+        showWelcomeMessage,
+        weather,
+        weatherLoaded
+      }
   }
 })
 </script>
 
 <template>
   <div class="home no-scroll">
+
+
     <!-- Welcome Message -->
     <div v-if="showWelcomeMessage" class="welcome-message">
       <div class="welcome-content">
@@ -103,6 +108,9 @@ export default defineComponent({
   margin: 0;
   padding: 0;
 }
+
+
+
 .home-content {
   width: 100%;
   max-width: 900px;
@@ -151,6 +159,7 @@ export default defineComponent({
     transform: translateX(-50%) translateY(0);
   }
 }
+
 .greeting {
   font-size: 2.6rem;
   font-weight: 800;
@@ -160,12 +169,14 @@ export default defineComponent({
   letter-spacing: -0.01em;
   text-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
 }
+
 .options {
   display: flex;
   gap: 3rem;
   justify-content: center;
   align-items: center;
 }
+
 .card {
   width: 270px;
   height: 270px;
@@ -181,31 +192,37 @@ export default defineComponent({
   transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
   border: 1.5px solid #e0e0e0;
 }
+
 .card:hover {
   transform: translateY(-10px) scale(1.04);
   box-shadow: 0 16px 48px rgba(44, 62, 80, 0.18);
   background: #e0f2f1;
 }
+
 .order {
   background: linear-gradient(135deg, #5ea6c4 0%, #b2f7ef 100%);
   color: #134e4a;
 }
+
 .run {
   background: linear-gradient(135deg, #468d8c 0%, #b2f7ef 100%);
   color: #134e4a;
 }
+
 .icon {
   width: 100px;
   height: 100px;
   margin-bottom: 1.5rem;
   filter: drop-shadow(0 2px 8px rgba(44, 62, 80, 0.10));
 }
+
 .card p {
   font-size: 1.3rem;
   font-weight: 700;
   margin: 0;
   text-align: center;
 }
+
 @media (max-width: 900px) {
   .options {
     flex-direction: column;
@@ -218,6 +235,8 @@ export default defineComponent({
     padding: 1.5rem 1rem;
   }
 }
+
+
 
 @media (max-width: 480px) {
   .home-content {
@@ -260,6 +279,11 @@ export default defineComponent({
   
   .welcome-content {
     font-size: 0.85rem;
+  }
+  
+  .home-content {
+    position: relative;
+    padding: 60px 1rem 1rem;
   }
 }
 </style>
