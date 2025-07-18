@@ -5,7 +5,7 @@ import { useDeliveryStore } from '@/stores/delivery'
 import { useCartStore } from '@/stores/cart'
 import { useOrderStore } from '@/stores/order'
 import { useAuthStore } from '@/stores/auth'
-import ordertimeline from '../components/OrderTimeline.vue'
+import OrderTimeline from '../components/OrderTimeline.vue'
 import { createOrder } from '@/services/orderFoodService' 
 import { convertToUtcISOString } from '@/utility/orderHelpers'
 
@@ -89,7 +89,7 @@ function goBack() {
   <div class="summary-page">
 
       <!-- pass both data and routes -->
-      <ordertimeline :data="data" />
+      <OrderTimeline :data="data" />
 
     <!-- box -->
     <div class="summary-box">

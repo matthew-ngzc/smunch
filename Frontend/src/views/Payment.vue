@@ -6,7 +6,7 @@ import { updatePaymentStatus } from '@/services/orderFoodService'
 import { useOrderStore } from '@/stores/order'
 
 // importing the timeline
-import ordertimeline from '../components/OrderTimeline.vue'
+import OrderTimeline from '../components/OrderTimeline.vue'
 
 
 // progress timeline
@@ -53,7 +53,7 @@ function goBack() {
   <div class="payment-page-wrapper">
   <div class="payment-page">
      <!-- pass both data and routes -->
-    <ordertimeline :data="data" :routes="routes" />
+    <OrderTimeline :data="data" :routes="routes" />
   
   <div class="payment-container">
 

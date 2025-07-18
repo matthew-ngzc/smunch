@@ -1,5 +1,5 @@
 <script setup>
-import ordertimeline from '../components/OrderTimeline.vue'
+import OrderTimeline from '../components/OrderTimeline.vue'
 import { ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDeliveryStore } from '@/stores/delivery'
@@ -205,7 +205,7 @@ function goBack() {
 <template>
   <div class="select-location-page-wrapper">
   <div class="select-location-page">
-    <ordertimeline :data="data" />
+    <OrderTimeline :data="data" />
 
       <div class="delivery-form-container">
         <div class="back-button" @click="goBack">
