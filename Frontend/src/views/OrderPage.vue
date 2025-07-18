@@ -64,46 +64,63 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="order-page" :class="{ faded: isChatExpanded }">
-    <!-- Search Bar -->
-    <!-- <div class="chat-search-bar">
-      <input type="text" placeholder="Order with SMUNCH.AI !" class="chat-input" />
-      <button class="chat-send-btn">Send</button>
-    </div> -->
-    <div>
-      <ChatBar @chatStateChange="handleChatStateChange"/>
-    </div>
+  <div class="order-page-wrapper">
+    <div class="order-page" :class="{ faded: isChatExpanded }">
+      <!-- Search Bar -->
+      <!-- <div class="chat-search-bar">
+        <input type="text" placeholder="Order with SMUNCH.AI !" class="chat-input" />
+        <button class="chat-send-btn">Send</button>
+      </div> -->
+      <div>
+        <ChatBar @chatStateChange="handleChatStateChange"/>
+      </div>
 
-    <div class="order-content">
-      <hr class="divider" />
+      <div class="order-content">
+        <hr class="divider" />
 
-      <h2>order something with SMUNCH!</h2>
-      <div class="merchant-list">
-        <div
-          v-for="merchant in merchants"
-          :key="merchant.id"
-          class="merchant-card"
-          @click="goToMerchant(merchant.merchant_id)"
-        >
-          <div class="logo-wrapper">
-            <img :src="merchant.image_url" alt="merchant logo" class="merchant-logo" />
+        <h2>order something with SMUNCH!</h2>
+        <div class="merchant-list">
+          <div
+            v-for="merchant in merchants"
+            :key="merchant.id"
+            class="merchant-card"
+            @click="goToMerchant(merchant.merchant_id)"
+          >
+            <div class="logo-wrapper">
+              <img :src="merchant.image_url" alt="merchant logo" class="merchant-logo" />
+            </div>
+            <div class="text">
+              <h3>{{ merchant.name }}</h3>
+              <p>$1.00 delivery fee</p>
+            </div>
           </div>
-          <div class="text">
-            <h3>{{ merchant.name }}</h3>
-            <p>$1.00 delivery fee</p>
-          </div>
-        </div>
-      </div> 
-    </div>
-  </div> 
+        </div> 
+      </div>
+    </div> 
+  </div>
 </template>
 
 <style scoped>
+.order-page-wrapper {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: auto;
+}
+
 .order-page {
   padding: 30px;
   font-family: 'Inter', sans-serif;
   padding-top: 120px; /* Ensures content is not hidden behind the fixed ChatBar */
   position: relative;
+  width: 100%;
+  max-width: 1200px;
 }
 
 .order-page::before {

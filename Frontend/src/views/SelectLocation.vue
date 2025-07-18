@@ -68,87 +68,108 @@ async function goToSummary() {
 </script>
 
 <template>
-  <div class="select-location-page">
-    <ordertimeline :data="data" />
+  <div class="select-location-page-wrapper">
+    <div class="select-location-page">
+      <ordertimeline :data="data" />
 
-    <div class="delivery-form-box">
-      <h2>where should your food be delivered?</h2>
+      <div class="delivery-form-box">
+        <h2>where should your food be delivered?</h2>
 
-      <div class="contents">
-        <!-- building -->
-        <div class="filters">
-          <label>building</label>
-          <select v-model="building">
-            <option value="" disabled selected hidden>select</option>
-            <option value="Business">School of Business</option>
-            <option value="Law">School of Law</option>
-            <option value="Economics">School of Economics</option>
-            <option value="Accounting">School of Accounting</option>
-            <option value="Scis1">School of Computing and Information Systems 1</option>
-            <option value="Scis2">School of Computing and Information Systems 2</option>
-          </select>
+        <div class="contents">
+          <!-- building -->
+          <div class="filters">
+            <label>building</label>
+            <select v-model="building">
+              <option value="" disabled selected hidden>select</option>
+              <option value="Business">School of Business</option>
+              <option value="Law">School of Law</option>
+              <option value="Economics">School of Economics</option>
+              <option value="Accounting">School of Accounting</option>
+              <option value="Scis1">School of Computing and Information Systems 1</option>
+              <option value="Scis2">School of Computing and Information Systems 2</option>
+            </select>
+          </div>
+
+          <!-- floor -->
+          <div class="filters">
+            <label>floor</label>
+            <select v-model="floor">
+              <option value="" disabled selected hidden>select</option>
+              <option value="Level 2">2</option>
+              <option value="Level 3">3</option>
+              <option value="Level 4">4</option>
+            </select>
+          </div>
+
+          <!-- room number -->
+          <div class="filters">
+            <label>room number</label>
+            <input type="text" v-model="roomNumber" />
+            <small style="color: #888;">e.g. 2-2, 2-3 or custom</small>
+            <div v-if="roomNumberError" class="room-number-error">{{ roomNumberError }}</div>
+          </div>
+
+          <!-- facility type -->
+          <div class="filters">
+            <label>facility type</label>
+            <select v-model="facilityType">
+              <option value="" disabled selected hidden>select</option>
+              <option value="Classroom">classroom</option>
+              <option value="Group study room">group study room</option>
+              <option value="Meeting pod">meeting pod</option>
+              <option value="Seminar room">seminar room</option>
+            </select>
+          </div>
+
+          <!-- date -->
+          <div class="filters">
+            <label>date</label>
+            <input type="date" v-model="date" />
+          </div>
+
+          <!-- time -->
+          <div class="filters">
+            <label>time</label>
+            <select v-model="time">
+              <option value="" disabled selected hidden>select</option>
+              <option value="08:15 AM">08:15 AM</option>
+              <option value="12:00 PM">12:00 PM</option>
+              <option value="03:30 PM">03:30 PM</option>
+              <option value="07:00 PM">07:00 PM</option>
+            </select>
+          </div>
         </div>
 
-        <!-- floor -->
-        <div class="filters">
-          <label>floor</label>
-          <select v-model="floor">
-            <option value="" disabled selected hidden>select</option>
-            <option value="Level 2">2</option>
-            <option value="Level 3">3</option>
-            <option value="Level 4">4</option>
-          </select>
+        <div v-if="showValidationError" class="warning-banner">
+          Please fill in all fields before proceeding.
         </div>
 
-        <!-- room number -->
-        <div class="filters">
-          <label>room number</label>
-          <input type="text" v-model="roomNumber" />
-          <small style="color: #888;">e.g. 2-2, 2-3 or custom</small>
-          <div v-if="roomNumberError" class="room-number-error">{{ roomNumberError }}</div>
-        </div>
-
-        <!-- facility type -->
-        <div class="filters">
-          <label>facility type</label>
-          <select v-model="facilityType">
-            <option value="" disabled selected hidden>select</option>
-            <option value="Classroom">classroom</option>
-            <option value="Group study room">group study room</option>
-            <option value="Meeting pod">meeting pod</option>
-            <option value="Seminar room">seminar room</option>
-          </select>
-        </div>
-
-        <!-- date -->
-        <div class="filters">
-          <label>date</label>
-          <input type="date" v-model="date" />
-        </div>
-
-        <!-- time -->
-        <div class="filters">
-          <label>time</label>
-          <select v-model="time">
-            <option value="" disabled selected hidden>select</option>
-            <option value="08:15 AM">08:15 AM</option>
-            <option value="12:00 PM">12:00 PM</option>
-            <option value="03:30 PM">03:30 PM</option>
-            <option value="07:00 PM">07:00 PM</option>
-          </select>
-        </div>
+        <button class="next-btn" @click="goToSummary">next</button>
       </div>
-
-      <div v-if="showValidationError" class="warning-banner">
-        Please fill in all fields before proceeding.
-      </div>
-
-      <button class="next-btn" @click="goToSummary">next</button>
     </div>
   </div>
 </template>
 
 <style scoped>
+.select-location-page-wrapper {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: auto;
+}
+
+.select-location-page {
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+}
+
 /* same as Filter.vue styles */
 .delivery-form-box {
   max-width: 900px;
