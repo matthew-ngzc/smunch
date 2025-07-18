@@ -1068,5 +1068,152 @@ function closeGame() {
   .poker-name {
     font-size: 0.6rem;
   }
+  
+  .game-title-split {
+    gap: 3rem;
+    margin-bottom: 2rem;
+    flex-direction: column;
+  }
+  
+  .title-text-left,
+  .title-text-right {
+    font-size: 1.8rem;
+    margin-top: 20px;
+  }
+  
+  .title-text-left span,
+  .title-text-right span {
+    margin-left: 0;
+  }
+  
+  .dino-peek {
+    height: 200px;
+    margin-bottom: -40px;
+  }
+  
+  .game-options {
+    width: 95vw;
+    max-width: 400px;
+    padding: 20px;
+  }
+  
+  .header {
+    font-size: 24px;
+    margin-top: 10px;
+  }
+  
+  .content {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .game-card {
+    width: 150px;
+    height: 150px;
+    padding: 1.5rem 1rem;
+    margin-bottom: 20px;
+    margin-top: 15px;
+  }
+  
+  .game-card p {
+    font-size: 1.2rem;
+  }
+  
+  .game-icon {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .game-modal {
+    max-width: 95vw;
+    max-height: 85vh;
+    padding: 24px 16px;
+    margin-top: 5px;
+  }
+  
+  .game-modal h2 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+  }
+  
+  .spinner {
+    max-width: 250px;
+    max-height: 250px;
+    margin-top: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+  
+  .spin-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+  
+  .result {
+    font-size: 1.1rem;
+    margin-top: 15px;
+  }
+  
+  .emoji-hint {
+    font-size: 2rem;
+    margin: 12px 0 0 0;
+  }
+  
+  .hangman-slots {
+    gap: 0.8rem;
+    margin: 20px 0 12px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .hangman-slot {
+    width: 35px;
+    height: 45px;
+    font-size: 1.6rem;
+  }
+  
+  .hangman-tiles {
+    gap: 0.8rem;
+    margin: 12px 0 12px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .hangman-tile {
+    width: 35px;
+    height: 35px;
+    font-size: 1.5rem;
+  }
+  
+  .dino-popup-inner {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  
+  .dino-img {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .dino-bubble {
+    font-size: 0.9rem;
+    padding: 12px 16px;
+    min-width: 180px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  
+  .dino-bubble:before {
+    display: none;
+  }
+  
+  .dino-cancel {
+    font-size: 0.9rem;
+    padding: 6px 16px;
+    margin-left: 0;
+    margin-bottom: 10px;
+  }
 }
 </style>

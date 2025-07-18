@@ -294,4 +294,143 @@ export default defineComponent({
   border: 1px solid #ffb3b3;
 }
 
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .merchant-page {
+    padding: 15px;
+    margin-top: 15px;
+  }
+  
+  .merchant-header {
+    padding: 16px;
+    height: auto;
+    min-height: 100px;
+  }
+  
+  .merchant-logo {
+    height: 60px;
+    width: 75px;
+    margin-right: 15px;
+    margin-left: 5px;
+  }
+  
+  .merchant-name {
+    font-size: 22px;
+  }
+  
+  .menu-item {
+    padding: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .menu-image {
+    height: 100px;
+    width: 100%;
+    max-width: 150px;
+    margin-right: 0;
+    align-self: center;
+  }
+  
+  .menu-info {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .menu-controls {
+    justify-content: center;
+    gap: 25px;
+    margin-top: 8px;
+  }
+  
+  .menu-controls button {
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+  }
+  
+  .menu-price {
+    align-self: center;
+    font-size: 1.1rem;
+  }
+  
+  .checkout-btn {
+    width: 90%;
+    max-width: 300px;
+    margin: 24px auto 20px;
+    padding: 14px 24px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .merchant-page {
+    padding: 10px;
+    margin-top: 10px;
+  }
+  
+  .merchant-header {
+    padding: 12px;
+    gap: 8px;
+  }
+  
+  .merchant-logo {
+    height: 50px;
+    width: 60px;
+    margin-right: 10px;
+  }
+  
+  .merchant-name {
+    font-size: 18px;
+  }
+  
+  .location {
+    font-size: 14px;
+  }
+  
+  .menu-item {
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+  
+  .menu-image {
+    height: 80px;
+    max-width: 120px;
+  }
+  
+  .menu-info h3 {
+    font-size: 16px;
+  }
+  
+  .desc {
+    font-size: 0.8rem;
+  }
+  
+  .menu-controls {
+    gap: 20px;
+  }
+  
+  .menu-controls button {
+    width: 25px;
+    height: 25px;
+    font-size: 16px;
+  }
+  
+  .menu-price {
+    font-size: 1rem;
+  }
+  
+  .checkout-btn {
+    width: 95%;
+    padding: 12px 20px;
+    font-size: 16px;
+  }
+  
+  .warning-banner {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+}
+
 </style>

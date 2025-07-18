@@ -332,4 +332,147 @@ function goBack() {
 .next-btn:hover {
    background-color: #036232;
 }
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .summary-page {
+    padding: 15px;
+  }
+  
+  .summary-box {
+    padding: 30px 25px;
+    margin-top: 20px;
+  }
+  
+  .summary-box h2 {
+    font-size: 24px;
+    margin-top: 15px;
+  }
+  
+  .summary-section h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .summary-contents {
+    margin-top: 20px;
+  }
+  
+  .summary-items {
+    font-size: 16px;
+  }
+  
+  .item-row.header {
+    font-size: 20px;
+  }
+  
+  .right,
+  .right-text {
+    gap: 20px;
+  }
+  
+  .summary-totals {
+    margin-top: 40px;
+    margin-bottom: 30px;
+    font-size: 16px;
+  }
+  
+  .delivery-details p {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .next-btn {
+    width: 90%;
+    max-width: 250px;
+    padding: 14px 24px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-page {
+    padding: 10px;
+  }
+  
+  .summary-box {
+    padding: 20px 15px;
+    margin-top: 15px;
+  }
+  
+  .back-button {
+    top: 15px;
+    left: 15px;
+    width: 35px;
+    height: 35px;
+  }
+  
+  .summary-box h2 {
+    font-size: 20px;
+    margin-top: 20px;
+  }
+  
+  .summary-section h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+  
+  .summary-contents {
+    margin-top: 15px;
+  }
+  
+  .summary-items {
+    font-size: 14px;
+  }
+  
+  .item-row.header {
+    font-size: 16px;
+  }
+  
+  .item-row {
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .item-row.header {
+    flex-direction: row;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .right,
+  .right-text {
+    gap: 15px;
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .name {
+    font-weight: 500;
+  }
+  
+  .qty,
+  .price {
+    width: auto;
+    text-align: right;
+  }
+  
+  .summary-totals {
+    margin-top: 25px;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  
+  .delivery-details p {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  
+  .next-btn {
+    width: 95%;
+    padding: 12px 20px;
+    font-size: 16px;
+  }
+}
 </style>

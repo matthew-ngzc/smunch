@@ -53,3 +53,33 @@ a,
 
 }
 
+/* Global mobile responsive styles */
+@media (max-width: 768px) {
+  html,
+  body {
+    font-size: 16px;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 480px) {
+  html,
+  body {
+    font-size: 14px;
+    overflow-x: hidden;
+  }
+  
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+

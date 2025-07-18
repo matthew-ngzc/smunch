@@ -396,6 +396,101 @@ const logout = async () => {
   font-size: 16px;
   font-weight: 500;
   white-space: nowrap;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .navbar-box {
+    padding: 0 15px;
+    height: 55px;
+  }
+  
+  .navbar-left a {
+    font-size: 18px;
+  }
+  
+  .navbar-center {
+    display: none;
+  }
+  
+  .coins-display {
+    margin-right: 10px;
+  }
+  
+  .coins-count {
+    font-size: 14px;
+  }
+  
+  .coin-image {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .icon-circle {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .profile-pic {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .auth-link {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-box {
+    padding: 0 10px;
+    height: 50px;
+  }
+  
+  .navbar-left a {
+    font-size: 16px;
+  }
+  
+  .coins-display {
+    margin-right: 5px;
+  }
+  
+  .coins-count {
+    font-size: 12px;
+  }
+  
+  .coin-image {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .icon-circle {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .profile-pic {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .auth-link {
+    font-size: 12px;
+    padding: 5px 10px;
+    margin: 0 2px;
+  }
+  
+  .profile-menu {
+    width: 200px;
+    right: -10px;
+  }
+  
+  .profile-menu li a {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+}
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;

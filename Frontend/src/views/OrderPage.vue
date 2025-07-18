@@ -472,6 +472,11 @@ export default defineComponent({
 }
 
 @media (max-width: 480px) {
+  .order-page {
+    padding: 20px 15px;
+    padding-top: 100px;
+  }
+  
   .merchant-grid {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -484,6 +489,19 @@ export default defineComponent({
   
   .page-title {
     font-size: 2rem;
+  }
+  
+  .page-subtitle {
+    font-size: 1rem;
+  }
+  
+  .header-section {
+    margin-bottom: 40px;
+  }
+  
+  .chat-container {
+    top: 70px;
+    right: 15px;
   }
 }
 </style>

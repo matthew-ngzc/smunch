@@ -218,4 +218,48 @@ export default defineComponent({
     padding: 1.5rem 1rem;
   }
 }
+
+@media (max-width: 480px) {
+  .home-content {
+    padding: 1rem;
+  }
+  
+  .greeting {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .options {
+    gap: 1.5rem;
+  }
+  
+  .card {
+    width: 95vw;
+    max-width: 300px;
+    height: 180px;
+    padding: 1.2rem 0.8rem;
+  }
+  
+  .icon {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 1rem;
+  }
+  
+  .card p {
+    font-size: 1.1rem;
+  }
+  
+  .welcome-message {
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 90vw;
+    padding: 10px 16px;
+  }
+  
+  .welcome-content {
+    font-size: 0.85rem;
+  }
+}
 </style>

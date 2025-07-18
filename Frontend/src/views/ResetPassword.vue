@@ -301,6 +301,65 @@ button[type="submit"]:hover {
   background: #036232; /* darker green */
 }
 
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .form-box {
+    padding: 2rem 1.5rem;
+    max-width: 400px;
+  }
+  
+  h2 {
+    font-size: 1.6rem;
+  }
+  
+  .modal-box {
+    max-width: 350px;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.5rem;
+  }
+  
+  .form-box {
+    padding: 1.5rem 1rem;
+    max-width: 300px;
+  }
+  
+  h2 {
+    font-size: 1.4rem;
+  }
+  
+  .form-group input {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+  
+  button[type="submit"] {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+  
+  .modal-box {
+    max-width: 90vw;
+    padding: 1.2rem;
+  }
+  
+  .modal-box h3 {
+    font-size: 1.1rem;
+  }
+  
+  .modal-box p {
+    font-size: 0.9rem;
+  }
+}
+
 
 
 

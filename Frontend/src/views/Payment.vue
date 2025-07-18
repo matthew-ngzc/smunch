@@ -215,4 +215,115 @@ function goBack() {
   cursor: pointer;
   font-weight: bold;
 }
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .payment-page {
+    padding: 15px;
+  }
+  
+  .payment-container {
+    width: 95%;
+    margin: 20px auto;
+    padding: 25px 20px;
+  }
+  
+  .title {
+    font-size: 1.4rem;
+    margin-bottom: 25px;
+  }
+  
+  .content {
+    flex-direction: column;
+    gap: 25px;
+    text-align: center;
+  }
+  
+  .steps {
+    font-size: 16px;
+  }
+  
+  .qr-box {
+    width: 180px;
+    margin: 0 auto;
+    transform: none;
+  }
+  
+  .qr-image {
+    margin-left: 0;
+  }
+  
+  .qr-caption {
+    margin-left: 0;
+    text-align: center;
+  }
+  
+  .note {
+    font-size: 16px;
+    margin-top: 20px;
+  }
+  
+  .done-btn {
+    width: 90%;
+    max-width: 250px;
+    padding: 14px 24px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-page {
+    padding: 10px;
+  }
+  
+  .payment-container {
+    width: 100%;
+    margin: 15px auto;
+    padding: 20px 15px;
+  }
+  
+  .back-button {
+    top: 15px;
+    left: 15px;
+    width: 35px;
+    height: 35px;
+  }
+  
+  .title {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    margin-top: 25px;
+  }
+  
+  .content {
+    gap: 20px;
+  }
+  
+  .steps {
+    font-size: 14px;
+  }
+  
+  .steps p {
+    margin-bottom: 15px;
+  }
+  
+  .qr-box {
+    width: 150px;
+  }
+  
+  .qr-caption {
+    font-size: 0.8rem;
+  }
+  
+  .note {
+    font-size: 14px;
+    margin-top: 15px;
+  }
+  
+  .done-btn {
+    width: 95%;
+    padding: 12px 20px;
+    font-size: 16px;
+  }
+}
 </style>

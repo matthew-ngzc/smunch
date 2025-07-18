@@ -639,4 +639,149 @@ function getCombinedStatus(order) {
 .dot.yellow { background-color: #ffc107; }
 .dot.green { background-color: #198754; }
 .dot.red { background-color: #dc3545; }
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .orders-page {
+    padding: 15px;
+  }
+  
+  .orders-page h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+  
+  .order-card {
+    padding: 15px;
+    margin-bottom: 10px;
+  }
+  
+  .order-content {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .merchant-logo {
+    width: 80px;
+    height: 70px;
+    align-self: center;
+  }
+  
+  .order-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .order-summary {
+    align-items: flex-start;
+    min-width: auto;
+  }
+  
+  .status-badge {
+    margin-top: 10px;
+    min-width: 100px;
+  }
+  
+  .empty-state {
+    padding: 40px 15px;
+    margin: 20px 10px;
+  }
+  
+  .empty-state h3 {
+    font-size: 1.3rem;
+  }
+  
+  .empty-state p {
+    font-size: 0.9rem;
+  }
+  
+  .info-text {
+    width: 90vw;
+    max-width: 350px;
+  }
+  
+  .tooltip {
+    right: -50px;
+  }
+  
+  .status-name {
+    min-width: 100px;
+    font-size: 0.8rem;
+  }
+  
+  .status-desc {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .orders-page {
+    padding: 10px;
+  }
+  
+  .orders-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .order-card {
+    padding: 12px;
+  }
+  
+  .order-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .order-meta p,
+  .order-meta small {
+    font-size: 0.8rem;
+  }
+  
+  .order-price {
+    font-size: 1rem;
+  }
+  
+  .status-badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    min-width: 80px;
+  }
+  
+  .pagination {
+    bottom: 10px;
+    gap: 2px;
+  }
+  
+  .page-btn {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    min-width: 24px;
+    height: 24px;
+  }
+  
+  .info-text {
+    width: 85vw;
+    max-width: 300px;
+    padding: 0.8rem 1rem;
+  }
+  
+  .info-text h4 {
+    font-size: 0.9rem;
+  }
+  
+  .status-item {
+    gap: 0.5rem;
+  }
+  
+  .status-name {
+    min-width: 80px;
+    font-size: 0.75rem;
+  }
+  
+  .status-desc {
+    font-size: 0.7rem;
+  }
+}
 </style>

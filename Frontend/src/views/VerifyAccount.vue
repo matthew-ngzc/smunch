@@ -152,4 +152,54 @@ h2 {
   }
 }
 
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .message-box {
+    padding: 2.5rem 1.5rem;
+    max-width: 350px;
+  }
+  
+  h2 {
+    font-size: 1.6rem;
+  }
+  
+  .subtext,
+  .text {
+    font-size: 0.9rem;
+  }
+  
+  .icon {
+    width: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .verify-page {
+    padding: 0.5rem;
+  }
+  
+  .message-box {
+    padding: 2rem 1rem;
+    max-width: 300px;
+  }
+  
+  h2 {
+    font-size: 1.4rem;
+  }
+  
+  .subtext,
+  .text {
+    font-size: 0.85rem;
+  }
+  
+  .icon {
+    width: 45px;
+  }
+  
+  .ok-button {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
 </style>

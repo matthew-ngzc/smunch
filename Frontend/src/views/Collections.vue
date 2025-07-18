@@ -8,7 +8,7 @@
           <img src="/infoIcon.png" alt="Info" class="info-icon-img" />
         </div>
         <div class="tooltip">
-          <p class="info-text">Collect all smunchies to unlock the word! Unlock the word to discover a hidden gem!</p>
+          <p class="info-text">Collect all smunchies to unlock the mystery word! Unlock the mystery word to discover a hidden gem!</p>
         </div>
       </div>
     </div>
@@ -1247,5 +1247,206 @@ const canUnlockCurrentDino = computed(() => {
   background: linear-gradient(135deg, #c53030 0%, #e53e3e 100%);
   transform: translateY(-2px) scale(1.04);
   box-shadow: 0 6px 20px rgba(229, 62, 62, 0.18);
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .collections-container {
+    padding: 2rem 1.5rem;
+  }
+  
+  .title {
+    font-size: 1.6rem;
+  }
+  
+  .word-container {
+    font-size: 3rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .letter {
+    width: 70px;
+    height: 70px;
+    padding: 1.5rem 1.5rem 1.5rem 2rem;
+    font-size: 2.5rem;
+  }
+  
+  .dino-display {
+    gap: 4rem;
+    min-height: 250px;
+  }
+  
+  .arrow-btn {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .prev-arrow {
+    left: -2rem;
+  }
+  
+  .next-arrow {
+    right: -2rem;
+  }
+  
+  .arrow-img {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .dino-content {
+    width: 600px;
+  }
+  
+  .dino-image {
+    height: 150px;
+  }
+  
+  .dino-name {
+    font-size: 1.6rem;
+  }
+  
+  .dino-description {
+    font-size: 1rem;
+    max-width: 350px;
+  }
+  
+  .modal-content {
+    max-width: 350px;
+    padding: 2rem;
+  }
+  
+  .smunch-modal {
+    max-width: 300px;
+    min-width: 200px;
+    padding: 1.2rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .collections-container {
+    padding: 1.5rem 1rem;
+  }
+  
+  .title {
+    font-size: 1.4rem;
+  }
+  
+  .word-container {
+    font-size: 2.5rem;
+    gap: 1rem;
+  }
+  
+  .letter {
+    width: 50px;
+    height: 50px;
+    padding: 1rem 1rem 1rem 1.5rem;
+    font-size: 2rem;
+  }
+  
+  .dino-display {
+    gap: 2rem;
+    min-height: 200px;
+    flex-direction: column;
+    position: static;
+  }
+  
+  .arrow-btn {
+    width: 50px;
+    height: 50px;
+    position: static;
+    transform: none;
+  }
+  
+  .prev-arrow,
+  .next-arrow {
+    left: auto;
+    right: auto;
+  }
+  
+  .arrow-controls {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 1rem;
+  }
+  
+  .arrow-img {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .dino-content {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .dino-image {
+    height: 120px;
+  }
+  
+  .dino-name {
+    font-size: 1.4rem;
+  }
+  
+  .dino-description {
+    font-size: 0.9rem;
+    max-width: 280px;
+  }
+  
+  .dino-favorite-food {
+    font-size: 0.9rem;
+  }
+  
+  .page-indicator {
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
+  
+  .indicator-dot {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .modal-content {
+    max-width: 90vw;
+    padding: 1.5rem;
+  }
+  
+  .smunch-modal {
+    max-width: 85vw;
+    min-width: 250px;
+    padding: 1rem 1.2rem;
+  }
+  
+  .modal-title {
+    font-size: 1.1rem;
+  }
+  
+  .modal-message {
+    font-size: 0.95rem;
+  }
+  
+  .modal-buttons {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .modal-btn {
+    width: 100%;
+    padding: 0.8rem 1.5rem;
+  }
+  
+  .unlock-btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 1rem;
+  }
+  
+  .button-coin {
+    width: 28px;
+    height: 28px;
+  }
 }
 </style>
