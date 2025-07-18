@@ -1,4 +1,4 @@
-
+import { extractRoomKey } from "./order.utils.js";
 /* ────────────────────────────────────────────────────────────────────
  *  HELPERS
  *  ------------------------------------------------------------------
@@ -30,11 +30,11 @@ function roomDistance(roomA, roomB) {
   return score;
 }
 
-/** Build a *canonical* string key for one order’s destination */
-function extractRoomKey(order) {
-  // order.room_number already looks like "4-30"
-  return `${order.building}-${order.room_type}-${order.room_number}`;
-}
+// /** Build a *canonical* string key for one order’s destination */
+// function extractRoomKey(order) {
+//   // order.room_number already looks like "4-30"
+//   return `${order.building}-${order.room_type}-${order.room_number}`;
+// }
 
 /** Parse a key back into its structured pieces so the distance
  *  function can read numeric floor / room_no and compare strings. */

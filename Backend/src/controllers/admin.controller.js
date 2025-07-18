@@ -13,9 +13,10 @@ import {
 import { getUserByIdOrThrow } from "../models/user.model.js";
 import { buildPendingTransactions } from "../services/payment.service.js";
 import { sendReceiptEmail, sendTestEmail } from "../utils/mailer.js";
-import { extractItems } from "../utils/order.utils.js";
+import { buildMerchantList, extractItems, extractRoomKey } from "../utils/order.utils.js";
 import { clusterOrdersOptimal } from "../utils/orderGrouping.utils.js";
 import { formatCentsToDollars } from "../utils/payment.utils.js";
+import { shuffleArray } from "../utils/shuffleArray.js";
 
 /**
  * @swagger
@@ -402,126 +403,289 @@ export const verifyPayments = async (req, res, next) => {
  *       500:
  *         description: Server error while processing assignment
  */
+
+/**
+ * Controller: assignRunnersToOrders
+ * ---------------------------------
+ * • Validates slot & runner list
+ * • Fetches all PAID orders for the slot
+ * • If orders ≤ runners → one-to-one assignment (some runners idle)
+ * • Else → distance-optimal clustering
+ * • Persists runner_id on orders + sets status "preparing"
+ * • Responds with runner-centric assignment payload
+ */
 export const assignRunnersToOrders = async (req, res, next) => {
   try {
     const { slot, runner_ids } = req.body;
 
-    /* 1. Validate input  ------------------------------------------------ */
+    /* 1️⃣  Validate input ------------------------------------------------ */
     const validSlots = Object.keys(DELIVERY_TIMINGS);
     if (!slot || !validSlots.includes(slot)) {
-      return res
-        .status(400)
-        .json({ message: `Invalid slot. Allowed: ${validSlots.join(", ")}` });
-    }
-
-    if (!Array.isArray(runner_ids) || runner_ids.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "runner_ids must be a non-empty array" });
-    }
-
-    /* 2. Fetch orders for the slot  ------------------------------------ */
-    const orders = await getFullOrdersForTodayBySlot(slot);
-
-    if (!orders.length) {
-      return res
-        .status(200)
-        .json({ message: "No orders found for this slot", assignments: [] });
-    }
-
-    /* 3. Guard: more runners than orders ------------------------------- */
-    //TODO: return some runners empty, randomly assign
-    if (runner_ids.length > orders.length) {
       return res.status(400).json({
-        message: "More runners than orders — cannot assign meaningfully",
+        message: `Invalid slot. Allowed: ${validSlots.join(', ')}`
+      });
+    }
+    if (!Array.isArray(runner_ids) || runner_ids.length === 0) {
+      return res.status(400).json({
+        message: 'runner_ids must be a non-empty array'
       });
     }
 
-    /* 4. Cluster orders  ------------------------------------------------ */
-    const clusters = clusterOrdersOptimal(orders, runner_ids.length);
+    /* 2️⃣  Fetch orders (with items) ------------------------------------ */
+    const orders = await getFullOrdersForTodayBySlot(slot);
+    if (!orders.length) {
+      return res.status(200).json({
+        message: 'No orders found for this slot',
+        assignments: []
+      });
+    }
 
-    /* 5. Build runner-centric response  -------------------------------- */
+    /* 3️⃣  Shuffle runners to avoid bias -------------------------------- */
+    const shuffledRunners = shuffleArray([...runner_ids]);
+
     const result = [];
 
-    for (let i = 0; i < clusters.length; i++) {
-      const runnerId = runner_ids[i];
-      const orderIds = clusters[i].orders.map((o) => o.order_id);
+    /* 4️⃣  Case A: orders ≤ runners  ------------------------------------ */
+    if (orders.length <= shuffledRunners.length) {
+      // a) pair each order with one runner
+      for (let i = 0; i < orders.length; i++) {
+        const runnerId = shuffledRunners[i];
+        const order    = orders[i];
 
-      /* 5a. Persist assignments + status bump */
-      await assignRunnerToOrders(orderIds, runnerId);
-      // change order status to preparing once assigned runner
-      await updateOrderStatusBulk(orderIds, ORDER_STATUSES[2]); // e.g. “assigned_runner”
+        await assignRunnerToOrders([order.order_id], runnerId);
+        await updateOrderStatusBulk([order.order_id], ORDER_STATUSES[2]);
 
-      /* 5b. Aggregate items by merchant for shopping list */
-      const merchantMap = new Map();
-      for (const order of clusters[i].orders) {
-        const key = order.merchant_id;
-        if (!merchantMap.has(key)) {
-          merchantMap.set(key, {
-            merchant_name: order.merchant_name,
-            total_amount_cents: 0,
-            items_to_order: new Map(), // itemName → { qty, notes }
-          });
-        }
-        const merchant = merchantMap.get(key);
-        merchant.total_amount_cents += order.total_amount_cents;
-
-        /* push / merge each item */
-        for (const item of order.items || []) {
-          const itemKey =
-            item.menu_items.name +
-            (item.notes || "") +
-            (item.customisations || "");
-          if (!merchant.items_to_order.has(itemKey)) {
-            merchant.items_to_order.set(itemKey, {
-              name: item.menu_items.name,
-              quantity: 0,
-              notes: item.notes,
-              customisations: item.customisations,
-            });
-          }
-          merchant.items_to_order.get(itemKey).quantity += item.quantity;
-        }
+        result.push({
+          runner_id: runnerId,
+          overview: {
+            total_orders: 1,
+            total_amount_dollars: formatCentsToDollars(order.total_amount_cents)
+          },
+          merchants: buildMerchantList([order]),
+          route: [extractRoomKey(order)],
+          orders: [{
+            order_id:      order.order_id,
+            building:      order.building,
+            room_type:     order.room_type,
+            room_number:   order.room_number,
+            delivery_time: order.delivery_time,
+            items:         extractItems(order)
+          }]
+        });
       }
 
-      /* 5c. Simplify orders for route block (now incl. items) */
-      const ordersSimplified = clusters[i].orders.map((o) => ({
-        order_id: o.order_id,
-        building: o.building,
-        room_type: o.room_type,
-        room_number: o.room_number,
-        delivery_time: o.delivery_time,
-        items: extractItems(o),
-      }));
+      // b) remaining idle runners
+      for (let i = orders.length; i < shuffledRunners.length; i++) {
+        result.push({
+          runner_id: shuffledRunners[i],
+          overview: { total_orders: 0, total_amount_dollars: '0.00' },
+          merchants: [],
+          route: [],
+          orders: []
+        });
+      }
 
-      /* 5d. Final merchant array */
-      const merchantGroups = Array.from(merchantMap.values()).map((m) => ({
-        merchant_name: m.merchant_name,
-        total_amount_dollars: formatCentsToDollars(m.total_amount_cents),
-        items_to_order: Array.from(m.items_to_order.values()),
-      }));
+      return res
+        .status(200)
+        .json({ message: 'Runner assignment complete', assignments: result });
+    }
 
-      /* 5e. Push into result */
+    /* 5️⃣  Case B: orders > runners  ------------------------------------ */
+    const clusters = clusterOrdersOptimal(orders, shuffledRunners.length);
+
+    for (let i = 0; i < clusters.length; i++) {
+      const runnerId = shuffledRunners[i];
+      const cluster  = clusters[i];
+      const orderIds = cluster.orders.map(o => o.order_id);
+
+      await assignRunnerToOrders(orderIds, runnerId);
+      await updateOrderStatusBulk(orderIds, ORDER_STATUSES[2]);
+
       result.push({
         runner_id: runnerId,
-        /* optional mini-overview */
         overview: {
-          total_orders: clusters[i].orders.length,
+          total_orders: cluster.orders.length,
           total_amount_dollars: formatCentsToDollars(
-            clusters[i].orders.reduce((sum, o) => sum + o.total_amount_cents, 0)
-          ),
+            cluster.orders.reduce((s, o) => s + o.total_amount_cents, 0)
+          )
         },
-        merchants: merchantGroups,
-        route: clusters[i].route, // explicit room sequence
-        orders: ordersSimplified, // detailed bags per stop
+        merchants: buildMerchantList(cluster.orders),
+        route: cluster.route,
+        orders: cluster.orders.map(o => ({
+          order_id:      o.order_id,
+          building:      o.building,
+          room_type:     o.room_type,
+          room_number:   o.room_number,
+          delivery_time: o.delivery_time,
+          items:         extractItems(o)
+        }))
       });
     }
 
-    /* 6. Respond -------------------------------------------------------- */
+    /* 6️⃣  Respond ------------------------------------------------------- */
     res
       .status(200)
-      .json({ message: "Runner assignment complete", assignments: result });
+      .json({ message: 'Runner assignment complete', assignments: result });
   } catch (err) {
     next(err);
   }
 };
+
+
+
+// export const assignRunnersToOrders = async (req, res, next) => {
+//   try {
+//     const { slot, runner_ids } = req.body;
+
+//     /* 1. Validate input  ------------------------------------------------ */
+//     const validSlots = Object.keys(DELIVERY_TIMINGS);
+//     if (!slot || !validSlots.includes(slot)) {
+//       return res
+//         .status(400)
+//         .json({ message: `Invalid slot. Allowed: ${validSlots.join(", ")}` });
+//     }
+
+//     if (!Array.isArray(runner_ids) || runner_ids.length === 0) {
+//       return res
+//         .status(400)
+//         .json({ message: "runner_ids must be a non-empty array" });
+//     }
+
+//     /* 2. Fetch orders for the slot  ------------------------------------ */
+//     const orders = await getFullOrdersForTodayBySlot(slot);
+
+//     if (!orders.length) {
+//       return res
+//         .status(200)
+//         .json({ message: "No orders found for this slot", assignments: [] });
+//     }
+
+//     /* 3. If fewer or equal orders than runners, skip clustering, some runners empty -------------- */
+//     if (orders.length <= runner_ids.length) {
+//       const idsShuffled = shuffleArray([...runner_ids]);
+//       const result = [];
+
+//       // a) one-to-one pairing
+//       orders.forEach((order, i) => {
+//         result.push({
+//           runner_id: idsShuffled[i],
+//           overview: {
+//             total_orders: 1,
+//             total_amount_dollars: formatCentsToDollars(order.total_amount_cents)
+//           },
+//           merchants: buildMerchantList([order]),
+//           route: [buildRoomKey(order)],
+//           orders: [{
+//             order_id: order.order_id,
+//             building: order.building,
+//             room_type: order.room_type,
+//             room_number: order.room_number,
+//             delivery_time: order.delivery_time,
+//             items: extractItems(order)
+//           }]
+//         });
+
+//         await assignRunnerToOrders([order.order_id], idsShuffled[i]);
+//         await updateOrderStatusBulk([order.order_id], ORDER_STATUSES[2]);
+//       });
+
+//       // b) remaining idle runners
+//       idsShuffled.slice(orders.length).forEach(id => {
+//         result.push({
+//           runner_id: id,
+//           overview: { total_orders: 0, total_amount_dollars: '0.00' },
+//           merchants: [],
+//           route: [],
+//           orders: []
+//         });
+//       });
+
+//       return res
+//         .status(200)
+//         .json({ message: 'Runner assignment complete', assignments: result });
+//     }
+
+//     /* 4. Cluster orders  ------------------------------------------------ */
+//     const clusters = clusterOrdersOptimal(orders, runner_ids.length);
+
+//     /* 5. Build runner-centric response  -------------------------------- */
+//     const result = [];
+
+//     for (let i = 0; i < clusters.length; i++) {
+//       const runnerId = runner_ids[i];
+//       const orderIds = clusters[i].orders.map((o) => o.order_id);
+
+//       /* 5a. Persist assignments + status bump */
+//       await assignRunnerToOrders(orderIds, runnerId);
+//       // change order status to preparing once assigned runner
+//       await updateOrderStatusBulk(orderIds, ORDER_STATUSES[2]); // e.g. “assigned_runner”
+
+//       /* 5b. Aggregate items by merchant for shopping list */
+//       const merchantMap = new Map();
+//       for (const order of clusters[i].orders) {
+//         const key = order.merchant_id;
+//         if (!merchantMap.has(key)) {
+//           merchantMap.set(key, {
+//             merchant_name: order.merchant_name,
+//             total_amount_cents: 0,
+//             items_to_order: new Map(), // itemName → { qty, notes }
+//           });
+//         }
+//         const merchant = merchantMap.get(key);
+//         merchant.total_amount_cents += order.total_amount_cents;
+
+//         /* push / merge each item */
+//         for (const item of order.items || []) {
+//           const itemKey =
+//             item.menu_items.name +
+//             (item.notes || "") +
+//             (item.customisations || "");
+//           if (!merchant.items_to_order.has(itemKey)) {
+//             merchant.items_to_order.set(itemKey, {
+//               name: item.menu_items.name,
+//               quantity: 0,
+//               notes: item.notes,
+//               customisations: item.customisations,
+//             });
+//           }
+//           merchant.items_to_order.get(itemKey).quantity += item.quantity;
+//         }
+//       }
+
+//       /* 5c. Simplify orders for route block (now incl. items) */
+//       const ordersSimplified = clusters[i].orders.map((o) => ({
+//         order_id: o.order_id,
+//         building: o.building,
+//         room_type: o.room_type,
+//         room_number: o.room_number,
+//         delivery_time: o.delivery_time,
+//         items: extractItems(o),
+//       }));
+
+//       /* 5d. Final merchant array */
+//       const merchantGroups = buildMerchantList(clusters.orders);
+
+//       /* 5e. Push into result */
+//       result.push({
+//         runner_id: runnerId,
+//         /* optional mini-overview */
+//         overview: {
+//           total_orders: clusters[i].orders.length,
+//           total_amount_dollars: formatCentsToDollars(
+//             clusters[i].orders.reduce((sum, o) => sum + o.total_amount_cents, 0)
+//           ),
+//         },
+//         merchants: merchantGroups,
+//         route: clusters[i].route, // explicit room sequence
+//         orders: ordersSimplified, // detailed bags per stop
+//       });
+//     }
+
+//     /* 6. Respond -------------------------------------------------------- */
+//     res
+//       .status(200)
+//       .json({ message: "Runner assignment complete", assignments: result });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
