@@ -31,7 +31,7 @@
       <!-- Dino Viewer with Arrows -->
       <div class="dino-display">
         <button v-if="selectedIndex > 0" class="arrow-btn prev-arrow" @click="prevDino">
-          <img src="/public/left-arrow.png" alt="Previous" class="arrow-img" />
+          <img src="/left-arrow.png" alt="Previous" class="arrow-img" />
         </button>
 
         <div class="dino-content">
@@ -78,7 +78,7 @@
           class="arrow-btn next-arrow"
           @click="nextDino"
         >
-          <img src="/public/right-arrow.png" alt="Next" class="arrow-img" />
+          <img src="/right-arrow.png" alt="Next" class="arrow-img" />
         </button>
       </div>
 
@@ -189,12 +189,12 @@ const dinoFavoriteFoods = [
   'Jollibee Fried Chicken',
 ]
 const dinoImages = [
-  './public/stark.png',
-  './public/milo.png',
-  './public/uno.png',
-  './public/nicole.png',
-  './public/charlotte.png',
-  './public/hatch.png',
+  '/Stark.png',
+  '/milo.png',
+  '/uno.png',
+  '/nicole.png',
+  '/charlotte.png',
+  '/hatch.png',
 ]
 const dinoCosts = [0, 100, 200, 300, 400, 500]
 
