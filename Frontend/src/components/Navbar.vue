@@ -110,17 +110,17 @@ const logout = async () => {
       <div v-if="isOpen" class="profile-menu" ref="dropdown">
         <!-- menu-header -->
         <div class="menu-header">
-          <div class="dropdown-icon-circle">
-            <img v-if="profilePicture" :src="profilePicture" alt="Profile Picture" class="dropdown-profile-pic" />
-            <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <g fill="none" stroke="#0d3d31" stroke-linecap="round" stroke-width="2">
-                <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1"/>
-                <path d="M12 11c-2.21 0 -4 -1.79 -4 -4c0 -2.21 1.79 -4 4 -4c2.21 0 4 1.79 4 4c0 2.21 -1.79 4 -4 4Z"/>
-              </g>
-            </svg>
+          <div class="dropdown-user-info">
+            <div class="dropdown-user-details">
+              <div class="dropdown-user-name"> hi, {{ auth.userName || 'User' }}!</div>
+            </div>
           </div>
 
-          <div class="close" @click.stop="closeMenu">X</div>
+          <div class="close" @click.stop="closeMenu">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
         </div>
 
 
@@ -128,10 +128,11 @@ const logout = async () => {
 
       <ul>
         <li><router-link to="/profile">View Profile</router-link></li>
-        <li @click="logout">  Log out</li>
         <li> <router-link to="/activeOrders">Active orders</router-link> </li>
         <li> <router-link to="/pastOrders">Past orders</router-link> </li>
-        <li> <router-link to="/help">Help</router-link> </li>
+        <li> <router-link to="/faq">FAQ</router-link> </li>
+        <li> <router-link to="/contact">Contact Us</router-link> </li>
+        <li @click="logout">  Log out</li>
       </ul>
       </div>
 
@@ -259,7 +260,13 @@ const logout = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.profile-wrapper:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .profile-wrapper svg {
@@ -295,40 +302,57 @@ const logout = async () => {
   top: 50px;
   background: white;
   color: rgb(60, 58, 58);
-  border-radius: 8px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
   width: 220px;
   z-index: 100;
-  padding: 12px 16px; /* ✅ uniform internal spacing */
+  padding: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .menu-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 12px;
 }
 
 .dropdown-user-info {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 10px;
+  flex: 1;
 }
 
-.dropdown-profile-icon {
-  width: 36px;
-  height: 36px;
-  background-color: #e0e0e0;
-  border-radius: 50%;
-  padding: 5px;
+.dropdown-user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.dropdown-profile-pic {
-  width: 36px;
-  height: 36px;
+.dropdown-user-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: #134e4a;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.close {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #0d3d31;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.close:hover {
+  background: #f0f0f0;
+  color: #333;
 }
 
 .msg {
@@ -343,7 +367,7 @@ const logout = async () => {
 .profile-menu hr {
   margin: 12px 0;
   border: none;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid #e0e0e0;
 }
 
 .profile-menu ul {
@@ -353,32 +377,52 @@ const logout = async () => {
 }
 
 .profile-menu li {
-  border-radius: 6px;
+  border-radius: 8px;
   transition: background-color 0.2s ease;
   cursor: pointer;
-  padding: 4px 0; /* ✅ vertical padding only */
+  margin: 2px 0;
 }
 
 .profile-menu li:hover {
-  background-color: #f2f2f2;
+  background-color: #f8f9fa;
 }
 
 .profile-menu li a {
   all: unset;
   display: block;
-  padding-left: 4px; /* ✅ light indent */
+  padding: 10px 12px;
   width: 100%;
-  color: black;
+  color: #134e4a;
+  font-size: 16px;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  letter-spacing: -0.01em;
+}
+
+.profile-menu li:last-child {
+  margin-top: 8px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 8px;
+}
+
+.profile-menu li:last-child a {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.profile-menu li:last-child:hover {
+  background-color: #fff5f5;
 }
 
 .profile-menu hr {
   margin: 10px 0;
   border: none;
-  border-top: 1px solid #888;
+  border-top: 1px solid #e0e0e0;
 }
 
 .auth-link {
@@ -391,6 +435,20 @@ const logout = async () => {
 
 .auth-link:hover {
   text-shadow: 4px 4px 5px #a9b5cd;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .profile-menu {
+    width: 200px;
+    right: 10px;
+  }
+  
+
+  
+  .dropdown-user-name {
+    font-size: 13px;
+  }
 }
 
 </style>
