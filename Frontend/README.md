@@ -2,7 +2,7 @@
 
 A modern Vue.js web application for campus food delivery, built with Vue 3.
 
-## 🚀 Features
+## Features
 
 - **Modern UI/UX**: Clean, responsive design with smooth animations
 - **Real-time Updates**: Live order tracking and status updates
@@ -12,7 +12,7 @@ A modern Vue.js web application for campus food delivery, built with Vue 3.
 - **Payment Integration**: QR code payment system
 - **Mobile Responsive**: Optimized for all device sizes
 
-## 📋 Prerequisites
+## Prerequisites
 
 Before running this project, ensure you have the following installed:
 
@@ -20,7 +20,7 @@ Before running this project, ensure you have the following installed:
 - **npm** (comes with Node.js)
 - **Git**
 
-## 🛠️ Local Development Setup
+## Local Development Setup
 
 ### 1. Clone the Repository
 
@@ -71,7 +71,7 @@ npm run dev
 
 The application will be available at `http://localhost:5173`
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Frontend/
@@ -93,11 +93,11 @@ Frontend/
 └── README.md             # This file
 ```
 
-## 🌐 Cloud Deployment
+## Cloud Deployment
 
 The frontend is deployed using Vercel. The live application can be accessed at: https://smunch-webapp-six.vercel.app/
 
-## 📚 Dependencies
+## Dependencies
 
 ### Core Dependencies
 - **Vue 3**: Progressive JavaScript framework
