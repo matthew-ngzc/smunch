@@ -20,6 +20,14 @@
       </div>
     </div>
 
+    <!-- Loading Overlay -->
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Updating profile...</p>
+      </div>
+    </div>
+
     <div class="profile-content">
       <div class="profile-card">
         <div class="back-button" @click="$router.go(-1)">
@@ -146,11 +154,12 @@
           </div>
 
           <div class="wrapper">
-            <button type="submit" class="save-btn">
-              <svg class="save-icon" fill="currentColor" viewBox="0 0 20 20">
+            <button type="submit" class="save-btn" :disabled="isLoading">
+              <svg v-if="!isLoading" class="save-icon" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
               </svg>
-              Save Changes
+              <div v-else class="button-spinner"></div>
+              {{ isLoading ? 'Saving...' : 'Save Changes' }}
             </button>
           </div>
         </form>
@@ -176,6 +185,7 @@ const confirmPassword = ref('')
 const showSuccessMessage = ref(false)
 const showErrorMessage = ref(false)
 const errorMessage = ref('')
+const isLoading = ref(false)
 
 const profilePicturePreview = ref('')
 const selectedProfilePictureFile = ref(null)
@@ -256,6 +266,8 @@ async function uploadToImageKit(file) {
 
 async function handleProfileSave() {
   try {
+    isLoading.value = true
+    
     let profilePictureUrl = profilePicturePreview.value
 
     if (selectedProfilePictureFile.value) {
@@ -329,7 +341,7 @@ async function handleProfileSave() {
 
         // Update the auth store with the new profile picture
         authStore.setProfilePicture(newUrl)
-        
+      }  
       // Update bio if changed
       if (response.data.user.bio !== undefined) {
         if (typeof authStore.setBio === 'function') {
@@ -375,6 +387,8 @@ async function handleProfileSave() {
     setTimeout(() => {
       showErrorMessage.value = false
     }, 3000)
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
@@ -757,14 +771,20 @@ async function handleProfileSave() {
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
 }
 
-.save-btn:hover {
+.save-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #059669 0%, #10b981 100%);
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
 }
 
-.save-btn:active {
+.save-btn:active:not(:disabled) {
   transform: translateY(0);
+}
+
+.save-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .save-icon {
@@ -838,6 +858,64 @@ async function handleProfileSave() {
 
 .error-text {
   white-space: nowrap;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
+
+.loading-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #38c172;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  margin: 0;
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Button Spinner */
+.button-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @keyframes slideDown {
