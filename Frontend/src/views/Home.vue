@@ -5,6 +5,7 @@ import OrderIcon from '@/assets/order-icon.png'
 import RunIcon from '@/assets/run-icon.png'
 import { useAuthStore } from '@/stores/auth'
 import DinoWeather from '@/components/DinoWeather.vue'
+import axiosInstance from '@/utility/axiosInstance'
 
 export default defineComponent({
   name: 'Home',
@@ -33,11 +34,13 @@ export default defineComponent({
         }, 3000)
       }
       try {
-        const res = await fetch('/api/weather/rain-status')
-        if (res.ok) {
-          weather.value = await res.json()
-        }
-      } catch (e) { /* ignore */ }
+        const res = await axiosInstance.get('/api/weather/rain-status')
+        weather.value = res.data
+      } catch (e) { 
+        console.warn('Weather API failed:', e)
+        // Fallback weather data so DinoWeather still shows
+        weather.value = { raining: false, message: "Life's good. Let's get SMUNCHIN' !" }
+      }
       weatherLoaded.value = true
     })
     
