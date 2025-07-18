@@ -29,6 +29,7 @@ export const useAuthStore = defineStore('auth', {
     userName: sessionStorage.getItem('userName') || null,
     coins: Number(sessionStorage.getItem('coins')) || 0,
     profilePicture: sessionStorage.getItem('profilePicture') || null,
+    bio: sessionStorage.getItem('bio') || null,
     dinoUnlocked: (() => {
       const stored = sessionStorage.getItem('dinoUnlocked')
       return (stored && stored !== 'null') ? stored : null
@@ -46,6 +47,7 @@ export const useAuthStore = defineStore('auth', {
       this.userName = userInfo?.name || null
       this.coins = userInfo?.coins || 0
       this.profilePicture = userInfo?.profile_picture || null
+      this.bio = userInfo?.bio || null
       this.dinoUnlocked = userInfo?.dinoUnlocked || null
 
       console.log('💾 Storing dino_unlocked:', this.dinoUnlocked)
@@ -57,6 +59,10 @@ export const useAuthStore = defineStore('auth', {
 
       if (this.profilePicture) {
         sessionStorage.setItem('profilePicture', this.profilePicture)
+      }
+      
+      if (this.bio) {
+        sessionStorage.setItem('bio', this.bio)
       }
       
       // Handle dinoUnlocked properly in sessionStorage
@@ -72,6 +78,7 @@ export const useAuthStore = defineStore('auth', {
       this.userName = null
       this.coins = 0
       this.profilePicture = null
+      this.bio = null
       this.dinoUnlocked = null
 
       sessionStorage.removeItem('token')
@@ -79,6 +86,7 @@ export const useAuthStore = defineStore('auth', {
       sessionStorage.removeItem('userName')
       sessionStorage.removeItem('coins')
       sessionStorage.removeItem('profilePicture')
+      sessionStorage.removeItem('bio')
       sessionStorage.removeItem('dinoUnlocked')
 
       // for supabase realtime 
@@ -110,6 +118,17 @@ export const useAuthStore = defineStore('auth', {
       sessionStorage.setItem('profilePicture', profilePictureUrl)
       console.log('🖼️ Auth Store: profilePicture state updated to:', this.profilePicture)
       console.log('🖼️ Auth Store: sessionStorage updated to:', sessionStorage.getItem('profilePicture'))
+    },
+    setBio(bioText) {
+      console.log('📝 Auth Store: setBio called with:', bioText)
+      this.bio = bioText
+      if (bioText) {
+        sessionStorage.setItem('bio', bioText)
+      } else {
+        sessionStorage.removeItem('bio')
+      }
+      console.log('📝 Auth Store: bio state updated to:', this.bio)
+      console.log('📝 Auth Store: sessionStorage updated to:', sessionStorage.getItem('bio'))
     },
     updateDinoUnlocked(newDinoUnlocked) {
       console.log('🦕 Auth Store: updateDinoUnlocked called', {

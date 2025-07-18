@@ -1,6 +1,6 @@
 <script setup>
 import OrderTimeline from '../components/OrderTimeline.vue'
-import { ref, watchEffect } from 'vue'
+import { ref, watchEffect, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDeliveryStore } from '@/stores/delivery'
 import { storeToRefs } from 'pinia'
@@ -18,18 +18,16 @@ const data = {
 const showValidationError = ref(false)
 const router = useRouter()
 const deliveryStore = useDeliveryStore()
-const { building, floor, facilityType, date, time } = storeToRefs(deliveryStore)
-const roomNumber = ref(deliveryStore.roomNumber)
+const { building, facilityType, date, time, roomNumber } = storeToRefs(deliveryStore)
 
-
+// Computed properties for dynamic options
 const buildingError = ref('')
-const floorError = ref('')
 const facilityError = ref('')
 const roomNumberError = ref('')
 
-// for facility type
-watchEffect(() => {
-  if (!building.value || !floor.value || !facilityType.value) return
+// Computed property for available rooms
+const availableRooms = computed(() => {
+  if (!building.value || !facilityType.value) return []
 
   const normalisedMap = {
     business: 'LKCSB',
@@ -41,31 +39,67 @@ watchEffect(() => {
   }
 
   const normalisedBuilding = normalisedMap[building.value?.toLowerCase()]
-  const extractedFloor = floor.value?.match(/\d+/)?.[0]
+  if (!normalisedBuilding || !locationMap[normalisedBuilding]) return []
 
   const map = locationMap[normalisedBuilding]
-  const validFacilities = map?.floors?.[extractedFloor]
-    ? Object.keys(map.floors[extractedFloor]).map(f => f.toLowerCase())
-    : []
+  const allRooms = []
+  
+  // Get all floors for the building
+  Object.keys(map.floors).forEach(floor => {
+    const floorData = map.floors[floor]
+    if (floorData[facilityType.value]) {
+      allRooms.push(...floorData[facilityType.value])
+    }
+  })
+  
+  return allRooms.sort()
+})
 
-  if (!validFacilities.includes(facilityType.value.toLowerCase())) {
-    facilityError.value = 'invalid facility type for selected building and floor.'
+// Computed property to check if room dropdown should be enabled
+const isRoomDropdownEnabled = computed(() => {
+  return building.value && facilityType.value && availableRooms.value.length > 0
+})
+
+// for facility type
+watchEffect(() => {
+  if (!building.value || !facilityType.value) return
+
+  const normalisedMap = {
+    business: 'LKCSB',
+    law: 'YPHSL',
+    economics: 'SOA',
+    accounting: 'SOA',
+    scis1: 'SCIS1',
+    scis2: 'SCIS2'
+  }
+
+  const normalisedBuilding = normalisedMap[building.value?.toLowerCase()]
+  
+  if (!normalisedBuilding || !locationMap[normalisedBuilding]) {
+    facilityError.value = 'Invalid building selected.'
+    return
+  }
+
+  const map = locationMap[normalisedBuilding]
+  const allFacilities = []
+  
+  // Get all facility types for the building
+  Object.keys(map.floors).forEach(floor => {
+    const floorData = map.floors[floor]
+    Object.keys(floorData).forEach(facility => {
+      if (!allFacilities.includes(facility)) {
+        allFacilities.push(facility)
+      }
+    })
+  })
+
+  if (!allFacilities.includes(facilityType.value)) {
+    facilityError.value = 'Invalid facility type for selected building.'
   } else {
     facilityError.value = ''
   }
 })
 
-
-// Auto-fill room number when floor is chosen
-watchEffect(() => {
-  if (floor.value) {
-    const match = floor.value.match(/Level (\d+)/)
-    if (match) {
-      roomNumber.value = `${match[1]}-`
-      roomNumberError.value = ''
-    }
-  }
-})
 
 // for room number
 watchEffect(() => {
@@ -74,51 +108,21 @@ watchEffect(() => {
     return
   }
 
-  const roomNumberPattern = /^\d+-\d+$/
-  const matchesPattern = roomNumberPattern.test(roomNumber.value.trim())
-  const isValid = validateRoomNumber(building.value, floor.value, facilityType.value, roomNumber.value)
+  const isValid = availableRooms.value.includes(roomNumber.value)
 
-  if (!matchesPattern) {
-    roomNumberError.value = 'room format must be like 2-3 or 4-1'
-  } else if (!isValid) {
-    roomNumberError.value = 'invalid room number for selected building/floor/facility.'
+  if (!isValid) {
+    roomNumberError.value = 'Invalid room number for selected building/facility.'
   } else {
     roomNumberError.value = ''
   }
 })
 
-// for floor
-watchEffect(() => {
-  if (!building.value || !floor.value) {
-    floorError.value = ''
-    return
+
+function validateRoomNumber(buildingVal, facilityVal, roomVal) {
+  if (!buildingVal || !facilityVal || !roomVal) {
+    return false // missing data
   }
 
-  const normalisedMap = {
-    business: 'LKCSB',
-    law: 'YPHSL',
-    economics: 'SOA',
-    accounting: 'SOA',
-    scis1: 'SCIS1',
-    scis2: 'SCIS2'
-  }
-
-  const normalisedBuilding = normalisedMap[building.value?.toLowerCase()]
-  const extractedFloor = floor.value?.match(/\d+/)?.[0] // "Level 3" -> "3"
-
-  const map = locationMap[normalisedBuilding]
-  const validFloors = map?.floors ? Object.keys(map.floors) : []
-
-  if (!validFloors.includes(extractedFloor)) {
-    floorError.value = 'invalid floor for selected building.'
-  } else {
-    floorError.value = ''
-  }
-})
-
-
-function validateRoomNumber(buildingVal, floorVal, facilityVal, roomVal) {
-  // convert all keys to lowercase for safe matching
   const normalisedMap = {
     business: "LKCSB",
     law: "YPHSL",
@@ -129,69 +133,64 @@ function validateRoomNumber(buildingVal, floorVal, facilityVal, roomVal) {
   }
 
   const normalisedBuilding = normalisedMap[buildingVal?.toLowerCase()]
-  const extractedFloor = floorVal?.match(/\d+/)?.[0] // "Level 3" -> "3"
-
-  if (!normalisedBuilding || !extractedFloor || !facilityVal || !roomVal) {
-    return false // missing data
+  if (!normalisedBuilding || !locationMap[normalisedBuilding]) {
+    return false
   }
 
   const map = locationMap[normalisedBuilding]
-  if (!map) return false
-
-  const facilityKey = Object.keys(map.floors[extractedFloor] || {}).find(fac => fac.toLowerCase() === facilityVal.toLowerCase())
-  if (!facilityKey) return false
-
-  const validRooms = map.floors[extractedFloor][facilityKey] || []
-  return validRooms.includes(roomVal.trim())
+  const allRooms = []
+  
+  // Get all rooms for the building and facility type
+  Object.keys(map.floors).forEach(floor => {
+    const floorData = map.floors[floor]
+    if (floorData[facilityVal]) {
+      allRooms.push(...floorData[facilityVal])
+    }
+  })
+  
+  return allRooms.includes(roomVal.trim())
 }
 
 
 async function goToSummary() {
-  if (!building.value || !floor.value || !facilityType.value || !date.value || !time.value || !roomNumber.value) {
+  if (!building.value || !facilityType.value || !date.value || !time.value || !roomNumber.value) {
     showValidationError.value = true
     return
   }
 
-  const isRoomValid = validateRoomNumber(building.value, floor.value, facilityType.value, roomNumber.value)
+  const isRoomValid = validateRoomNumber(building.value, facilityType.value, roomNumber.value)
 
-if (!isRoomValid) {
-  // full validation with specific field errors
-  buildingError.value = ''
-  floorError.value = ''
-  facilityError.value = ''
-  roomNumberError.value = ''
+  if (!isRoomValid) {
+    // full validation with specific field errors
+    buildingError.value = ''
+    facilityError.value = ''
+    roomNumberError.value = ''
 
-  const normalisedMap = {
-    business: 'LKCSB',
-    law: 'YPHSL',
-    economics: 'SOA',
-    accounting: 'SOA',
-    scis1: 'SCIS1',
-    scis2: 'SCIS2'
+    const normalisedMap = {
+      business: 'LKCSB',
+      law: 'YPHSL',
+      economics: 'SOA',
+      accounting: 'SOA',
+      scis1: 'SCIS1',
+      scis2: 'SCIS2'
+    }
+
+    const normalisedBuilding = normalisedMap[building.value?.toLowerCase()]
+
+    if (!normalisedBuilding || !locationMap[normalisedBuilding]) {
+      buildingError.value = 'Invalid building selected.'
+    } else if (!availableRooms.value.length) {
+      facilityError.value = 'Invalid facility for this building.'
+    } else {
+      roomNumberError.value = 'Invalid room number for selected building/facility.'
+    }
+
+    return
   }
-
-  const normalisedBuilding = normalisedMap[building.value?.toLowerCase()]
-  const extractedFloor = floor.value?.match(/\d+/)?.[0]
-
-  if (!normalisedBuilding || !locationMap[normalisedBuilding]) {
-    buildingError.value = 'Invalid building selected.'
-  } else if (!extractedFloor || !locationMap[normalisedBuilding].floors[extractedFloor]) {
-    floorError.value = 'Invalid floor for this building.'
-  } else if (!locationMap[normalisedBuilding].floors[extractedFloor][facilityType.value]) {
-    facilityError.value = 'Invalid facility for this floor.'
-  } else {
-    roomNumberError.value = 'Invalid room number for selected building/floor/facility.'
-  }
-
-  return
-}
-
-
 
   // success
   showValidationError.value = false
   roomNumberError.value = ''
-  deliveryStore.roomNumber = roomNumber.value
   router.push('/summary')
 }
 
@@ -227,48 +226,17 @@ function goBack() {
             <div class="select-wrapper">
               <select v-model="building" class="modern-select">
                 <option value="" disabled selected hidden>Select building</option>
-            <option value="Business">School of Business</option>
-            <option value="Law">School of Law</option>
-            <option value="Economics">School of Economics</option>
-            <option value="Accounting">School of Accounting</option>
-            <option value="Scis1">School of Computing and Information Systems 1</option>
-            <option value="Scis2">School of Computing and Information Systems 2</option>
-          </select>
+                <option value="Business">School of Business</option>
+                <option value="Law">School of Law</option>
+                <option value="Economics">School of Economics</option>
+                <option value="Accounting">School of Accounting</option>
+                <option value="Scis1">School of Computing and Information Systems 1</option>
+                <option value="Scis2">School of Computing and Information Systems 2</option>
+              </select>
               <div class="select-arrow"></div>
               <div v-if="buildingError" class="error-message">{{ buildingError }}</div>
             </div>
-        </div>
-
-          <!-- Floor Selection -->
-          <div class="form-section">
-            <label>Floor</label>
-            <div class="select-wrapper">
-              <select v-model="floor" class="modern-select">
-                <option value="" disabled selected hidden>Select floor</option>
-                <option value="Level 1">Level 1</option>
-                <option value="Level 2">Level 2</option>
-                <option value="Level 3">Level 3</option>
-                <option value="Level 4">Level 4</option>
-          </select>
-              <div class="select-arrow"></div>
-            </div>
-            <div v-if="floorError" class="error-message">{{ floorError }}</div>
-        </div>
-
-          <!-- Room Number -->
-          <div class="form-section">
-            <label>Room Number</label>
-            <div class="input-wrapper">
-              <input 
-                type="text" 
-                v-model="roomNumber" 
-                class="modern-input"
-                placeholder="e.g. 2-2, 2-3"
-              />
-            </div>
-            <div v-if="roomNumberError" class="error-message"> {{ roomNumberError }}
-            </div>
-        </div>
+          </div>
 
           <!-- Facility Type -->
           <div class="form-section">
@@ -277,14 +245,31 @@ function goBack() {
               <select v-model="facilityType" class="modern-select">
                 <option value="" disabled selected hidden>Select facility</option>
                 <option value="Classroom">Classroom</option>
-                <option value="Group study room">Group Study Room</option>
-                <option value="Meeting pod">Meeting Pod</option>
-                <option value="Seminar room">Seminar Room</option>
-          </select>
+                <option value="Group Study Room">Group Study Room</option>
+                <option value="Meeting Pod">Meeting Pod</option>
+                <option value="Seminar Room">Seminar Room</option>
+              </select>
               <div class="select-arrow"></div>
             </div>
             <div v-if="facilityError" class="error-message">{{ facilityError }}</div>
-        </div>
+          </div>
+
+          <!-- Room Number -->
+          <div class="form-section">
+            <label>Room Number</label>
+            <div class="select-wrapper">
+              <select v-model="roomNumber" class="modern-select" :disabled="!isRoomDropdownEnabled">
+                <option value="" disabled selected hidden>
+                  {{ !isRoomDropdownEnabled ? 'Select building and facility first' : 'Select room number' }}
+                </option>
+                <option v-for="room in availableRooms" :key="room" :value="room">
+                  {{ room }}
+                </option>
+              </select>
+              <div class="select-arrow"></div>
+            </div>
+            <div v-if="roomNumberError" class="error-message">{{ roomNumberError }}</div>
+          </div>
 
 
           <!-- Date -->
@@ -471,9 +456,15 @@ function goBack() {
   background: white;
 }
 
-.modern-select:hover, .modern-input:hover {
+.modern-select:hover:not(:disabled), .modern-input:hover {
   border-color: #cbd5e0;
   background: #fafbfc;
+}
+
+.modern-select:disabled {
+  background: #f7fafc;
+  color: #a0aec0;
+  cursor: not-allowed;
 }
 
 .modern-input::placeholder {

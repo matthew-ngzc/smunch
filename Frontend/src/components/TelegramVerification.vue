@@ -8,7 +8,7 @@
         placeholder="enter telegram handle (without @)"
         class="tg-input full-input"
       />
-      <button @click="requestOtp" class="tg-btn-inline">get otp link</button>
+      <button type="button" @click="requestOtp" class="tg-btn-inline">get otp link</button>
     </div>
 
     <div v-if="step === 2" class="tg-box">
@@ -17,7 +17,7 @@
       <p class="tg-fallback">or <a :href="link.telegram_link_web" target="_blank">open in browser</a></p>
 
       <p class="tg-instruction"> return and click verify:</p>
-      <button @click="verifyOtp" class="tg-btn">verify</button>
+      <button type="button" @click="verifyOtp" class="tg-btn">verify</button>
     </div>
 
     <div v-if="step === 3" class="tg-success">

@@ -1,5 +1,33 @@
 <template>
   <div class="profile-container no-scroll">
+    <!-- Success Notification Popup -->
+    <div v-if="showSuccessMessage" class="success-notification">
+      <div class="success-content">
+        <svg class="success-icon" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <span class="success-text">Profile Updated Successfully!</span>
+      </div>
+    </div>
+
+    <!-- Error Notification Popup -->
+    <div v-if="showErrorMessage" class="error-notification">
+      <div class="error-content">
+        <svg class="error-icon" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        <span class="error-text">{{ errorMessage }}</span>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Updating profile...</p>
+      </div>
+    </div>
+
     <div class="profile-content">
       <div class="profile-card">
         <div class="back-button" @click="$router.go(-1)">
@@ -30,11 +58,43 @@
         </div>
 
         <form @submit.prevent="handleProfileSave" class="profile-form">
-          <div class="form-grid">
+          <!-- <div class="form-grid">
             <div class="form-section">
-              <label for="bio">Bio</label>
+              <div class="bio-header">
+                <label for="bio">Bio</label>
+                <button 
+                  v-if="!isEditingBio" 
+                  type="button" 
+                  @click="startEditingBio" 
+                  class="edit-bio-btn"
+                >
+                  <svg class="edit-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                  </svg>
+                  Edit Bio
+                </button>
+                <div v-else class="bio-actions">
+                  <button type="button" @click="confirmEditBio" class="save-bio-btn">
+                    <svg class="save-icon" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Ok
+                  </button>
+                  <button type="button" @click="cancelEditBio" class="cancel-bio-btn">
+                    <svg class="cancel-icon" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                    Cancel
+                  </button>
+                </div>
+              </div>
               <div class="input-wrapper">
+                <div v-if="!isEditingBio" class="bio-display">
+                  <p v-if="bio" class="bio-text">{{ bio }}</p>
+                  <p v-else class="bio-placeholder">No bio added yet. Click "Edit Bio" to add one.</p>
+                </div>
                 <textarea 
+                  v-else
                   id="bio" 
                   v-model="bio" 
                   placeholder="Tell us about yourself..." 
@@ -43,7 +103,7 @@
                 ></textarea>
               </div>
             </div>
-          </div>
+          </div> -->
 
           <div class="form-section">
             <label>Account Verification</label>
@@ -94,11 +154,12 @@
           </div>
 
           <div class="wrapper">
-            <button type="submit" class="save-btn">
-              <svg class="save-icon" fill="currentColor" viewBox="0 0 20 20">
+            <button type="submit" class="save-btn" :disabled="isLoading">
+              <svg v-if="!isLoading" class="save-icon" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
               </svg>
-              Save Changes
+              <div v-else class="button-spinner"></div>
+              {{ isLoading ? 'Saving...' : 'Save Changes' }}
             </button>
           </div>
         </form>
@@ -117,21 +178,34 @@ import TelegramVerification from '@/components/TelegramVerification.vue'
 const authStore = useAuthStore()
 
 const bio = ref('')
+const isEditingBio = ref(false)
 const currentPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
+const showSuccessMessage = ref(false)
+const showErrorMessage = ref(false)
+const errorMessage = ref('')
+const isLoading = ref(false)
 
 const profilePicturePreview = ref('')
 const selectedProfilePictureFile = ref(null)
 const defaultProfilePicture = 'https://ui-avatars.com/api/?name=User&background=0d3d31&color=fff&size=128'
 
 onMounted(() => {
+  console.log('🔍 onMounted - authStore:', authStore)
+  console.log('🔍 onMounted - authStore.setBio:', authStore.setBio)
+  console.log('🔍 onMounted - authStore.bio:', authStore.bio)
+  
   if (authStore.profilePicture) {
     profilePicturePreview.value = authStore.profilePicture
+  }
+  if (authStore.bio) {
+    bio.value = authStore.bio
   }
 })
 
 const fileInput = ref(null)
+const originalBio = ref('')
 
 function onProfilePictureChange(e) {
   const file = e.target.files[0]
@@ -143,6 +217,21 @@ function onProfilePictureChange(e) {
     }
     reader.readAsDataURL(file)
   }
+}
+
+function startEditingBio() {
+  originalBio.value = bio.value
+  isEditingBio.value = true
+}
+
+function cancelEditBio() {
+  bio.value = originalBio.value
+  isEditingBio.value = false
+}
+
+function confirmEditBio() {
+  // Just exit edit mode, don't save yet
+  isEditingBio.value = false
 }
 
 async function getImageKitAuthParams() {
@@ -177,6 +266,8 @@ async function uploadToImageKit(file) {
 
 async function handleProfileSave() {
   try {
+    isLoading.value = true
+    
     let profilePictureUrl = profilePicturePreview.value
 
     if (selectedProfilePictureFile.value) {
@@ -184,194 +275,123 @@ async function handleProfileSave() {
     }
 
     if (newPassword.value && newPassword.value !== confirmPassword.value) {
-      alert('New password and confirmation do not match.')
+      errorMessage.value = 'New password and confirmation do not match.'
+      showErrorMessage.value = true
+      setTimeout(() => {
+        showErrorMessage.value = false
+      }, 3000)
       return
     }
 
     const payload = {}
-    if (bio.value?.trim()) payload.bio = bio.value.trim()
-    if (profilePictureUrl && profilePictureUrl !== defaultProfilePicture) {
-      payload.profile_picture = profilePictureUrl
+    let hasChanges = false
+    
+    // Check if bio has changed (compare with stored bio)
+    const currentStoredBio = authStore.bio || ''
+    const bioText = bio.value?.trim() || ''
+    if (bioText !== currentStoredBio) {
+      payload.bio = bioText
+      hasChanges = true
     }
-    if (newPassword.value?.trim()) payload.password = newPassword.value
+    
+    // Check if profile picture has changed
+    // Only consider it changed if:
+    // 1. User selected a new file, OR
+    // 2. Current URL is different from what's stored in auth store
+    const currentStoredPicture = authStore.profilePicture || defaultProfilePicture
+    const profilePictureChanged = selectedProfilePictureFile.value || 
+                                 (profilePictureUrl && profilePictureUrl !== currentStoredPicture)
+    
+    if (profilePictureChanged) {
+      payload.profile_picture = profilePictureUrl
+      hasChanges = true
+    }
+    
+    // Check if password has changed
+    if (newPassword.value?.trim()) {
+      payload.password = newPassword.value
+      hasChanges = true
+    }
 
-    if (Object.keys(payload).length === 0) {
-      alert('No changes to save.')
+    if (!hasChanges) {
+      errorMessage.value = 'No changes to save.'
+      showErrorMessage.value = true
+      setTimeout(() => {
+        showErrorMessage.value = false
+      }, 3000)
       return
     }
 
-         const response = await axiosInstance.put('/api/users/profile', payload)
-     
-     console.log('🔍 Backend response:', response.data)
+    const response = await axiosInstance.put('/api/users/profile', payload)
 
-     if (response.data.user.profile_picture) {
-       const newUrl = response.data.user.profile_picture
-       profilePicturePreview.value = newUrl
+    // Only show success if we actually sent changes and got a successful response
+    if (response.data && response.data.user) {
+      // Update profile picture if changed
+      if (response.data.user.profile_picture) {
+        const newUrl = response.data.user.profile_picture
+        profilePicturePreview.value = newUrl
 
-       // Preload image before updating store
-       await new Promise((resolve, reject) => {
-         const img = new Image()
-         img.onload = resolve
-         img.onerror = reject
-         img.src = newUrl
-       })
+        // Preload image before updating store
+        await new Promise((resolve, reject) => {
+          const img = new Image()
+          img.onload = resolve
+          img.onerror = reject
+          img.src = newUrl
+        })
 
-       // Update the auth store with the new profile picture
-       authStore.setProfilePicture(newUrl)
-       
-       console.log('✅ Profile picture updated in store:', newUrl)
-       console.log('💾 SessionStorage after update:', sessionStorage.getItem('profilePicture'))
-     } else {
-       console.warn('⚠️ No profile_picture in response')
-     }
+        // Update the auth store with the new profile picture
+        authStore.setProfilePicture(newUrl)
+      }  
+      // Update bio if changed
+      if (response.data.user.bio !== undefined) {
+        if (typeof authStore.setBio === 'function') {
+          authStore.setBio(response.data.user.bio)
+          console.log('Bio updated in store:', response.data.user.bio)
+        } else {
+          console.warn('⚠️ authStore.setBio is not a function, updating manually')
+          authStore.bio = response.data.user.bio
+          if (response.data.user.bio) {
+            sessionStorage.setItem('bio', response.data.user.bio)
+          } else {
+            sessionStorage.removeItem('bio')
+          }
+        }
+      }
 
-    selectedProfilePictureFile.value = null
-    newPassword.value = ''
-    confirmPassword.value = ''
-    currentPassword.value = ''
+      selectedProfilePictureFile.value = null
+      newPassword.value = ''
+      confirmPassword.value = ''
+      currentPassword.value = ''
 
-    alert('Profile updated successfully!')
+      // Show success notification only when we actually made changes
+      showSuccessMessage.value = true
+      setTimeout(() => {
+        showSuccessMessage.value = false
+      }, 3000)
+    } else {
+      // If backend didn't return expected data, show error
+      errorMessage.value = 'Failed to update profile. Please try again.'
+      showErrorMessage.value = true
+      setTimeout(() => {
+        showErrorMessage.value = false
+      }, 3000)
+    }
   } catch (err) {
     console.error('Profile update error:', err)
     if (err.message.includes('ImageKit')) {
-      alert('Failed to upload profile picture. Check your internet connection.')
+      errorMessage.value = 'Failed to upload profile picture. Check your internet connection.'
     } else {
-      alert('Failed to update profile. Please try again.')
+      errorMessage.value = 'Failed to update profile. Please try again.'
     }
+    showErrorMessage.value = true
+    setTimeout(() => {
+      showErrorMessage.value = false
+    }, 3000)
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
-
-<!-- <script>
-import axiosInstance from '@/utility/axiosInstance';
-import { useAuthStore } from '@/stores/auth';
-import TelegramVerification from '@/components/TelegramVerification.vue';
-
-export default {
-  components: { TelegramVerification },
-  data() {
-    return {
-      bio: '',
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-      profilePicturePreview: '',
-      selectedProfilePictureFile: null,
-      defaultProfilePicture: 'https://ui-avatars.com/api/?name=User&background=0d3d31&color=fff&size=128',
-    };
-  },
-  mounted() {
-    const authStore = useAuthStore();
-    if (authStore.profilePicture) {
-      this.profilePicturePreview = authStore.profilePicture;
-    }
-  },
-
-  methods: {
-    onProfilePictureChange(e) {
-      const file = e.target.files[0];
-      if (file) {
-        this.selectedProfilePictureFile = file;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          this.profilePicturePreview = event.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    },
-
-    async uploadToImageKit(file) {
-      const authParams = await this.getImageKitAuthParams();
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('fileName', `profile_${Date.now()}_${file.name}`);
-      formData.append('publicKey', import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY);
-      formData.append('signature', authParams.signature);
-      formData.append('expire', authParams.expire.toString());
-      formData.append('token', authParams.token);
-      formData.append('folder', '/profile_pictures');
-
-      const response = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`ImageKit upload failed: ${errorData.message || response.statusText}`);
-      }
-
-      const data = await response.json();
-      return data.url;
-    },
-
-    async getImageKitAuthParams() {
-      const response = await axiosInstance.get('/api/users/imagekit-auth');
-      return response.data;
-    },
-
-    async handleProfileSave() {
-      try {
-        let profilePictureUrl = this.profilePicturePreview;
-
-        if (this.selectedProfilePictureFile) {
-          profilePictureUrl = await this.uploadToImageKit(this.selectedProfilePictureFile);
-        }
-
-        if (this.newPassword && this.newPassword !== this.confirmPassword) {
-          alert('New password and confirmation do not match.');
-          return;
-        }
-
-        const payload = {};
-        if (this.bio?.trim()) payload.bio = this.bio.trim();
-        if (profilePictureUrl && profilePictureUrl !== this.defaultProfilePicture) {
-          payload.profile_picture = profilePictureUrl;
-        }
-        if (this.newPassword?.trim()) payload.password = this.newPassword;
-
-        if (Object.keys(payload).length === 0) {
-          alert('No changes to save.');
-          return;
-        }
-
-        const authStore = useAuthStore();
-        const response = await axiosInstance.put('/api/users/profile', payload);
-
-        if (response.data.user.profile_picture_url) {
-          const newUrl = response.data.user.profile_picture_url;
-          this.profilePicturePreview = newUrl;
-
-          // ✅ Preload image before updating
-          await new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = resolve;
-            img.onerror = reject;
-            img.src = newUrl;
-          });
-
-          // ✅ Update both store and sessionStorage
-          authStore.setProfilePicture(newUrl)
-        }
-
-        this.selectedProfilePictureFile = null;
-        this.newPassword = '';
-        this.confirmPassword = '';
-        this.currentPassword = '';
-
-        alert('Profile updated successfully!');
-      } catch (err) {
-        console.error('Profile update error:', err);
-        if (err.message.includes('ImageKit')) {
-          alert('Failed to upload profile picture. Check your internet connection.');
-        } else {
-          alert('Failed to update profile. Please try again.');
-        }
-      }
-    }
-  }
-};
-</script> -->
 
 <style scoped>
 * { box-sizing: border-box; }
@@ -572,6 +592,109 @@ export default {
   letter-spacing: 0.05em;
 }
 
+.bio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.edit-bio-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #5ea6c4 0%, #b2f7ef 100%);
+  color: #134e4a;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-bio-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(94, 166, 196, 0.3);
+}
+
+.edit-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.bio-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.save-bio-btn,
+.cancel-bio-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.save-bio-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.save-bio-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.cancel-bio-btn {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.cancel-bio-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.save-icon,
+.cancel-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.bio-display {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  display: flex;
+  align-items: flex-start;
+}
+
+.bio-text {
+  margin: 0;
+  color: #2d3748;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.bio-placeholder {
+  margin: 0;
+  color: #a0aec0;
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
 .input-wrapper {
   position: relative;
   display: flex;
@@ -648,19 +771,162 @@ export default {
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
 }
 
-.save-btn:hover {
+.save-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #059669 0%, #10b981 100%);
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
 }
 
-.save-btn:active {
+.save-btn:active:not(:disabled) {
   transform: translateY(0);
+}
+
+.save-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .save-icon {
   width: 18px;
   height: 18px;
+}
+
+/* Success Notification */
+.success-notification {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+  animation: slideDown 0.5s ease-out;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.success-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.success-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.success-text {
+  white-space: nowrap;
+}
+
+/* Error Notification */
+.error-notification {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(245, 101, 101, 0.3);
+  animation: slideDown 0.5s ease-out;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.error-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.error-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.error-text {
+  white-space: nowrap;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
+
+.loading-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #38c172;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  margin: 0;
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Button Spinner */
+.button-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 /* Animations */

@@ -152,24 +152,11 @@ function goBack() {
         <h2>Delivery details</h2>
 
         <div class="delivery-details">
-          <p><strong>Location</strong><br />{{ deliveryStore.building }} {{ deliveryStore.floor }} - {{ deliveryStore.facilityType }}</p>
+          <p><strong>Location</strong><br />{{ deliveryStore.building }} - {{ deliveryStore.facilityType }} ({{ deliveryStore.roomNumber }})</p>
           <p><strong>Date</strong><br />{{ deliveryStore.date }}</p>
           <p><strong>Time</strong><br />{{ deliveryStore.time }}</p>
         </div>
       </div>
-
-        
-
-        <div class="summary-section">
-          <h2>Delivery details</h2>
-
-          <div class="delivery-details">
-            <p><strong>Location</strong><br />{{ deliveryStore.building }} Level {{ deliveryStore.roomNumber }} {{ deliveryStore.facilityType }}</p>
-            <p><strong>Date</strong><br />{{ deliveryStore.date }}</p>
-            <p><strong>Time</strong><br />{{ deliveryStore.time }}</p>
-          </div>
-
-        </div>
 
         <button class="next-btn" @click="next">next</button>
       </div>
