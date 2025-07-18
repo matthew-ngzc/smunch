@@ -1,5 +1,5 @@
 import express from 'express';
-import { addMerchant, getPendingPayments, testEmail, verifyPayments } from '../controllers/admin.controller.js';
+import { addMerchant, assignRunnersToOrders, getPendingPayments, testEmail, verifyPayments } from '../controllers/admin.controller.js';
 import { requireRole } from '../middlewares/role.middleware.js';
 import { authenticateToken } from '../middlewares/auth.middleware.js';
 
@@ -35,5 +35,8 @@ router.get('/payments/pending', authenticateToken, requireRole('admin'), getPend
  * sets payment_status to 'payment_confirmed' and order_status to 'payment_verified' for with paid:true
  */
 router.post('/payments/verify', authenticateToken, requireRole('admin'), verifyPayments);
+
+
+router.post('/orders/assign-runners', authenticateToken, requireRole('admin'), assignRunnersToOrders)
 
 export default router;
