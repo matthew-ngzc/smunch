@@ -73,7 +73,7 @@ function goBack() {
         Enter your reference number <strong>{{ paymentReference }}</strong> in the PayNow comments.</p><br />
 
         <p><strong>STEP 2:</strong><br />
-        Send your payment screenshot to <strong>@smunch_bot</strong> via telegram.</p><br />
+        Send your payment screenshot to <strong>@smunch_admin</strong> via telegram.</p><br />
 
         <p><strong>STEP 3:</strong><br />
           Press "done" once payment has been made!</p><br />
@@ -82,7 +82,7 @@ function goBack() {
       <!-- QR Code -->
       <div class="qr-box">
         <img :src="qrCode" alt="PayNow QR Code" class="qr-image" />
-          <p class="qr-caption">Paynow recipient's name: <strong>Matt</strong></p>
+          <p class="qr-caption">Paynow recipient's name: <strong>SMUNCH</strong></p>
       </div>
     </div>
 
