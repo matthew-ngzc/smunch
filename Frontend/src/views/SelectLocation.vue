@@ -1,5 +1,5 @@
 <script setup>
-import ordertimeline from '../components/ordertimeline.vue'
+import ordertimeline from '../components/OrderTimeline.vue'
 import { ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDeliveryStore } from '@/stores/delivery'
