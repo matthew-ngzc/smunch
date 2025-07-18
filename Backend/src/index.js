@@ -51,6 +51,6 @@ if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY || !proc
 app.listen(PORT, () => {
   console.log(`[SYSTEM] Server running on port ${PORT}...`);
   console.log(`[DOCS] Swagger UI available at: ${process.env.BACKEND_URL}:${PORT}/api-docs`);
-  console.log('[CICD] working');
+  console.log('[CICD] workingg');
 });
 
