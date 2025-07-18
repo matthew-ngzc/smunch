@@ -1,61 +1,113 @@
-# Frontend
+# SMUNCH Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+A modern Vue.js web application for campus food delivery, built with Vue 3.
 
-## Recommended IDE Setup
+## 🚀 Features
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- **Modern UI/UX**: Clean, responsive design with smooth animations
+- **Real-time Updates**: Live order tracking and status updates
+- **User Authentication**: Secure login/signup with profile management
+- **Order Management**: Complete order flow from selection to payment
+- **Location Services**: Dynamic room selection based on building and facility type
+- **Payment Integration**: QR code payment system
+- **Mobile Responsive**: Optimized for all device sizes
 
-## Type Support for `.vue` Imports in TS
+## 📋 Prerequisites
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+Before running this project, ensure you have the following installed:
 
-## Customize configuration
+- **Node.js** (version 16 or higher)
+- **npm** (comes with Node.js)
+- **Git**
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## 🛠️ Local Development Setup
 
-## Project Setup
+### 1. Clone the Repository
 
-```sh
+```bash
+# Clone the repository containing both Frontend and Backend
+git clone https://github.com/regan-tan/smunch.git
+cd SMUNCH-webapp/Frontend
+```
+
+### 2. Install Dependencies
+
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### 3. Environment Configuration
 
-```sh
+Create a `.env` file in the Frontend directory with the following variables:
+
+```env
+VITE_ENVIRONMENT=local 
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
+```
+
+**Environment Variable Descriptions:**
+- `VITE_ENVIRONMENT`: Set to `local` for local development
+- `VITE_SUPABASE_URL`: Your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key
+- `VITE_IMAGEKIT_PUBLIC_KEY`: Your ImageKit public key for image uploads
+
+### 4. Start Backend Server
+
+```bash
+# Navigate to Backend directory and start the server
+cd ../Backend
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+### 5. Start Frontend Development Server
 
-```sh
-npm run build
+```bash
+# In a new terminal, navigate to Frontend directory
+cd Frontend
+npm run dev
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+The application will be available at `http://localhost:5173`
 
-```sh
-npm run test:unit
+## 📁 Project Structure
+
+```
+Frontend/
+├── public/                 
+├── src/
+│   ├── assets/            # Images, CSS, and other assets
+│   ├── components/        # Reusable Vue components        
+│   ├── lib/               # External library configurations
+│   ├── router/            # Vue Router configuration
+│   ├── services/          # API services and external integrations
+│   ├── stores/            # Pinia state management
+│   ├── utility/           # Utility functions and helpers
+│   ├── views/             # Page components
+│   ├── App.vue            # Root component
+│   └── main.js            # Application entry point
+├── tests/                 # Test files
+├── package.json           # Dependencies and scripts
+├── vite.config.ts         # Vite configuration
+└── README.md             # This file
 ```
 
-### Run End-to-End Tests with [Nightwatch](https://nightwatchjs.org/)
+## 🌐 Cloud Deployment
 
-```sh
-# When using CI, the project must be built first.
-npm run build
+The frontend is deployed using Vercel. The live application can be accessed at: https://smunch-webapp-six.vercel.app/
 
-# Runs the end-to-end tests
-npm run test:e2e
-# Runs the tests only on Chrome
-npm run test:e2e -- --env chrome
-# Runs the tests of a specific file
-npm run test:e2e -- tests/e2e/example.ts
-# Runs the tests in debug mode
-npm run test:e2e -- --debug
-```
-    
-### Lint with [ESLint](https://eslint.org/)
+## 📚 Dependencies
 
-```sh
-npm run lint
-```
+### Core Dependencies
+- **Vue 3**: Progressive JavaScript framework
+- **Vite**: Fast build tool and dev server
+- **Pinia**: State management for Vue
+- **Vue Router**: Official router for Vue.js
+- **Axios**: HTTP client for API calls
+
+### Development Dependencies
+- **TypeScript**: Type safety
+- **ESLint**: Code linting
+- **Vitest**: Unit testing
+- **Nightwatch**: E2E testing
