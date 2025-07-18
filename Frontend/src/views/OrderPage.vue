@@ -30,7 +30,7 @@ export default defineComponent({
         id: 1, 
         title: "Merchant Explorer", 
         description: "Discover a new flavor adventure", 
-        task: "Order from a merchant you've never tried before", 
+        task: "Order from a merchant you've never tried before and leave a review", 
         reward: 75, 
         icon: "🗺️",
         color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -40,7 +40,7 @@ export default defineComponent({
         id: 2, 
         title: "Early Riser", 
         description: "Beat the breakfast rush", 
-        task: "Place your first order before 10:30 AM", 
+        task: "Complete your first two orders before 05:30 AM", 
         reward: 50, 
         icon: "🌅",
         color: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
@@ -60,8 +60,8 @@ export default defineComponent({
         id: 4, 
         title: "Variety Seeker", 
         description: "Embrace culinary diversity", 
-        task: "Order from 3 different merchants today", 
-        reward: 120, 
+        task: "Order from 6 different merchants today", 
+        reward: 320, 
         icon: "🎨",
         color: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
         difficulty: "Medium"
@@ -90,7 +90,7 @@ export default defineComponent({
         id: 7, 
         title: "Game Champion", 
         description: "Show your gaming prowess", 
-        task: "Win 3 arcade games in a row", 
+        task: "Spend 30 minutes in the arcade", 
         reward: 200, 
         icon: "🏆",
         color: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
@@ -288,7 +288,7 @@ export default defineComponent({
   z-index: 999;
   height: 130px;
   width: 250px;
-  background: linear-gradient(135deg, #95b49e 0%, #609661 50%, #55c15c 100%);
+  background: linear-gradient(135deg, #9fcbac 0%, #52c094 50%, #49ce52 100%);
   border-radius: 12px;
   padding: 12px;
   box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
@@ -316,7 +316,7 @@ export default defineComponent({
 .daily-challenge:hover {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 50%, #f093fb 100%);
+  background: linear-gradient(135deg, #92c39f 0%, #6cc06e 50%, #56df5f 100%);
 }
 
 .challenge-header {
