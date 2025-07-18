@@ -7,12 +7,12 @@ import { useRouter } from 'vue-router'
 // initalise qty of items incart
 import { onMounted } from 'vue'
 // importing the timeline
-import ordertimeline from '../components/ordertimeline.vue'
+import OrderTimeline from '../components/OrderTimeline.vue'
 
 
 export default defineComponent({
 
-  components: { ordertimeline },
+  components: { OrderTimeline },
   
   setup() {
     const cart = useCartStore()
@@ -102,7 +102,7 @@ export default defineComponent({
   <div class="cart-page">
 
     <!-- pass both data and routes -->
-     <ordertimeline :data="data" :routes="routes" />
+     <OrderTimeline :data="data" :routes="routes" />
 
       <div class="cart-container">
 
