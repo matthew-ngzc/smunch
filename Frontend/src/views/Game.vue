@@ -462,6 +462,7 @@ function closeGame() {
 
 <style scoped>
 
+
 .game-title-split {
   display: flex;
   align-items: center; /* keeps things aligned at the base */
@@ -645,10 +646,15 @@ function closeGame() {
   border-radius: 18px;
   box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
   padding: 48px 56px;
+  max-width: 90vw;
+  max-height: 90vh;
+  margin-top: 10px;
+  display: inline-flex;
   flex-direction: column;
   align-items: center;
   position: relative;
   width: fit-content;
+  height: fit-content;
 }
 
 
@@ -671,7 +677,6 @@ function closeGame() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  max-width: 300px;
   max-width: 350px;
   max-height: 350px; 
   margin-top: 40px;
