@@ -7,7 +7,7 @@ import { useRouter } from 'vue-router'
 // initalise qty of items incart
 import { onMounted } from 'vue'
 // importing the timeline
-import ordertimeline from '../components/ordertimeline.vue'
+import ordertimeline from '../components/OrderTimeline.vue'
 
 
 export default defineComponent({

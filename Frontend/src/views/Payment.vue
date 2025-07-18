@@ -6,7 +6,7 @@ import { updatePaymentStatus } from '@/services/orderFoodService'
 import { useOrderStore } from '@/stores/order'
 
 // importing the timeline
-import ordertimeline from '../components/ordertimeline.vue'
+import ordertimeline from '../components/OrderTimeline.vue'
 
 
 // progress timeline
