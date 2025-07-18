@@ -350,7 +350,7 @@ function closeGame() {
           </div>
           
         </div>
-      </div>
+      </div>      
 
 
       <!-- WHEEL SCREEN -->
@@ -566,7 +566,7 @@ function closeGame() {
   flex-direction:column;
   align-items: center;
   margin-top: 0px;
-  background-color: white;
+  background-color: rgb(255, 255, 255);
   padding: 30px;
   border-radius: 20px;
   box-shadow: 0 0 10px grey;
@@ -579,6 +579,7 @@ function closeGame() {
   margin-top: 20px;
   color: black;
 }
+
 
 .content {
   display: flex;
@@ -644,14 +645,12 @@ function closeGame() {
   border-radius: 18px;
   box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
   padding: 48px 56px;
-  min-width: 600px;
-  min-height: 200px;
-  margin-top: 9px;
-  display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
+  width: fit-content;
 }
+
 
 .game-modal h2 {
   font-weight: bold;
@@ -673,7 +672,11 @@ function closeGame() {
   align-items: center;
   justify-content: center;
   max-width: 300px;
-  max-height: 300px;
+  max-width: 350px;
+  max-height: 350px; 
+  margin-top: 40px;
+  margin-left: 100px;
+  margin-right: 100px;
 }
 
 .wheel-pointer-big {

@@ -338,6 +338,7 @@ function nextPage() {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   margin-left: 20px;
   margin-right: 20px;
+  max-height: 400px;
 }
 
 .empty-icon {
