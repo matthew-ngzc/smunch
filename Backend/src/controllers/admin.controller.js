@@ -1,8 +1,11 @@
+import { DELIVERY_TIMINGS, ORDER_STATUSES } from '../constants/enums.constants.js';
 import { createMerchantOrThrow } from '../models/merchant.model.js';
-import { getFullOrderByIdOrThrow, updatePaymentAndOrderStatusToPaid } from '../models/order.model.js';
+import { assignRunnerToOrders, getFullOrderByIdOrThrow, getOrdersForTodayBySlot, updateOrderStatusBulk, updatePaymentAndOrderStatusToPaid } from '../models/order.model.js';
 import { getUserByIdOrThrow } from '../models/user.model.js';
 import { buildPendingTransactions } from '../services/payment.service.js';
 import { sendReceiptEmail, sendTestEmail } from '../utils/mailer.js';
+import { clusterOrdersOptimal } from '../utils/orderGrouping.utils.js';
+import { formatCentsToDollars } from '../utils/payment.utils.js';
 
 /**
  * @swagger
@@ -319,6 +322,161 @@ export const verifyPayments = async (req, res, next) => {
     const transactions = await buildPendingTransactions();
 
     return res.status(200).json({ transactions });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+/**
+ * @swagger
+ * /api/admin/orders/assign-runners:
+ *   post:
+ *     summary: Assign orders to runners based on clustering
+ *     description: |
+ *       Clusters today's orders for a specific delivery time slot and assigns each cluster to a runner.
+ *       
+ *       This endpoint is intended to be called ~30 minutes before delivery (e.g., at 11:30 AM for 12:00 PM lunch).
+ *       
+ *       Each cluster corresponds to a group of orders going to nearby rooms, optimized using SMUNCH's k-medoids algorithm.
+ *       
+ *       Runner IDs are assigned in order to each cluster and stored in the database via the `runner_id` column.
+ *     tags: [Admin]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - slot
+ *               - runner_ids
+ *             properties:
+ *               slot:
+ *                 type: string
+ *                 enum: [08:15, 12:00, 15:30, 19:00]
+ *                 example: "12:00"
+ *                 description: "One of the four supported delivery timings"
+ *               runner_ids:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 example: [5, 6, 7, 8, 9]
+ *                 description: "List of runner user IDs in assignment order"
+ *     responses:
+ *       200:
+ *         description: Runner assignment completed successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Runner assignment complete"
+ *               assignments:
+ *                 - runner_id: 5
+ *                   route: ["SCIS-seminar-3-1", "SCIS-seminar-3-2"]
+ *                   orders:
+ *                     - order_id: 42
+ *                       building: "SCIS"
+ *                       room_type: "seminar"
+ *                       room_number: "3-1"
+ *       400:
+ *         description: Invalid input or mismatch between runners and orders
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Invalid slot. Allowed: 08:15, 12:00, 15:30, 19:00"
+ *       500:
+ *         description: Server error while processing assignment
+ */
+export const assignRunnersToOrders = async (req, res, next) => {
+  try {
+    const { slot, runner_ids } = req.body;
+
+    // Validate input
+    const validSlots = Object.keys(DELIVERY_TIMINGS);
+    if (!slot || !validSlots.includes(slot)) {
+      return res.status(400).json({ message: `Invalid slot. Allowed: ${validSlots.join(', ')}` });
+    }
+
+    if (!Array.isArray(runner_ids) || runner_ids.length === 0) {
+      return res.status(400).json({ message: 'runner_ids must be a non-empty array' });
+    }
+
+    // Fetch orders
+    const orders = await getOrdersForTodayBySlot(slot);
+
+    if (!orders.length) {
+      return res.status(200).json({ message: 'No orders found for this slot', assignments: [] });
+    }
+
+    if (runner_ids.length > orders.length) {
+      return res.status(400).json({ message: 'More runners than orders — cannot assign meaningfully' });
+    }
+
+    // cluster orders
+    const clusters = clusterOrdersOptimal(orders, runner_ids.length);
+
+    // Store runner_id in DB
+    for (let i = 0; i < clusters.length; i++) {
+      const runnerId = runner_ids[i];
+      const orderIds = clusters[i].orders.map(o => o.order_id);
+      await assignRunnerToOrders(orderIds, runnerId);
+      await updateOrderStatusBulk(orderIds, ORDER_STATUSES[2]);
+
+            // Group by merchant
+      const merchantMap = new Map();
+
+      for (const order of clusters[i].orders) {
+        const key = order.merchant_id;
+        if (!merchantMap.has(key)) {
+          merchantMap.set(key, {
+            merchant_name: order.merchant_name,
+            total_amount_cents: 0,
+            items_to_order: []
+          });
+        }
+
+        const merchant = merchantMap.get(key);
+        merchant.total_amount_cents += order.total_amount_cents;
+
+        for (const item of order.items || []) {
+          merchant.items_to_order.push({
+            name: item.menu_items.name,
+            quantity: item.quantity,
+            notes: item.notes,
+            customisations: item.customisations
+          });
+        }
+      }
+
+      const ordersSimplified = clusters[i].orders.map(o => ({
+        order_id: o.order_id,
+        building: o.building,
+        room_type: o.room_type,
+        room_number: o.room_number,
+        delivery_time: o.delivery_time
+      }));
+
+      const merchantGroups = Array.from(merchantMap.values()).map(m => ({
+        merchant_name: m.merchant_name,
+        total_amount_dollars: formatCentsToDollars(m.total_amount_cents),
+        items_to_order: m.items_to_order
+      }));
+
+      result.push({
+        runner_id: runnerId,
+        orders: ordersSimplified,
+        merchants: merchantGroups
+      });
+    }
+
+    // 🧾 Return assignments
+    // const result = clusters.map((cluster, i) => ({
+    //   runner_id: runner_ids[i],
+    //   route: cluster.route,
+    //   orders: cluster.orders
+    // }));
+
+    res.status(200).json({ message: 'Runner assignment complete', assignments: result });
   } catch (err) {
     next(err);
   }

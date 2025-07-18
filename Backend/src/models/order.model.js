@@ -485,3 +485,71 @@ export async function updateOrderReminderTimestamp(orderId, columnName) {
 
   if (error) throw error;
 }
+
+
+/**
+ * Retrieves all PAID orders for the current day and given delivery slot (e.g. '12:00').
+ * 
+ * Intended to be called by the runner-clustering algorithm.
+ * 
+ * @param {string} slotKey - One of the DELIVERY_TIMINGS keys ('08:15', '12:00', etc)
+ * @returns {Promise<object[]>} - Array of orders (basic info)
+ */
+export async function getOrdersForTodayBySlot(slotKey) {
+  const slot = DELIVERY_TIMINGS[slotKey];
+  if (!slot) {
+    throw new Error(`Invalid slot key: ${slotKey}`);
+  }
+
+  const sgZone = 'Asia/Singapore';
+  const now = DateTime.now().setZone(sgZone);
+  const todayDate = now.toISODate(); // e.g. '2025-07-18'
+
+  const deliveryTime = DateTime.fromISO(todayDate, { zone: sgZone }).set({
+    hour: slot.hour,
+    minute: slot.minute,
+    second: 0,
+    millisecond: 0
+  });
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('delivery_time', deliveryTime.toISO())
+    .eq('payment_status', PAYMENT_STATUSES[2]); // 'payment_confirmed'
+
+  if (error) throw error;
+  return data;
+}
+
+
+/**
+ * Updates runner_id for a list of orders
+ *
+ * @param {number[]} orderIds - List of order IDs
+ * @param {number} runnerId - ID of runner assigned to this group
+ * @returns {Promise<void>}
+ */
+export async function assignRunnerToOrders(orderIds, runnerId) {
+  if (!Array.isArray(orderIds) || orderIds.length === 0) return;
+
+  const { error } = await supabase
+    .from('orders')
+    .update({ runner_id: runnerId })
+    .in('order_id', orderIds);
+
+  if (error) throw error;
+}
+
+
+// can possible refactor to combine with other bulk status updates
+export async function updateOrderStatusBulk(orderIds, newStatus) {
+  if (!Array.isArray(orderIds) || orderIds.length === 0) return;
+
+  const { error } = await supabase
+    .from('orders')
+    .update({ order_status: newStatus })
+    .in('order_id', orderIds);
+
+  if (error) throw error;
+}
