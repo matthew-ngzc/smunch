@@ -12,10 +12,17 @@ import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
 function determineBaseURL(environment) {
-  if (environment === 'deployed') {
+  if (environment === 'railway') {
     return 'https://backend-production-cbdf.up.railway.app'
-  } else {
-    return 'http://124.243.149.250:3000'  // adjust port to your backend dev server
+  } 
+  if (environment === 'render') {
+    return 'https://smunch-webapp.onrender.com'
+  }
+  if (environment === 'local') {
+    return 'http://124.243.149.250:3000'
+  }
+  else {
+    return 'http://localhost:3000'
   }
 }
 
