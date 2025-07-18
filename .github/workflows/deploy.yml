@@ -29,6 +29,9 @@ jobs:
         username: ${{ secrets.HUAWEI_USER }}
         key: ${{ secrets.HUAWEI_SSH_KEY }}
         script: |
+          export NVM_DIR="$HOME/.nvm"
+          source "$NVM_DIR/nvm.sh"
+          export PATH=$PATH:$NVM_DIR/versions/node/v22.17.1/bin
           cd ~/SMUNCH-webapp/Backend
           git pull origin main
           pm2 restart smunch-backend
