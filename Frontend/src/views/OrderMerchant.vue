@@ -98,50 +98,67 @@ export default defineComponent({
 
 
 <template>
-  <div class="merchant-page">
-    <div class="merchant-header">
+  <div class="merchant-page-wrapper">
+    <div class="merchant-page">
+      <div class="merchant-header">
 
-      <div class="logo"> 
-        <img :src="merchantInfo.image_url" alt="Merchant Logo" class="merchant-logo" />
-      </div>
-
-      <div class="texts">
-        <p class="merchant-name"> {{ merchantInfo.name }} </p>
-        <p class="location"> {{ merchantInfo.location }} </p>
-      </div>
-    
-    </div>
-
-    <hr />
-
-    <div v-for="item in merchantMenu" :key="item.menu_item_id" class="menu-item">
-      <img :src="item.image_url" class="menu-image" />
-      <div class="menu-info">
-        <h3>{{ item.name.toLowerCase() }}</h3>
-        <p class="desc"> {{ item.description }} </p>
-        <div class="menu-controls">
-          <button @click="decrease(item.menu_item_id)">-</button>
-          <span>{{ quantities[item.menu_item_id] }}</span>
-          <button @click="increase(item.menu_item_id)">+</button>
+        <div class="logo"> 
+          <img :src="merchantInfo.image_url" alt="Merchant Logo" class="merchant-logo" />
         </div>
+
+        <div class="texts">
+          <p class="merchant-name"> {{ merchantInfo.name }} </p>
+          <p class="location"> {{ merchantInfo.location }} </p>
+        </div>
+      
       </div>
-      <div class="menu-price">${{ (item.price_cents / 100).toFixed(2) }}</div>
-    </div>
 
-    <div v-if="showEmptyCartWarning" class="warning-banner">
-      Your cart is empty. Please select at least one item before checking out.
-    </div>
+      <hr />
 
-    <button class="checkout-btn" @click="checkout">checkout</button>
+      <div v-for="item in merchantMenu" :key="item.menu_item_id" class="menu-item">
+        <img :src="item.image_url" class="menu-image" />
+        <div class="menu-info">
+          <h3>{{ item.name.toLowerCase() }}</h3>
+          <p class="desc"> {{ item.description }} </p>
+          <div class="menu-controls">
+            <button @click="decrease(item.menu_item_id)">-</button>
+            <span>{{ quantities[item.menu_item_id] }}</span>
+            <button @click="increase(item.menu_item_id)">+</button>
+          </div>
+        </div>
+        <div class="menu-price">${{ (item.price_cents / 100).toFixed(2) }}</div>
+      </div>
+
+      <div v-if="showEmptyCartWarning" class="warning-banner">
+        Your cart is empty. Please select at least one item before checking out.
+      </div>
+
+      <button class="checkout-btn" @click="checkout">checkout</button>
+    </div>
   </div>
 </template>
 
 
 <style scoped>
+.merchant-page-wrapper {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: auto;
+}
+
 .merchant-page {
   padding: 20px;
   font-family: 'Inter', sans-serif;
   margin-top: 25px;
+  width: 100%;
+  max-width: 1200px;
 }
 
 .merchant-header {
@@ -159,10 +176,10 @@ export default defineComponent({
 
 
 .merchant-logo {
-  height: 100px;
+  height: 80px;
   margin-right: 20px;
   margin-left: 10px;
-  width: 120px;
+  width: 100px;
 }
 
 .texts {

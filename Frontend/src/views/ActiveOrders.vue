@@ -16,7 +16,6 @@ const pageSize = 5
 const totalOrders = ref(0)
 
 
-
 // for supabase realtime
 const setupRealtimeSubscription = () => {
   const userId = authStore.userId
@@ -125,71 +124,88 @@ function getCombinedStatus(order) {
 </script>
 
 <template>
-  <div class="orders-page">
+  <div class="orders-page-wrapper">
+    <div class="orders-page">
 
-      <div class="orders-header">
-      <h2>Active Orders</h2>
-      <InfoPopup />
-    </div>
+        <div class="orders-header">
+        <h2>Active Orders</h2>
+        <InfoPopup />
+      </div>
 
-    <ul class="orders-list">
-      <li v-for="order in activeOrders" :key="order.order_id" class="order-card" @click="openReceipt(order)">
-        <div class="order-content">
-          <img :src="order.merchant.image_url" alt="merchant logo" class="merchant-logo" />
-          <div class="order-main">
-          <div class="order-header">
-            <div class="order-text">
-              <h3>Order {{ order.order_id }}</h3>
-              <div class="order-meta">
-                <p>Destination: School of {{ formatLocation(order) }}</p>
-                <p>Merchant: {{ order.merchant.name }}</p>
-                <p>Delivery date & time: {{ formatDateTime(order.delivery_time) }}</p>
-                <small>Order placed on {{ formatDateTime(order.created_at) }}</small>
+      <ul class="orders-list">
+        <li v-for="order in activeOrders" :key="order.order_id" class="order-card" @click="openReceipt(order)">
+          <div class="order-content">
+            <img :src="order.merchant.image_url" alt="merchant logo" class="merchant-logo" />
+            <div class="order-main">
+            <div class="order-header">
+              <div class="order-text">
+                <h3>Order {{ order.order_id }}</h3>
+                <div class="order-meta">
+                  <p>Destination: School of {{ formatLocation(order) }}</p>
+                  <p>Merchant: {{ order.merchant.name }}</p>
+                  <p>Delivery date & time: {{ formatDateTime(order.delivery_time) }}</p>
+                  <small>Order placed on {{ formatDateTime(order.created_at) }}</small>
+                </div>
+              </div>
+
+              <div class="order-summary">
+                <div class="top-summary">
+                  <span>{{ getItemCount(order) }} item<span v-if="getItemCount(order) > 1">s</span></span>
+                  <div class="order-price">${{ (order.total_amount_cents / 100).toFixed(2) }}</div>
+                </div>
+                <span class="status-badge" :class="formatStatusClass(getCombinedStatus(order))">
+                  {{ formatStatus(getCombinedStatus(order)) }}
+                </span>
+
               </div>
             </div>
-
-            <div class="order-summary">
-              <div class="top-summary">
-                <span>{{ getItemCount(order) }} item<span v-if="getItemCount(order) > 1">s</span></span>
-                <div class="order-price">${{ (order.total_amount_cents / 100).toFixed(2) }}</div>
-              </div>
-              <span class="status-badge" :class="formatStatusClass(getCombinedStatus(order))">
-                {{ formatStatus(getCombinedStatus(order)) }}
-              </span>
-
             </div>
-          </div>
-          </div>
-        </div> 
-      </li>
-    </ul>
-    <!-- Empty state for no orders -->
-    <div v-if="activeOrders.length === 0" class="empty-state">
-      <h3>No Active Orders</h3>
-      <p>You don't have any active orders right now. Place an order to see it here!</p>
-      <router-link to="/order" class="empty-action-btn">Place Order</router-link>
-    </div>
+          </div> 
+        </li>
+      </ul>
+      <!-- Empty state for no orders -->
+      <div v-if="activeOrders.length === 0" class="empty-state">
+        <h3>No Active Orders</h3>
+        <p>You don't have any active orders right now. Place an order to see it here!</p>
+        <router-link to="/order" class="empty-action-btn">Place Order</router-link>
+      </div>
 
-    <!-- Pagination - only show if there are orders -->
-    <div v-if="activeOrders.length > 0" class="pagination">
-      <button class="page-btn nav-btn" :disabled="currentPage === 1" @click="prevPage">&#60;</button>
-      <button
-        v-for="page in paginationRange"
-        :key="page"
-        :class="['page-btn', { active: page === currentPage } ]"
-        @click="changePage(page)"
-      >
-        {{ page }}
-      </button>
-      <button class="page-btn nav-btn" :disabled="currentPage === totalPages" @click="nextPage">&#62;</button>
+      <!-- Pagination - only show if there are orders -->
+      <div v-if="activeOrders.length > 0" class="pagination">
+        <button class="page-btn nav-btn" :disabled="currentPage === 1" @click="prevPage">&#60;</button>
+        <button
+          v-for="page in paginationRange"
+          :key="page"
+          :class="['page-btn', { active: page === currentPage } ]"
+          @click="changePage(page)"
+        >
+          {{ page }}
+        </button>
+        <button class="page-btn nav-btn" :disabled="currentPage === totalPages" @click="nextPage">&#62;</button>
+      </div>
+      <OrderReceipt v-if="selectedOrder" :order="selectedOrder" :onClose="closeReceipt" />
     </div>
-    <OrderReceipt v-if="selectedOrder" :order="selectedOrder" :onClose="closeReceipt" />
   </div>
 </template>
 
 <style scoped>
+.orders-page-wrapper {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: auto;
+}
+
 .orders-page {
   padding: 20px;
+  width: 100%;
+  max-width: 1200px;
 }
 
 .orders-page h2 {
@@ -335,6 +351,7 @@ function getCombinedStatus(order) {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   margin-left: 20px;
   margin-right: 20px;
+  min-height: 600px;
 }
 
 .empty-icon {
@@ -347,15 +364,17 @@ function getCombinedStatus(order) {
   font-weight: bold;
   color: #333;
   margin-bottom: 12px;
+  
 }
 
 .empty-state p {
   font-size: 16px;
   color: #666;
   margin-bottom: 24px;
-  max-width: 400px;
+ 
   margin-left: auto;
   margin-right: auto;
+  margin-top: 30px;
 }
 
 .empty-action-btn {
@@ -367,6 +386,7 @@ function getCombinedStatus(order) {
   border-radius: 8px;
   font-weight: bold;
   transition: background-color 0.2s;
+  margin-top: 330px;
 }
 
 .empty-action-btn:hover {

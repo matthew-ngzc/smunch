@@ -93,75 +93,95 @@ export default defineComponent({
 
 <template>
 
-  <div class="cart-page">
+  <div class="cart-page-wrapper">
+    <div class="cart-page">
 
-    <!-- pass both data and routes -->
-     <ordertimeline :data="data" :routes="routes" />
+      <!-- pass both data and routes -->
+       <ordertimeline :data="data" :routes="routes" />
 
-    <div class="cart"> 
+      <div class="cart"> 
 
-    <h2>Your Cart</h2>
+      <h2>Your Cart</h2>
 
-    <hr class="divider" />
+      <hr class="divider" />
 
-    <!-- starts a block that ONLY shows if the cart is not empty -->
-    <div class="cart-content" v-if="cart.items.length > 0">
-      <!-- loops through every item in cart.items, creates div for each item  --> <!-- :key="item.id" is needed to track items  -->
-      <div v-for="item in cart.items" :key="item.id" class="cart-item">
+      <!-- starts a block that ONLY shows if the cart is not empty -->
+      <div class="cart-content" v-if="cart.items.length > 0">
+        <!-- loops through every item in cart.items, creates div for each item  --> <!-- :key="item.id" is needed to track items  -->
+        <div v-for="item in cart.items" :key="item.id" class="cart-item">
 
-        <!-- item image -->
-        <img :src="item.image_url" alt="item image" class="item-image" />
-        <div class="item-row"> 
-            <!-- item name -->
-          <div class="item-name"><strong>{{ item.name }}</strong></div>
-          <div class="item-right">  
-              <div class="menu-controls">
-                <button @click="decrease(item.id)">-</button>
-                <span>{{ quantities[item.id] }}</span>
-                <button @click="increase(item.id)">+</button>
-             </div> 
+          <!-- item image -->
+          <img :src="item.image_url" alt="item image" class="item-image" />
+          <div class="item-row"> 
+              <!-- item name -->
+            <div class="item-name"><strong>{{ item.name }}</strong></div>
+            <div class="item-right">  
+                <div class="menu-controls">
+                  <button @click="decrease(item.id)">-</button>
+                  <span>{{ quantities[item.id] }}</span>
+                  <button @click="increase(item.id)">+</button>
+               </div> 
 
-               <!-- total cost of a particular item , toFixed(2)ensures it always shows 2 decimal places-->
-            <div class="item-cost">${{ (item.quantity * item.price).toFixed(2) }}</div> 
+                 <!-- total cost of a particular item , toFixed(2)ensures it always shows 2 decimal places-->
+              <div class="item-cost">${{ (item.quantity * item.price).toFixed(2) }}</div> 
+            </div>
           </div>
         </div>
-      </div>
-      </div>
+        </div>
+
+        
+
+        <div v-else>
+          <p>Your cart is empty.</p>
+        </div>
+
+        <div class="bottom"> 
+          
+          <hr class="divider" />
+
+          <div class="cost-wrapper"> 
+            <!--  total cost of items in cart, from script using computed -->
+            <h3 class="total-cost">Total (Excl. delivery fee): </h3>
+            <h3 class="cost"> ${{ total.toFixed(2) }} </h3>
+          </div>
+
+          <div v-if="showEmptyCartWarning" class="warning-banner">
+            Your cart is empty. Please select at least one item before proceeding.
+          </div>
+          <div class="wrapper"> 
+            <button class="next" @click="next">next</button>
+          </div>
+
+        </div>
+
 
       
-
-      <div v-else>
-        <p>Your cart is empty.</p>
-      </div>
-
-      <div class="bottom"> 
-        
-        <hr class="divider" />
-
-        <div class="cost-wrapper"> 
-          <!--  total cost of items in cart, from script using computed -->
-          <h3 class="total-cost">Total (Excl. delivery fee): </h3>
-          <h3 class="cost"> ${{ total.toFixed(2) }} </h3>
-        </div>
-
-        <div v-if="showEmptyCartWarning" class="warning-banner">
-          Your cart is empty. Please select at least one item before proceeding.
-        </div>
-        <div class="wrapper"> 
-          <button class="next" @click="next">next</button>
-        </div>
-
-      </div>
-
-
-    
-    
-  </div>
+      
+    </div>
+    </div>
   </div>
 </template>
 
 
 <style scoped>
+.cart-page-wrapper {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: auto;
+}
+
+.cart-page {
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+}
 
 .cart {
   background-color: white;

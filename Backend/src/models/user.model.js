@@ -77,21 +77,28 @@ export async function createUserOrThrow(payload) {
   const { email, name, phoneNo, password, role } = payload;
   const hashedPassword = await bcrypt.hash(password, 10);
 
+  const insertPayload = {
+    email,
+    name,
+    phone: phoneNo,
+    hashed_password: hashedPassword,
+    role
+    // Note: intentionally omitting 'coins'
+  };
+  console.log('[DEBUG] Insert Payload:', JSON.stringify(insertPayload, null, 2));
+
   const { data, error } = await supabase
     .from('users')
-    .insert([{
-      email,
-      name,
-      phone: phoneNo,
-      hashed_password: hashedPassword,
-      role
-    }])
+    .insert([insertPayload])
     .select()
     .single();
 
-  if (error) throw error;
-  return data;
-}
+    if (error) {
+      console.log('Error in creating inside model');
+      throw error;
+    }
+    return data;
+  }
 
 
 /**

@@ -326,20 +326,32 @@ function closeGame() {
 
 
       <!-- CHOICE SCREEN -->
-      <div v-if="!showWheel && !showPoker && !showEmojis" class="game-options">
-        <div class="game-card wheel-game" @click="showWheel = true">
-          <img src="/dinoSpinTheWheel.png" class="game-icon" alt="Spin the Wheel" />
-          <p>Spin the Wheel</p>
-        </div>
-        <div class="game-card poker-game" @click="openPoker">
-          <img src="/dinoPokerCards.png" class="game-icon" alt="Poker Game" />
-          <p>Poker Roulette</p>
-        </div>
-        <div class="game-card emoji-game" @click="openEmojis">
-          <img src="/dinoGuessEmojis.png" class="game-icon" alt="Emoji Guessing Game" />
-          <p>Guess the Emojis</p>
+     <!-- choice screen container -->
+      <div v-if="!showWheel && !showPoker && !showEmojis" class="game-choice-wrapper">
+        
+
+        <div class="game-options">
+
+          <div class="header">select a game to play!</div>
+
+          <div class="content"> 
+              <div class="game-card wheel-game" @click="showWheel = true">
+              <img src="/dinoSpinTheWheel.png" class="game-icon" alt="Spin the Wheel" />
+              <p>Spin The Wheel</p>
+            </div>
+            <div class="game-card poker-game" @click="openPoker">
+              <img src="/dinoPokerCards.png" class="game-icon" alt="Poker Game" />
+              <p>Poker Roulette</p>
+            </div>
+            <div class="game-card emoji-game" @click="openEmojis">
+              <img src="/dinoGuessEmojis.png" class="game-icon" alt="Emoji Guessing Game" />
+              <p>Guess The Emojis</p>
+            </div>
+          </div>
+          
         </div>
       </div>
+
 
       <!-- WHEEL SCREEN -->
       <div v-if="showWheel" class="game-modal">
@@ -495,6 +507,7 @@ function closeGame() {
   margin-bottom: -85px; /* nudges the dino into the cards */
   pointer-events: none;
   transition: transform 0.3s ease-in-out;
+  z-index: 100;
 }
 
 .game-title-split:hover .dino-peek {
@@ -549,10 +562,28 @@ function closeGame() {
 
 .game-options {
   display: flex;
-  gap: 3rem;
   justify-content: center;
+  flex-direction:column;
   align-items: center;
   margin-top: 0px;
+  background-color: white;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 0 10px grey;
+  width: 840px;
+}
+
+.header {
+  font-size: 30px;
+  font-weight: bold;
+  margin-top: 20px;
+  color: black;
+}
+
+.content {
+  display: flex;
+  gap: 35px;
+  
 }
 
 .game-card {
@@ -569,11 +600,12 @@ function closeGame() {
   background: rgba(255, 255, 255, 0.85);
   transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
   border: 1.5px solid #e0e0e0;
-  margin-bottom: 100px;
+  margin-bottom: 50px;
+  margin-top: 30px;
 }
 
 .game-card p {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
   text-align: center;
@@ -612,14 +644,17 @@ function closeGame() {
   border-radius: 18px;
   box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
   padding: 48px 56px;
-  min-width: 420px;
-  max-width: 95vw;
-  max-height: 95vh;
-  margin-top: 32px;
+  min-width: 600px;
+  min-height: 200px;
+  margin-top: 9px;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
+}
+
+.game-modal h2 {
+  font-weight: bold;
 }
 
 .close-btn {
@@ -633,9 +668,12 @@ function closeGame() {
 }
 
 .spinner {
-  width: 460px;
-  height: 460px;
-  margin: 0 auto 18px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 300px;
+  max-height: 300px;
 }
 
 .wheel-pointer-big {
@@ -650,19 +688,26 @@ function closeGame() {
 }
 
 .spin-btn {
-  background: #17614a;
-  color: #fff;
+  background-color: #0d3d31;
+  color: white;
   border: none;
-  border-radius: 24px;
-  padding: 18px 60px;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 auto;
-  display: block;
-  margin-bottom: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 50px;
   cursor: pointer;
-  transition: background 0.2s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
 }
+
+.spin-btn:hover {
+  background-color: #11534a;
+}
+
+.spin-btn:disabled {
+  background-color: #a9b5bd;
+  cursor: not-allowed;
+}
+
 
 .spin-btn:disabled {
   opacity: 0.7;

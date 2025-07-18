@@ -108,6 +108,7 @@ const logout = async () => {
 
     <!-- dropdown -->
       <div v-if="isOpen" class="profile-menu" ref="dropdown">
+        <!-- menu-header -->
         <div class="menu-header">
           <div class="dropdown-icon-circle">
             <img v-if="profilePicture" :src="profilePicture" alt="Profile Picture" class="dropdown-profile-pic" />
@@ -118,8 +119,10 @@ const logout = async () => {
               </g>
             </svg>
           </div>
+
           <div class="close" @click.stop="closeMenu">X</div>
         </div>
+
 
       <hr />
 
@@ -305,19 +308,19 @@ const logout = async () => {
   justify-content: space-between;
 }
 
-.dropdown-icon-circle {
+.dropdown-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+}
+
+.dropdown-profile-icon {
   width: 36px;
   height: 36px;
   background-color: #e0e0e0;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dropdown-icon-circle svg {
-  width: 24px;
-  height: 24px;
+  padding: 5px;
 }
 
 .dropdown-profile-pic {
@@ -327,6 +330,15 @@ const logout = async () => {
   object-fit: cover;
   border: 2px solid #0d3d31;
 }
+
+.msg {
+  font-size: 16px;
+  color: #0d3d31;
+  font-weight: bold;
+  margin-top: 2px;
+  margin-left: 5px;
+}
+
 
 .profile-menu hr {
   margin: 12px 0;

@@ -54,7 +54,7 @@ export const useAuthStore = defineStore('auth', {
       sessionStorage.setItem('userId', this.userId)
       sessionStorage.setItem('userName', this.userName)
       sessionStorage.setItem('coins', this.coins.toString())
-      
+
       if (this.profilePicture) {
         sessionStorage.setItem('profilePicture', this.profilePicture)
       }

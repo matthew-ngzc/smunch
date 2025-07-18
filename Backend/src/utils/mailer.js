@@ -70,8 +70,8 @@ export const sendTestEmail = async ({ to }) => {
  * @returns {Promise} - Resolves when the email is sent successfully
  */
 export const sendVerificationEmail = async ({ to, name, token, role} ) => {
-  const path = role === 'merchant' ? 'merchant/verify-signup' : 'verify';
-  const link = `${process.env.FRONTEND_URL}/api/auth/${path}?token=${token}`;
+  const path = role === 'merchant' ? 'merchant/verify-signup' : 'verify-account';
+  const link = `${process.env.FRONTEND_URL}/${path}?token=${token}`;
   const accountType = role === 'merchant' ? 'Merchant' : 'User';
   const html = getVerificationEmailHtml({ link, accountType, name});
   return transporter.sendMail({

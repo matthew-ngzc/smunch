@@ -87,6 +87,9 @@
           </button>
         </div>
 
+        <div>
+           <TelegramVerification />
+        </div>
         <form @submit.prevent="handleProfileSave" class="profile-form">
           <div class="form-section">
             <h3 class="section-title">Personal Information</h3>
@@ -287,6 +290,7 @@ export default {
       this.profilePicturePreview = authStore.profilePicture;
     }
   },
+
   methods: {
     onProfilePictureChange(e) {
       const file = e.target.files[0];

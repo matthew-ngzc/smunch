@@ -86,77 +86,94 @@ function nextPage() {
 </script>
 
 <template>
-  <div class="orders-page">
-    <div class="orders-header">
-      <h2>Order History</h2>
-      <InfoPopup />
-    </div>
+  <div class="orders-page-wrapper">
+    <div class="orders-page">
+      <div class="orders-header">
+        <h2>Order History</h2>
+        <InfoPopup />
+      </div>
 
-    <ul class="orders-list">
-      <li
-        v-for="order in pastOrders" :key="order.order_id" class="order-card" @click="openReceipt(order)" style="cursor: pointer" >
-        <div class="order-content">
-          <img :src="order.merchant.image_url" alt="merchant logo" class="merchant-logo" />
+      <ul class="orders-list">
+        <li
+          v-for="order in pastOrders" :key="order.order_id" class="order-card" @click="openReceipt(order)" style="cursor: pointer" >
+          <div class="order-content">
+            <img :src="order.merchant.image_url" alt="merchant logo" class="merchant-logo" />
 
-          <div class="order-main">
-            <div class="order-header">
-              <div class="order-text">
-                <h3>Order {{ order.order_id }}</h3>
-                <div class="order-meta">
-                  <p>Merchant: {{ order.merchant.name }}</p>
-                  <p>Delivery date & time: School of {{ formatLocation(order) }}</p>
-                  <small>Order placed on {{ formatDateTime(order.created_at) }}</small>
-                </div>
-              </div>
-
-              <div class="order-summary">
-                <div class="top-summary">
-                  <span>{{ getItemCount(order) }} item<span v-if="getItemCount(order) > 1">s</span></span>
-                  <div class="order-price">${{ (order.total_amount_cents / 100).toFixed(2) }}</div>
-                  <!-- Coin reward for completed orders -->
-                  <div v-if="order.order_status === 'completed'" class="coin-reward">
-                    <span class="coin-text">+1</span>
-                    <img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="coin-icon-small" />
+            <div class="order-main">
+              <div class="order-header">
+                <div class="order-text">
+                  <h3>Order {{ order.order_id }}</h3>
+                  <div class="order-meta">
+                    <p>Merchant: {{ order.merchant.name }}</p>
+                    <p>Delivery date & time: School of {{ formatLocation(order) }}</p>
+                    <small>Order placed on {{ formatDateTime(order.created_at) }}</small>
                   </div>
                 </div>
-                <span class="status-badge" :class="formatStatusClass(getCombinedStatus(order))">
-                  {{ formatStatus(getCombinedStatus(order)) }}
-                </span>
+
+                <div class="order-summary">
+                  <div class="top-summary">
+                    <span>{{ getItemCount(order) }} item<span v-if="getItemCount(order) > 1">s</span></span>
+                    <div class="order-price">${{ (order.total_amount_cents / 100).toFixed(2) }}</div>
+                    <!-- Coin reward for completed orders -->
+                    <div v-if="order.order_status === 'completed'" class="coin-reward">
+                      <span class="coin-text">+1</span>
+                      <img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="coin-icon-small" />
+                    </div>
+                  </div>
+                  <span class="status-badge" :class="formatStatusClass(getCombinedStatus(order))">
+                    {{ formatStatus(getCombinedStatus(order)) }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </li>
-    </ul>
+        </li>
+      </ul>
 
-    <!-- Empty state for no orders -->
-    <div v-if="pastOrders.length === 0" class="empty-state">
-      <h3>No Order History</h3>
-      <p>You haven't placed any orders yet. Start ordering to see your history here!</p>
-      <router-link to="/order" class="empty-action-btn">Start Ordering</router-link>
+      <!-- Empty state for no orders -->
+      <div v-if="pastOrders.length === 0" class="empty-state">
+        <h3>No Order History</h3>
+        <p>You haven't placed any orders yet. Start ordering to see your history here!</p>
+        <router-link to="/order" class="empty-action-btn">Start Ordering</router-link>
+      </div>
+
+      <!-- Pagination - only show if there are orders -->
+      <div v-if="pastOrders.length > 0" class="pagination">
+        <button class="page-btn nav-btn" :disabled="currentPage === 1" @click="prevPage">&#60;</button>
+        <button
+          v-for="page in paginationRange"
+          :key="page"
+          :class="['page-btn', { active: page === currentPage }]"
+          @click="changePage(page)"
+        >
+          {{ page }}
+        </button>
+        <button class="page-btn nav-btn" :disabled="currentPage === totalPages" @click="nextPage">&#62;</button>
+      </div>
+
+      <OrderReceipt v-if="selectedOrder" :order="selectedOrder" :onClose="closeReceipt" :showOrderStatus="true" />
     </div>
-
-    <!-- Pagination - only show if there are orders -->
-    <div v-if="pastOrders.length > 0" class="pagination">
-      <button class="page-btn nav-btn" :disabled="currentPage === 1" @click="prevPage">&#60;</button>
-      <button
-        v-for="page in paginationRange"
-        :key="page"
-        :class="['page-btn', { active: page === currentPage }]"
-        @click="changePage(page)"
-      >
-        {{ page }}
-      </button>
-      <button class="page-btn nav-btn" :disabled="currentPage === totalPages" @click="nextPage">&#62;</button>
-    </div>
-
-    <OrderReceipt v-if="selectedOrder" :order="selectedOrder" :onClose="closeReceipt" :showOrderStatus="true" />
   </div>
 </template>
 
 <style scoped>
+.orders-page-wrapper {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: auto;
+}
+
 .orders-page {
   padding: 20px;
+  width: 100%;
+  max-width: 1200px;
 }
 
 .orders-page h2 {

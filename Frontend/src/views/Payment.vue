@@ -45,45 +45,66 @@ const done = async () => {
 </script>
 
 <template>
-  <div class="payment-page">
-     <!-- pass both data and routes -->
-    <ordertimeline :data="data" :routes="routes" />
-  
-  <div class="payment-container">
+  <div class="payment-page-wrapper">
+    <div class="payment-page">
+       <!-- pass both data and routes -->
+      <ordertimeline :data="data" :routes="routes" />
+    
+    <div class="payment-container">
 
-    <h2 class="title">Follow the steps below to proceed with payment.</h2><br />
+      <h2 class="title">Follow the steps below to proceed with payment.</h2><br />
 
-    <div class="content">
-      <!-- Steps -->
-      <div class="steps">
-        <p><strong>STEP 1:</strong><br />
-        PayNow <strong>${{ total.toFixed(2) }}</strong> via QR or Mobile to <strong>{{ paynowNumber }} </strong>.<br />
-        Enter your reference number <strong>{{ paymentReference }}</strong> in the PayNow comments.</p><br />
+      <div class="content">
+        <!-- Steps -->
+        <div class="steps">
+          <p><strong>STEP 1:</strong><br />
+          PayNow <strong>${{ total.toFixed(2) }}</strong> via QR or Mobile to <strong>{{ paynowNumber }} </strong>.<br />
+          Enter your reference number <strong>{{ paymentReference }}</strong> in the PayNow comments.</p><br />
 
-        <p><strong>STEP 2:</strong><br />
-        Send your payment screenshot to <strong>@smunch_bot</strong> via telegram.</p><br />
+          <p><strong>STEP 2:</strong><br />
+          Send your payment screenshot to <strong>@smunch_bot</strong> via telegram.</p><br />
 
-        <p><strong>STEP 3:</strong><br />
-        Press “done” once payment has been made!</p><br />
+          <p><strong>STEP 3:</strong><br />
+          Press "done" once payment has been made!</p><br />
+        </div>
+
+        <!-- QR Code -->
+        <div class="qr-box">
+          <img :src="qrCode" alt="PayNow QR Code" class="qr-image" />
+          <p class="qr-caption">Paynow recipient's name: <strong>Matt</strong></p>
+        </div>
       </div>
 
-      <!-- QR Code -->
-      <div class="qr-box">
-        <img :src="qrCode" alt="PayNow QR Code" class="qr-image" />
-        <p class="qr-caption">Paynow recipient’s name: <strong>Matt</strong></p>
-      </div>
+      <p class="note">
+        You will receive a confirmation from Smunch Admin within 1–2 days.
+      </p>
+
+      <button class="done-btn" @click="done">done</button>
     </div>
-
-    <p class="note">
-      You will receive a confirmation from Smunch Admin within 1–2 days.
-    </p>
-
-    <button class="done-btn" @click="done">done</button>
-  </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.payment-page-wrapper {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: auto;
+}
+
+.payment-page {
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+}
+
 .payment-container {
   max-width: 1500px;
   width: 1000px;
