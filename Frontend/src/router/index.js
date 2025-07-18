@@ -1,11 +1,5 @@
-/**
- * REIWEN :
- * This router folder has index.ts 
- * Everytime you want to route, you must create all your different routes here. (only create but haven't done the actual routing) 
- */
 import { createRouter, createWebHistory } from 'vue-router'
 
-// REIWEN : remember to import the components used for each router object in routes[]
 import LandingPage from '../views/LandingPage.vue'
 import Home from '../views/Home.vue'
 import OrderPage from '../views/OrderPage.vue'
@@ -18,7 +12,6 @@ import CartPage from '../views/CartPage.vue'
 import SelectLocation from '../views/SelectLocation.vue'
 import OrderSummary from '../views/OrderSummary.vue'
 import Payment from '../views/Payment.vue'
-import Help from '../views/Help.vue'
 import PastOrders from '../views/PastOrders.vue'
 import ActiveOrders from '../views/ActiveOrders.vue'
 import Profile from '../views/Profile.vue'
@@ -33,40 +26,54 @@ import VerifyAccount from '../views/VerifyAccount.vue'
 // REIWEN : this is a routes array and each route object has 3 properties
   const routes = [
   { path: '/', name: 'landingPage', component: LandingPage },     
-  { path: '/order', name: 'Order', component: OrderPage },
-  { path: '/run', name: 'Run', component: RunnerPage },        
-  { path: '/home', name: 'Home', component: Home },
+  { path: '/order', name: 'Order', component: OrderPage, meta: { requiresAuth: true } },
+  { path: '/run', name: 'Run', component: RunnerPage, meta: { requiresAuth: true } },        
+  { path: '/home', name: 'Home', component: Home, meta: { requiresAuth: true } },
   { path: '/signup', name: 'signup', component: signup },
   { path: '/login', name: 'login', component: login },
-  { path: '/order/:id', name: 'orderMerchant', component: OrderMerchant },
-  { path: '/summary', name: 'orderSummary', component: OrderSummary },
-  { path: '/payment', name: 'payment', component: Payment },
-  { path: '/cart', name: 'cartPage', component: CartPage },
-  { path: '/location', name: 'selectLocation', component: SelectLocation },
+  { path: '/order/:id', name: 'orderMerchant', component: OrderMerchant, meta: { requiresAuth: true } },
+  { path: '/summary', name: 'orderSummary', component: OrderSummary, meta: { requiresAuth: true } },
+  { path: '/payment', name: 'payment', component: Payment, meta: { requiresAuth: true } },
+  { path: '/cart', name: 'cartPage', component: CartPage, meta: { requiresAuth: true } },
+  { path: '/location', name: 'selectLocation', component: SelectLocation, meta: { requiresAuth: true } },
   { path: '/:catchAll(.*)', name: "pageNotFound", component: PageNotFound}, // redirect user to this page if path is not a valid one 
-  { path: '/activeorders', name: 'activeorders', component: ActiveOrders },
-  { path: '/pastorders', name: 'pastorders', component: PastOrders },
-  { path: '/help', name: 'help', component: Help },
-  { path: '/profile', name: 'profile', component: Profile },
+  { path: '/activeorders', name: 'activeorders', component: ActiveOrders, meta: { requiresAuth: true } },
+  { path: '/pastorders', name: 'pastorders', component: PastOrders, meta: { requiresAuth: true } },
+  { path: '/profile', name: 'profile', component: Profile, meta: { requiresAuth: true } },
   { path: '/faq', name: 'faq', component: FAQ },
   { path: '/about', name: 'about', component: About },
   { path: '/contact', name: 'contact', component: Contact },
-  { path: '/game', name: 'game', component: Game },
-  { path: '/collections', name: 'collections', component: Collections },
+  { path: '/game', name: 'game', component: Game, meta: { requiresAuth: true } },
+  { path: '/collections', name: 'collections', component: Collections, meta: { requiresAuth: true } },
   { path: '/reset-password', name: 'resetpassword', component: ResetPassword, meta: {hideNavbar: true} },
   { path: '/verify-account', name: 'verifyaccount', component: VerifyAccount, meta: {hideNavbar: true} },
 ]
 
-
-// REIWEN: Here is actually where we set up the router instance 
-// aka the thing that actually creates a router for the app 
 const router = createRouter({
-  // this just helps you to click "<-" and "->" in your browser 
+
   history: createWebHistory(import.meta.env.BASE_URL),
-  // you also pass in your `routes` array so that the router instance knows what it needs to do
+
   routes
+})
 
 
+router.beforeEach((to, from, next) => {
+
+  if (to.meta.requiresAuth) {
+  
+    const token = sessionStorage.getItem('token')
+    
+    if (!token) {
+      console.log('Route protection: No token found, redirecting to login')
+      next('/login')
+      return
+    }
+  
+    console.log('Route protection: Token found, allowing access to', to.path)
+    next()
+  } else {
+    next()
+  }
 })
 
 export default router

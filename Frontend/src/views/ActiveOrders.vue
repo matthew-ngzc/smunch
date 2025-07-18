@@ -28,6 +28,7 @@ const setupRealtimeSubscription = () => {
 // for supabase realtime
 onUnmounted(() => {
   realtimeOrdersService.unsubscribe()
+  
 })
 
 
@@ -55,6 +56,8 @@ async function fetchActiveOrders(page = 1) {
     const orders = res.data.orders
     totalOrders.value = res.data.total || 0
 
+    
+
     // for every order, you make a separate call to fetch its merchant info
     const ordersWithMerchant = await Promise.all(
       orders.map(async (order) => {
@@ -63,6 +66,10 @@ async function fetchActiveOrders(page = 1) {
         return order
       })
     )
+       
+       // sort by created_at DESC (latest first)
+    ordersWithMerchant.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+
     // store everything in reactive variable created earlier
     activeOrders.value = ordersWithMerchant
   } catch (error) {
@@ -111,6 +118,8 @@ function nextPage() {
 function getCombinedStatus(order) {
   if (order.payment_status === 'awaiting_payment') return 'awaiting_payment'
   if (order.payment_status === 'awaiting_verification') return 'awaiting_verification'
+  if (order.payment_status === 'refund_pending') return 'refund_pending'
+  if (order.payment_status === 'refund_complete') return 'refund_complete'
   if (order.payment_status === 'payment_confirmed') {
     if (order.order_status === 'preparing') return 'preparing'
     if (order.order_status === 'collected_by_runner') return 'collected_by_runner'
@@ -351,7 +360,7 @@ function getCombinedStatus(order) {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   margin-left: 20px;
   margin-right: 20px;
-  min-height: 600px;
+  max-height: 400px;
 }
 
 .empty-icon {
@@ -386,7 +395,7 @@ function getCombinedStatus(order) {
   border-radius: 8px;
   font-weight: bold;
   transition: background-color 0.2s;
-  margin-top: 330px;
+  margin-top: 100px;
 }
 
 .empty-action-btn:hover {
