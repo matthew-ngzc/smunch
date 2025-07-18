@@ -21,6 +21,7 @@
 import { defineStore } from 'pinia'
 import axiosInstance from '../utility/axiosInstance.js'
 
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: sessionStorage.getItem('token') || null,
@@ -53,7 +54,7 @@ export const useAuthStore = defineStore('auth', {
       sessionStorage.setItem('userId', this.userId)
       sessionStorage.setItem('userName', this.userName)
       sessionStorage.setItem('coins', this.coins.toString())
-      
+
       if (this.profilePicture) {
         sessionStorage.setItem('profilePicture', this.profilePicture)
       }
@@ -104,8 +105,11 @@ export const useAuthStore = defineStore('auth', {
       this.saveCollectionsToBackend()
     },
     setProfilePicture(profilePictureUrl) {
+      console.log('🖼️ Auth Store: setProfilePicture called with:', profilePictureUrl)
       this.profilePicture = profilePictureUrl
       sessionStorage.setItem('profilePicture', profilePictureUrl)
+      console.log('🖼️ Auth Store: profilePicture state updated to:', this.profilePicture)
+      console.log('🖼️ Auth Store: sessionStorage updated to:', sessionStorage.getItem('profilePicture'))
     },
     updateDinoUnlocked(newDinoUnlocked) {
       console.log('🦕 Auth Store: updateDinoUnlocked called', {

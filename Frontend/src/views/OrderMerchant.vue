@@ -98,6 +98,7 @@ export default defineComponent({
 
 
 <template>
+  <div class="merchant-page-wrapper">
   <div class="merchant-page">
     <div class="merchant-header">
 
@@ -133,15 +134,31 @@ export default defineComponent({
     </div>
 
     <button class="checkout-btn" @click="checkout">checkout</button>
+    </div>
   </div>
 </template>
 
 
 <style scoped>
+.merchant-page-wrapper {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: auto;
+}
+
 .merchant-page {
   padding: 20px;
   font-family: 'Inter', sans-serif;
   margin-top: 25px;
+  width: 100%;
+  max-width: 1200px;
 }
 
 .merchant-header {

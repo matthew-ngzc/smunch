@@ -42,14 +42,26 @@ const done = async () => {
   router.push({ name: 'activeorders' })
 }
 
+// Back button functionality
+function goBack() {
+  router.go(-1)
+}
+
 </script>
 
 <template>
+  <div class="payment-page-wrapper">
   <div class="payment-page">
      <!-- pass both data and routes -->
     <ordertimeline :data="data" :routes="routes" />
   
   <div class="payment-container">
+
+      <div class="back-button" @click="goBack">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
 
     <h2 class="title">Follow the steps below to proceed with payment.</h2><br />
 
@@ -64,13 +76,13 @@ const done = async () => {
         Send your payment screenshot to <strong>@smunch_bot</strong> via telegram.</p><br />
 
         <p><strong>STEP 3:</strong><br />
-        Press “done” once payment has been made!</p><br />
+          Press "done" once payment has been made!</p><br />
       </div>
 
       <!-- QR Code -->
       <div class="qr-box">
         <img :src="qrCode" alt="PayNow QR Code" class="qr-image" />
-        <p class="qr-caption">Paynow recipient’s name: <strong>Matt</strong></p>
+          <p class="qr-caption">Paynow recipient's name: <strong>Matt</strong></p>
       </div>
     </div>
 
@@ -80,10 +92,30 @@ const done = async () => {
 
     <button class="done-btn" @click="done">done</button>
   </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.payment-page-wrapper {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: auto;
+}
+
+.payment-page {
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+}
+
 .payment-container {
   max-width: 1500px;
   width: 1000px;
@@ -94,6 +126,32 @@ const done = async () => {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   font-family: 'Inter', sans-serif;
   text-align: center;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #4a5568;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.back-button:hover {
+  background: #f7fafc;
+  border-color: #38c172;
+  color: #38c172;
+  transform: scale(1.05);
 }
 
 .title {

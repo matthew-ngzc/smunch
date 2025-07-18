@@ -1,155 +1,164 @@
 <template>
-  <div class="collections-container">
-    <h1 class="title">Smunchy Collection</h1>
-
-    <!-- Display Word -->
-    <div class="word-container">
-      <span
-        v-for="(char, index) in letters"
-        :key="index"
-        class="letter"
-        :class="{
-          'locked-letter': index > unlockedIndex,
-          'just-unlocked': showLetterAnimation && index === justUnlockedIndex,
-        }"
-      >
-        {{ index <= unlockedIndex ? char : '?' }}
-      </span>
-    </div>
-
-    <!-- Dino Viewer with Arrows -->
-    <div class="dino-display">
-      <button v-if="selectedIndex > 0" class="arrow-btn prev-arrow" @click="prevDino">
-        <img src="/public/left-arrow.png" alt="Previous" class="arrow-img" />
-      </button>
-
-      <div class="dino-content">
-        <div v-if="selectedIndex <= unlockedIndex" class="dino-image-container">
-          <img
-            :src="dinoImages[selectedIndex]"
-            :alt="dinoNames[selectedIndex]"
-            class="dino-image"
-          />
+  <div class="collections-wrapper">
+      <div class="collections-container">
+    <div class="title-container">
+      <h1 class="title">Smunchy Collection</h1>
+      <div class="collection-info">
+        <div class="info-icon">
+          <img src="/infoIcon.png" alt="Info" class="info-icon-img" />
         </div>
-        <div v-else-if="selectedIndex === unlockedIndex + 1" class="tease-container">
-          <img
-            :src="dinoImages[selectedIndex]"
-            :alt="dinoNames[selectedIndex]"
-            class="dino-image tease-image"
-          />
-          <span class="tease-question-mark">?</span>
-        </div>
-        <div v-else class="mystery-container">
-          <img src="/dinoEgg.png" alt="Dino Egg" class="egg-background" />
-          <div class="mystery-mark">?</div>
-        </div>
-        <p v-if="selectedIndex <= unlockedIndex" class="dino-name">
-          {{ dinoNames[selectedIndex] }}
-        </p>
-
-        <div v-if="selectedIndex <= unlockedIndex" class="dino-info">
-          <p class="dino-description">{{ dinoDescriptions[selectedIndex] }}</p>
-          <p class="dino-favorite-food">Favorite Food: {{ dinoFavoriteFoods[selectedIndex] }}</p>
-        </div>
-
-        <div v-if="selectedIndex <= unlockedIndex" class="dino-actions">
-          <button class="equip-btn">Equip</button>
-          <button class="play-btn">Play</button>
-        </div>
-
-        <div v-else-if="selectedIndex === unlockedIndex + 1" class="locked-state">
-          <button class="unlock-btn" :disabled="!canUnlockCurrentDino" @click="unlockDino">
-            Unlock {{ dinoCosts[selectedIndex] }}
-            <img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="button-coin" />
-          </button>
-        </div>
-      </div>
-
-      <button
-        v-if="selectedIndex < dinoNames.length - 1"
-        class="arrow-btn next-arrow"
-        @click="nextDino"
-      >
-        <img src="/public/right-arrow.png" alt="Next" class="arrow-img" />
-      </button>
-    </div>
-
-    <!-- Dino Page Indicator -->
-    <div class="page-indicator">
-      <span
-        v-for="(dino, index) in dinoNames"
-        :key="index"
-        class="indicator-dot"
-        :class="{ active: index === selectedIndex }"
-        @click="selectedIndex = index"
-      ></span>
-    </div>
-
-    <!-- Confirmation Modal -->
-    <div v-if="showConfirmModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content smunch-modal" @click.stop>
-        <h3 class="modal-title">Confirm Unlock</h3>
-        <p class="modal-message">
-          Are you sure you want to unlock this smunchy for {{ dinoCosts[selectedIndex]
-          }}<img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="modal-coin" />?
-        </p>
-        <div class="modal-buttons">
-          <button class="modal-btn modal-btn-no" @click="closeModal">No</button>
-          <button class="modal-btn modal-btn-yes" @click="confirmUnlock">Yes</button>
+        <div class="tooltip">
+          <p class="info-text">Collect all smunchies to unlock the word! Unlock the word to discover a hidden gem!</p>
         </div>
       </div>
     </div>
 
-    <!-- Insufficient Balance Modal -->
-    <div
-      v-if="showInsufficientBalanceModal"
-      class="modal-overlay"
-      @click="closeInsufficientBalanceModal"
-    >
-      <div class="modal-content smunch-modal" @click.stop>
-        <h3 class="modal-title">Oops! You’re Short on Coins</h3>
-        <p class="modal-message">
-          Unlocking this smunchy costs 
-          <span class="cost-display">
-            {{ dinoCosts[selectedIndex] }}<img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="modal-coin" />
-          </span>
-          <br />Earn more coins to unlock it!
-        </p>
-        <div class="modal-buttons">
-          <button class="modal-btn modal-btn-no" @click="closeInsufficientBalanceModal">OK</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Spectacular Unlock Animation Overlay -->
-    <div v-if="showUnlockAnimation" class="unlock-celebration-overlay">
-      <!-- Confetti Particles -->
-      <div class="confetti-container">
-        <div
-          v-for="i in 50"
-          :key="i"
-          class="confetti-piece"
-          :style="{
-            left: Math.random() * 100 + '%',
-            animationDelay: Math.random() * 3 + 's',
-            backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'][
-              Math.floor(Math.random() * 6)
-            ],
+      <!-- Display Word -->
+      <div class="word-container">
+        <span
+          v-for="(char, index) in letters"
+          :key="index"
+          class="letter"
+          :class="{
+            'locked-letter': index > unlockedIndex,
+            'just-unlocked': showLetterAnimation && index === justUnlockedIndex,
           }"
-        ></div>
+        >
+          {{ index <= unlockedIndex ? char : '?' }}
+        </span>
       </div>
 
-      <!-- Success Message -->
-      <div class="unlock-success-message">
-        <div class="success-icon">🎉</div>
-        <h2 class="success-title">SMUNCHY UNLOCKED!</h2>
-        <p class="success-subtitle">
-          {{ dinoNames[justUnlockedIndex] }} has joined your collection!
-        </p>
+      <!-- Dino Viewer with Arrows -->
+      <div class="dino-display">
+        <button v-if="selectedIndex > 0" class="arrow-btn prev-arrow" @click="prevDino">
+          <img src="/public/left-arrow.png" alt="Previous" class="arrow-img" />
+        </button>
+
+        <div class="dino-content">
+          <div v-if="selectedIndex <= unlockedIndex" class="dino-image-container">
+            <img
+              :src="dinoImages[selectedIndex]"
+              :alt="dinoNames[selectedIndex]"
+              class="dino-image"
+            />
+          </div>
+          <div v-else-if="selectedIndex === unlockedIndex + 1" class="tease-container">
+            <img
+              :src="dinoImages[selectedIndex]"
+              :alt="dinoNames[selectedIndex]"
+              class="dino-image tease-image"
+            />
+            <span class="tease-question-mark">?</span>
+          </div>
+          <div v-else class="mystery-container">
+            <img src="/dinoEgg.png" alt="Dino Egg" class="egg-background" />
+            <div class="mystery-mark">?</div>
+          </div>
+          <p v-if="selectedIndex <= unlockedIndex" class="dino-name">
+            {{ dinoNames[selectedIndex] }}
+          </p>
+
+          <div v-if="selectedIndex <= unlockedIndex" class="dino-info">
+            <p class="dino-description">{{ dinoDescriptions[selectedIndex] }}</p>
+            <p class="dino-favorite-food">Favorite Food: {{ dinoFavoriteFoods[selectedIndex] }}</p>
+          </div>
+
+
+
+          <div v-else-if="selectedIndex === unlockedIndex + 1" class="locked-state">
+            <button class="unlock-btn" :disabled="!canUnlockCurrentDino" @click="unlockDino">
+              Unlock {{ dinoCosts[selectedIndex] }}
+              <img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="button-coin" />
+            </button>
+          </div>
+        </div>
+
+        <button
+          v-if="selectedIndex < dinoNames.length - 1"
+          class="arrow-btn next-arrow"
+          @click="nextDino"
+        >
+          <img src="/public/right-arrow.png" alt="Next" class="arrow-img" />
+        </button>
       </div>
 
-      <!-- Spectacular Glow Effect -->
-      <div class="unlock-glow-effect"></div>
+      <!-- Dino Page Indicator -->
+      <div class="page-indicator">
+        <span
+          v-for="(dino, index) in dinoNames"
+          :key="index"
+          class="indicator-dot"
+          :class="{ active: index === selectedIndex }"
+          @click="selectedIndex = index"
+        ></span>
+      </div>
+
+      <!-- Confirmation Modal -->
+      <div v-if="showConfirmModal" class="modal-overlay" @click="closeModal">
+        <div class="modal-content smunch-modal" @click.stop>
+          <h3 class="modal-title">Confirm Unlock</h3>
+          <p class="modal-message">
+            Are you sure you want to unlock this smunchy for {{ dinoCosts[selectedIndex]
+            }}<img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="modal-coin" />?
+          </p>
+          <div class="modal-buttons">
+            <button class="modal-btn modal-btn-no" @click="closeModal">No</button>
+            <button class="modal-btn modal-btn-yes" @click="confirmUnlock">Yes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insufficient Balance Modal -->
+      <div
+        v-if="showInsufficientBalanceModal"
+        class="modal-overlay"
+        @click="closeInsufficientBalanceModal"
+      >
+        <div class="modal-content smunch-modal" @click.stop>
+          <h3 class="modal-title">Oops! You're Short on Coins</h3>
+          <p class="modal-message">
+            Unlocking this smunchy costs 
+            <span class="cost-display">
+              {{ dinoCosts[selectedIndex] }}<img src="../assets/smunch_coin.jpg" alt="Smunch Coin" class="modal-coin" />
+            </span>
+            <br />Earn more coins to unlock it!
+          </p>
+          <div class="modal-buttons">
+            <button class="modal-btn modal-btn-no" @click="closeInsufficientBalanceModal">OK</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spectacular Unlock Animation Overlay -->
+      <div v-if="showUnlockAnimation" class="unlock-celebration-overlay">
+        <!-- Confetti Particles -->
+        <div class="confetti-container">
+          <div
+            v-for="i in 50"
+            :key="i"
+            class="confetti-piece"
+            :style="{
+              left: Math.random() * 100 + '%',
+              animationDelay: Math.random() * 3 + 's',
+              backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'][
+                Math.floor(Math.random() * 6)
+              ],
+            }"
+          ></div>
+        </div>
+
+        <!-- Success Message -->
+        <div class="unlock-success-message">
+          <div class="success-icon">🎉</div>
+          <h2 class="success-title">SMUNCHY UNLOCKED!</h2>
+          <p class="success-subtitle">
+            {{ dinoNames[justUnlockedIndex] }} has joined your collection!
+          </p>
+        </div>
+
+        <!-- Spectacular Glow Effect -->
+        <div class="unlock-glow-effect"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -305,12 +314,112 @@ const canUnlockCurrentDino = computed(() => {
 </script>
 
 <style scoped>
+.collections-wrapper {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+}
+
 .collections-container {
   max-width: 800px;
   margin: auto;
   padding: 3rem;
   text-align: center;
   font-family: 'Arial Rounded MT Bold', sans-serif;
+  position: relative;
+  width: 100%;
+}
+
+/* Collection Info */
+.collection-info {
+  position: relative;
+  z-index: 5;
+  cursor: pointer;
+}
+
+.info-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.info-icon:hover {
+  transform: scale(1.05);
+}
+
+.info-icon-img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.tooltip {
+  position: absolute;
+  top: 45px;
+  left: -10px;
+  max-width: 280px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  transform: translateY(-5px);
+  pointer-events: none;
+}
+
+.collection-info:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.info-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2f855a;
+  line-height: 1.2;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  text-align: left;
+  letter-spacing: 0.01em;
+  position: relative;
+  white-space: normal;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  backdrop-filter: blur(10px);
+  width: 320px;
+}
+
+.info-text::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 20px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid rgba(255, 255, 255, 0.95);
+}
+
+/* Title Container */
+.title-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
   position: relative;
 }
 
@@ -319,10 +428,12 @@ const canUnlockCurrentDino = computed(() => {
   font-size: 2rem;
   font-weight: 800;
   color: #134e4a;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
   text-align: center;
   letter-spacing: -0.01em;
   text-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+  position: relative;
+  z-index: 15;
 }
 
 /* Letter Progress Display */
@@ -600,15 +711,6 @@ const canUnlockCurrentDino = computed(() => {
 }
 
 /* Actions */
-.dino-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 0.5rem;
-}
-
-.equip-btn,
-.play-btn,
 .unlock-btn {
   padding: 0.5rem 1.2rem;
   border-radius: 10px;
@@ -617,19 +719,6 @@ const canUnlockCurrentDino = computed(() => {
   cursor: pointer;
   font-size: 0.9rem;
   transition: background 0.2s ease;
-}
-
-.equip-btn {
-  background: #d9edf7;
-  color: #31708f;
-}
-
-.play-btn {
-  background: #f7c948;
-  color: #7c5700;
-}
-
-.unlock-btn {
   background-color: #38c172;
   color: white;
 }

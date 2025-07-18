@@ -86,6 +86,7 @@ function nextPage() {
 </script>
 
 <template>
+  <div class="orders-page-wrapper">
   <div class="orders-page">
     <div class="orders-header">
       <h2>Order History</h2>
@@ -151,12 +152,28 @@ function nextPage() {
     </div>
 
     <OrderReceipt v-if="selectedOrder" :order="selectedOrder" :onClose="closeReceipt" :showOrderStatus="true" />
+    </div>
   </div>
 </template>
 
 <style scoped>
+.orders-page-wrapper {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #e0f7fa 0%, #c8e6c9 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: auto;
+}
+
 .orders-page {
   padding: 20px;
+  width: 100%;
+  max-width: 1200px;
 }
 
 .orders-page h2 {
@@ -321,6 +338,7 @@ function nextPage() {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   margin-left: 20px;
   margin-right: 20px;
+  max-height: 400px;
 }
 
 .empty-icon {

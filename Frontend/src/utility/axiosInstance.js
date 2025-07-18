@@ -15,7 +15,7 @@ function determineBaseURL(environment) {
   if (environment === 'deployed') {
     return 'https://backend-production-cbdf.up.railway.app'
   } else {
-    return 'http://124.243.149.250:3000' // adjust port to your backend dev server
+    return 'http://124.243.149.250:3000'  // adjust port to your backend dev server
   }
 }
 
