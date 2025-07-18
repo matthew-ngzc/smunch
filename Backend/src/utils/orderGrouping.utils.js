@@ -26,6 +26,7 @@ function roomDistance(roomA, roomB) {
   if (roomA.room_type  !== roomB.room_type)  score += 5;                  // type penalty
   score += Math.abs(roomA.floor - roomB.floor) * 10;                      // floor penalty
   score += Math.abs(roomA.room_number - roomB.room_number);               // door distance
+  //console.log(`[DEBUG] ${score}`)
   return score;
 }
 
@@ -38,11 +39,14 @@ function extractRoomKey(order) {
 /** Parse a key back into its structured pieces so the distance
  *  function can read numeric floor / room_no and compare strings. */
 function parseKey(key) {
-  // key example: "SCIS-seminar-4-30"
-  const [building, roomType, roomNumberStr] = key.split('-', 3);
+  // key looks like  "<building>-<room_type>-<floor>-<room>"
+  // room_type may itself contain dashes, so we grab from the *right*.
+  const parts = key.split('-');
 
-  // roomNumberStr => "4-30"  →  floor=4 , room=30
-  const [floorStr, roomStr] = roomNumberStr.split('-');
+  const roomStr  = parts.pop();          // last element
+  const floorStr = parts.pop();          // second-last
+  const building = parts.shift();        // first element
+  const roomType = parts.join('-');      // everything in between
 
   return {
     building,
@@ -51,6 +55,7 @@ function parseKey(key) {
     room_number: Number(roomStr)
   };
 }
+
 
 
 // TSP utilities (nearest0neightbour + 2-opt)
@@ -180,16 +185,18 @@ function kMedoidsWeighted({ points, k, dist, weights, maxIters, restarts }) {
     // all subsequent medoids are chosen based on distance from closest existing centre (to prefer far away points)
     // and also considers weights so that rooms with many orders are likely to be centres
     while (medoids.length < k) {
+      // for point i, compute distance from every already chosen medoid and take the smallest, then exaggerate it
       const d2 = allIdx.map(i =>
         Math.min(...medoids.map(m => dist[i][m])) ** 2 * weights[i]);
       // get probability
       const total = d2.reduce((a, b) => a + b, 0);
-      // inverse CDF sampling
+      // roulette wheel sampling (line them up, then choose a random number from 0 to total)
       let r = Math.random() * total, idx = 0;
       while ((r -= d2[idx]) > 0) idx++;
       medoids.push(idx);
     }
 
+    // Medoids created, assign points to clusters
     // -- PAM iterations (assign, update, repeat) -----------------------------------------------
     let changed = true,  // flag: did any medoid move in the last round?
         iter    = 0,     // how many PAM iterations so far
@@ -197,10 +204,16 @@ function kMedoidsWeighted({ points, k, dist, weights, maxIters, restarts }) {
     const medoidOf = idx => medoids.reduce((best, m, ci) =>
       dist[idx][m] < best.d ? { d: dist[idx][m], ci } : best,
       { d: Infinity, ci: -1 }).ci;
+    
 
     while (changed && iter++ < maxIters) {
       // assignment
-      assign = allIdx.map(medoidOf);
+      //assign = allIdx.map(medoidOf);
+      assign = allIdx.map(idx => {
+        const ci = medoidOf(idx);
+        //console.log(`[DEBUG] point ${idx} → cluster ${ci}`);
+        return ci;
+      })
 
       changed = false;
       for (let ci = 0; ci < k; ci++) {
@@ -406,6 +419,15 @@ export function clusterOrdersOptimal(
       dist[i][j] = dist[j][i] = d; //symmetric
     }
   }
+  // debugging distance
+  // for (let i = 0; i < dist.length; i++) {
+  //   for (let j = 0; j < dist[i].length; j++) {
+  //     if (!Number.isFinite(dist[i][j])) {
+  //       console.error('[BAD DIST]', i, j, roomKeys[i], roomKeys[j], dist[i][j]);
+  //     }
+  //   }
+  // }
+
 
   /* ── 4. k-medoids (weighted PAM) to create k clusters ────────────── */
   const { medoids, assign } = kMedoidsWeighted({
@@ -444,77 +466,3 @@ export function clusterOrdersOptimal(
 
   return clusters;
 }
-
-
-// export function groupOrdersByRoomProximity(orders, numClusters) {
-//   /*
-//   Bucket orders by unique room key (put the same destinations tgt)
-//   Room Buckets will look like 
-//   {
-//     "SCIS-2-2": [
-//         { order_id: 1, building: 'SCIS', floor: 2, room_number: 2, ... },
-//         { order_id: 7, building: 'SCIS', floor: 2, room_number: 2, ... }
-//     ],
-//     "SCIS-3-1": [
-//         { order_id: 3, building: 'SCIS', floor: 3, room_number: 1, ... }
-//     ]
-//   }
-//   */ 
-//   const roomBuckets = {};
-//   for (const order of orders) {
-//     const key = extractRoomKey(order);
-//     if (!roomBuckets[key]) roomBuckets[key] = [];
-//     roomBuckets[key].push(order);
-//   }
-
-//   const roomKeys = Object.keys(roomBuckets);
-
-//   // Initialize clusters with first N roomKeys (centers of clusters are how many runners we have)
-//   const clusters = Array(numClusters).fill(null).map((_, i) => ({
-//     center: roomKeys[i],
-//     rooms: [roomKeys[i]]
-//   }));
-
-//   // parse the centers of the clsters once and put into a map, for comparison with the extra rooms later
-//   const clusterCenters = new Map();
-//   for (const cluster of clusters) {
-//     const [building, floorStr, roomNumberStr] = cluster.center.split('-');
-//     clusterCenters.set(cluster.center, {
-//         building,
-//         floor: parseInt(floorStr),
-//         room_number: parseInt(roomNumberStr)
-//     });
-//   }
-
-//   // Assign remaining rooms to closest cluster (using scoring method)
-//   for (let i = numClusters; i < roomKeys.length; i++) {
-//     const roomKey = roomKeys[i];
-//     // parse the room
-//     const [building, floorStr, roomNumberStr] = roomKey.split('-');
-//     const current = {
-//       building,
-//       floor: parseInt(floorStr),
-//       room_number: parseInt(roomNumberStr)
-//     };
-
-//     // compare to the center of each cluster
-//     let best = { score: Infinity, cluster: null };
-//     for (const cluster of clusters) {
-//       const center = clusterCenters.get(cluster.center);
-//       const score = roomDistance(current, center);
-//       // find the lowest distance cluster
-//       if (score < best.score) {
-//         best = { score, cluster };
-//       }
-//     }
-//     //put in the best cluster
-//     best.cluster.rooms.push(roomKey);
-//   }
-
-//   // Return grouped orders per cluster
-//   return clusters.map(cluster => ({
-//     center: cluster.center,
-//     rooms: cluster.rooms,
-//     orders: cluster.rooms.flatMap(roomKey => roomBuckets[roomKey])
-//   }));
-// }

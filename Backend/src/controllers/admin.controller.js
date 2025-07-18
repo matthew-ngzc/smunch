@@ -1,11 +1,21 @@
-import { DELIVERY_TIMINGS, ORDER_STATUSES } from '../constants/enums.constants.js';
-import { createMerchantOrThrow } from '../models/merchant.model.js';
-import { assignRunnerToOrders, getFullOrderByIdOrThrow, getOrdersForTodayBySlot, updateOrderStatusBulk, updatePaymentAndOrderStatusToPaid } from '../models/order.model.js';
-import { getUserByIdOrThrow } from '../models/user.model.js';
-import { buildPendingTransactions } from '../services/payment.service.js';
-import { sendReceiptEmail, sendTestEmail } from '../utils/mailer.js';
-import { clusterOrdersOptimal } from '../utils/orderGrouping.utils.js';
-import { formatCentsToDollars } from '../utils/payment.utils.js';
+import {
+  DELIVERY_TIMINGS,
+  ORDER_STATUSES,
+} from "../constants/enums.constants.js";
+import { createMerchantOrThrow } from "../models/merchant.model.js";
+import {
+  assignRunnerToOrders,
+  getFullOrderByIdOrThrow,
+  getFullOrdersForTodayBySlot,
+  updateOrderStatusBulk,
+  updatePaymentAndOrderStatusToPaid,
+} from "../models/order.model.js";
+import { getUserByIdOrThrow } from "../models/user.model.js";
+import { buildPendingTransactions } from "../services/payment.service.js";
+import { sendReceiptEmail, sendTestEmail } from "../utils/mailer.js";
+import { extractItems } from "../utils/order.utils.js";
+import { clusterOrdersOptimal } from "../utils/orderGrouping.utils.js";
+import { formatCentsToDollars } from "../utils/payment.utils.js";
 
 /**
  * @swagger
@@ -13,7 +23,7 @@ import { formatCentsToDollars } from '../utils/payment.utils.js';
  *   post:
  *     summary: Create a new merchant (admin only)
  *     description: |
- *       Admin-only route to create a new merchant record.  
+ *       Admin-only route to create a new merchant record.
  *       This only creates the merchant in the database and optionally stores an email address for later onboarding.
  *     tags: [Admin]
  *     security:
@@ -82,8 +92,8 @@ export const addMerchant = async (req, res, next) => {
       location,
       contact_number,
       image_url,
-      payout_frequency = 'weekly',
-      email = null
+      payout_frequency = "weekly",
+      email = null,
     } = req.body;
 
     const merchant = await createMerchantOrThrow({
@@ -92,7 +102,7 @@ export const addMerchant = async (req, res, next) => {
       contact_number,
       image_url,
       payout_frequency,
-      email
+      email,
     });
 
     res.status(201).json({ merchant });
@@ -101,18 +111,17 @@ export const addMerchant = async (req, res, next) => {
   }
 };
 
-
 /**
  * @swagger
  * /api/admin/email-test:
  *   post:
  *     summary: Send a test email for internal validation
  *     description: |
- *       Sends a dummy email to the specified address using SMUNCH's email service.  
+ *       Sends a dummy email to the specified address using SMUNCH's email service.
  *       This is intended for internal use only to verify that email delivery is working.
- *       
+ *
  *       The content of the email explicitly states it's for dev testing purposes.
- *       
+ *
  *       ⚠️ If this email is received by someone outside the dev team, they are instructed to notify the team via Telegram.
  *     tags: [Email]
  *     requestBody:
@@ -152,16 +161,19 @@ export const addMerchant = async (req, res, next) => {
  * Body: { to: string }
  */
 export const testEmail = async (req, res, next) => {
-  try{
-    const {to} = req.body;
-    if (!to) return res.status(400).json({ message: 'Missing recipient email address' });
+  try {
+    const { to } = req.body;
+    if (!to)
+      return res
+        .status(400)
+        .json({ message: "Missing recipient email address" });
 
-    await sendTestEmail({to});
-    return res.status(200).json({ message: 'Test email sent successfully' });
-  }catch(err){
+    await sendTestEmail({ to });
+    return res.status(200).json({ message: "Test email sent successfully" });
+  } catch (err) {
     next(err);
   }
-}
+};
 
 /**
  * @swagger
@@ -170,10 +182,10 @@ export const testEmail = async (req, res, next) => {
  *     summary: Get all pending payments (admin only)
  *     description: |
  *       Retrieves a list of all orders where payment status is either `awaiting_payment` or `awaiting_verification`.
- *       
- *       🔒 **Access**:  
+ *
+ *       🔒 **Access**:
  *       ✅ Admins
- *       
+ *
  *       Each transaction includes the following fields:
  *       - `order_id`: Unique ID of the order
  *       - `reference_number`: Payment reference (e.g., SMUNCH-42-1)
@@ -220,7 +232,6 @@ export const getPendingPayments = async (req, res, next) => {
   }
 };
 
-
 /**
  * @swagger
  * /api/admin/payments/verify:
@@ -228,16 +239,16 @@ export const getPendingPayments = async (req, res, next) => {
  *     summary: Verify payments and return updated pending list (admin only)
  *     description: |
  *       Admin confirms payment for selected orders.
- *       
- *       🔒 **Access**:  
+ *
+ *       🔒 **Access**:
  *       ✅ Admins
- *       
- *       - For `paid: true` items:  
- *         - Updates `payment_status` → `payment_confirmed`  
+ *
+ *       - For `paid: true` items:
+ *         - Updates `payment_status` → `payment_confirmed`
  *         - Updates `order_status` → `payment_verified`
- * 
+ *
  *       - For the request body, the only important fields are `order_id` and `paid`, but simply copy and pasting the output from the `payments/pending` endpoint and changing the `paid` to true will also work
- *       
+ *
  *       - Returns the new order list with pending payments
  *     tags: [Admin]
  *     security:
@@ -288,7 +299,7 @@ export const verifyPayments = async (req, res, next) => {
   try {
     const { updates } = req.body;
     if (!Array.isArray(updates)) {
-      return res.status(400).json({ message: 'updates must be an array' });
+      return res.status(400).json({ message: "updates must be an array" });
     }
 
     // Step 1: Extract only paid=true
@@ -304,17 +315,22 @@ export const verifyPayments = async (req, res, next) => {
     await updatePaymentAndOrderStatusToPaid(paidOrderIds);
 
     // Send receipts to those who have paid
-    for (const orderId of paidOrderIds){
-      try{
-
+    for (const orderId of paidOrderIds) {
+      try {
         const order = await getFullOrderByIdOrThrow(orderId);
         console.log(`order.customer_id: ${order.customer_id}`);
 
-        const user = await getUserByIdOrThrow(order.customer_id, 'user_id, email');
+        const user = await getUserByIdOrThrow(
+          order.customer_id,
+          "user_id, email"
+        );
 
         await sendReceiptEmail(user.email, order);
-      }catch(err){
-        console.error(`[EMAIL FAILURE] Could not send receipt for order ${orderId}:`, err.message);
+      } catch (err) {
+        console.error(
+          `[EMAIL FAILURE] Could not send receipt for order ${orderId}:`,
+          err.message
+        );
       }
     }
 
@@ -327,7 +343,6 @@ export const verifyPayments = async (req, res, next) => {
   }
 };
 
-
 /**
  * @swagger
  * /api/admin/orders/assign-runners:
@@ -335,11 +350,11 @@ export const verifyPayments = async (req, res, next) => {
  *     summary: Assign orders to runners based on clustering
  *     description: |
  *       Clusters today's orders for a specific delivery time slot and assigns each cluster to a runner.
- *       
+ *
  *       This endpoint is intended to be called ~30 minutes before delivery (e.g., at 11:30 AM for 12:00 PM lunch).
- *       
+ *
  *       Each cluster corresponds to a group of orders going to nearby rooms, optimized using SMUNCH's k-medoids algorithm.
- *       
+ *
  *       Runner IDs are assigned in order to each cluster and stored in the database via the `runner_id` column.
  *     tags: [Admin]
  *     requestBody:
@@ -391,92 +406,121 @@ export const assignRunnersToOrders = async (req, res, next) => {
   try {
     const { slot, runner_ids } = req.body;
 
-    // Validate input
+    /* 1. Validate input  ------------------------------------------------ */
     const validSlots = Object.keys(DELIVERY_TIMINGS);
     if (!slot || !validSlots.includes(slot)) {
-      return res.status(400).json({ message: `Invalid slot. Allowed: ${validSlots.join(', ')}` });
+      return res
+        .status(400)
+        .json({ message: `Invalid slot. Allowed: ${validSlots.join(", ")}` });
     }
 
     if (!Array.isArray(runner_ids) || runner_ids.length === 0) {
-      return res.status(400).json({ message: 'runner_ids must be a non-empty array' });
+      return res
+        .status(400)
+        .json({ message: "runner_ids must be a non-empty array" });
     }
 
-    // Fetch orders
-    const orders = await getOrdersForTodayBySlot(slot);
+    /* 2. Fetch orders for the slot  ------------------------------------ */
+    const orders = await getFullOrdersForTodayBySlot(slot);
 
     if (!orders.length) {
-      return res.status(200).json({ message: 'No orders found for this slot', assignments: [] });
+      return res
+        .status(200)
+        .json({ message: "No orders found for this slot", assignments: [] });
     }
 
+    /* 3. Guard: more runners than orders ------------------------------- */
+    //TODO: return some runners empty, randomly assign
     if (runner_ids.length > orders.length) {
-      return res.status(400).json({ message: 'More runners than orders — cannot assign meaningfully' });
+      return res.status(400).json({
+        message: "More runners than orders — cannot assign meaningfully",
+      });
     }
 
-    // cluster orders
+    /* 4. Cluster orders  ------------------------------------------------ */
     const clusters = clusterOrdersOptimal(orders, runner_ids.length);
 
-    // Store runner_id in DB
+    /* 5. Build runner-centric response  -------------------------------- */
+    const result = [];
+
     for (let i = 0; i < clusters.length; i++) {
       const runnerId = runner_ids[i];
-      const orderIds = clusters[i].orders.map(o => o.order_id);
+      const orderIds = clusters[i].orders.map((o) => o.order_id);
+
+      /* 5a. Persist assignments + status bump */
       await assignRunnerToOrders(orderIds, runnerId);
-      await updateOrderStatusBulk(orderIds, ORDER_STATUSES[2]);
+      // change order status to preparing once assigned runner
+      await updateOrderStatusBulk(orderIds, ORDER_STATUSES[2]); // e.g. “assigned_runner”
 
-            // Group by merchant
+      /* 5b. Aggregate items by merchant for shopping list */
       const merchantMap = new Map();
-
       for (const order of clusters[i].orders) {
         const key = order.merchant_id;
         if (!merchantMap.has(key)) {
           merchantMap.set(key, {
             merchant_name: order.merchant_name,
             total_amount_cents: 0,
-            items_to_order: []
+            items_to_order: new Map(), // itemName → { qty, notes }
           });
         }
-
         const merchant = merchantMap.get(key);
         merchant.total_amount_cents += order.total_amount_cents;
 
+        /* push / merge each item */
         for (const item of order.items || []) {
-          merchant.items_to_order.push({
-            name: item.menu_items.name,
-            quantity: item.quantity,
-            notes: item.notes,
-            customisations: item.customisations
-          });
+          const itemKey =
+            item.menu_items.name +
+            (item.notes || "") +
+            (item.customisations || "");
+          if (!merchant.items_to_order.has(itemKey)) {
+            merchant.items_to_order.set(itemKey, {
+              name: item.menu_items.name,
+              quantity: 0,
+              notes: item.notes,
+              customisations: item.customisations,
+            });
+          }
+          merchant.items_to_order.get(itemKey).quantity += item.quantity;
         }
       }
 
-      const ordersSimplified = clusters[i].orders.map(o => ({
+      /* 5c. Simplify orders for route block (now incl. items) */
+      const ordersSimplified = clusters[i].orders.map((o) => ({
         order_id: o.order_id,
         building: o.building,
         room_type: o.room_type,
         room_number: o.room_number,
-        delivery_time: o.delivery_time
+        delivery_time: o.delivery_time,
+        items: extractItems(o),
       }));
 
-      const merchantGroups = Array.from(merchantMap.values()).map(m => ({
+      /* 5d. Final merchant array */
+      const merchantGroups = Array.from(merchantMap.values()).map((m) => ({
         merchant_name: m.merchant_name,
         total_amount_dollars: formatCentsToDollars(m.total_amount_cents),
-        items_to_order: m.items_to_order
+        items_to_order: Array.from(m.items_to_order.values()),
       }));
 
+      /* 5e. Push into result */
       result.push({
         runner_id: runnerId,
-        orders: ordersSimplified,
-        merchants: merchantGroups
+        /* optional mini-overview */
+        overview: {
+          total_orders: clusters[i].orders.length,
+          total_amount_dollars: formatCentsToDollars(
+            clusters[i].orders.reduce((sum, o) => sum + o.total_amount_cents, 0)
+          ),
+        },
+        merchants: merchantGroups,
+        route: clusters[i].route, // explicit room sequence
+        orders: ordersSimplified, // detailed bags per stop
       });
     }
 
-    // 🧾 Return assignments
-    // const result = clusters.map((cluster, i) => ({
-    //   runner_id: runner_ids[i],
-    //   route: cluster.route,
-    //   orders: cluster.orders
-    // }));
-
-    res.status(200).json({ message: 'Runner assignment complete', assignments: result });
+    /* 6. Respond -------------------------------------------------------- */
+    res
+      .status(200)
+      .json({ message: "Runner assignment complete", assignments: result });
   } catch (err) {
     next(err);
   }
