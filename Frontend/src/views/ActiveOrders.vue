@@ -134,65 +134,65 @@ function getCombinedStatus(order) {
 
 <template>
   <div class="orders-page-wrapper">
-    <div class="orders-page">
+  <div class="orders-page">
 
-        <div class="orders-header">
-        <h2>Active Orders</h2>
-        <InfoPopup />
-      </div>
+      <div class="orders-header">
+      <h2>Active Orders</h2>
+      <InfoPopup />
+    </div>
 
-      <ul class="orders-list">
-        <li v-for="order in activeOrders" :key="order.order_id" class="order-card" @click="openReceipt(order)">
-          <div class="order-content">
-            <img :src="order.merchant.image_url" alt="merchant logo" class="merchant-logo" />
-            <div class="order-main">
-            <div class="order-header">
-              <div class="order-text">
-                <h3>Order {{ order.order_id }}</h3>
-                <div class="order-meta">
-                  <p>Destination: School of {{ formatLocation(order) }}</p>
-                  <p>Merchant: {{ order.merchant.name }}</p>
-                  <p>Delivery date & time: {{ formatDateTime(order.delivery_time) }}</p>
-                  <small>Order placed on {{ formatDateTime(order.created_at) }}</small>
-                </div>
-              </div>
-
-              <div class="order-summary">
-                <div class="top-summary">
-                  <span>{{ getItemCount(order) }} item<span v-if="getItemCount(order) > 1">s</span></span>
-                  <div class="order-price">${{ (order.total_amount_cents / 100).toFixed(2) }}</div>
-                </div>
-                <span class="status-badge" :class="formatStatusClass(getCombinedStatus(order))">
-                  {{ formatStatus(getCombinedStatus(order)) }}
-                </span>
-
+    <ul class="orders-list">
+      <li v-for="order in activeOrders" :key="order.order_id" class="order-card" @click="openReceipt(order)">
+        <div class="order-content">
+          <img :src="order.merchant.image_url" alt="merchant logo" class="merchant-logo" />
+          <div class="order-main">
+          <div class="order-header">
+            <div class="order-text">
+              <h3>Order {{ order.order_id }}</h3>
+              <div class="order-meta">
+                <p>Destination: School of {{ formatLocation(order) }}</p>
+                <p>Merchant: {{ order.merchant.name }}</p>
+                <p>Delivery date & time: {{ formatDateTime(order.delivery_time) }}</p>
+                <small>Order placed on {{ formatDateTime(order.created_at) }}</small>
               </div>
             </div>
-            </div>
-          </div> 
-        </li>
-      </ul>
-      <!-- Empty state for no orders -->
-      <div v-if="activeOrders.length === 0" class="empty-state">
-        <h3>No Active Orders</h3>
-        <p>You don't have any active orders right now. Place an order to see it here!</p>
-        <router-link to="/order" class="empty-action-btn">Place Order</router-link>
-      </div>
 
-      <!-- Pagination - only show if there are orders -->
-      <div v-if="activeOrders.length > 0" class="pagination">
-        <button class="page-btn nav-btn" :disabled="currentPage === 1" @click="prevPage">&#60;</button>
-        <button
-          v-for="page in paginationRange"
-          :key="page"
-          :class="['page-btn', { active: page === currentPage } ]"
-          @click="changePage(page)"
-        >
-          {{ page }}
-        </button>
-        <button class="page-btn nav-btn" :disabled="currentPage === totalPages" @click="nextPage">&#62;</button>
-      </div>
-      <OrderReceipt v-if="selectedOrder" :order="selectedOrder" :onClose="closeReceipt" />
+            <div class="order-summary">
+              <div class="top-summary">
+                <span>{{ getItemCount(order) }} item<span v-if="getItemCount(order) > 1">s</span></span>
+                <div class="order-price">${{ (order.total_amount_cents / 100).toFixed(2) }}</div>
+              </div>
+              <span class="status-badge" :class="formatStatusClass(getCombinedStatus(order))">
+                {{ formatStatus(getCombinedStatus(order)) }}
+              </span>
+
+            </div>
+          </div>
+          </div>
+        </div> 
+      </li>
+    </ul>
+    <!-- Empty state for no orders -->
+    <div v-if="activeOrders.length === 0" class="empty-state">
+      <h3>No Active Orders</h3>
+      <p>You don't have any active orders right now. Place an order to see it here!</p>
+      <router-link to="/order" class="empty-action-btn">Place Order</router-link>
+    </div>
+
+    <!-- Pagination - only show if there are orders -->
+    <div v-if="activeOrders.length > 0" class="pagination">
+      <button class="page-btn nav-btn" :disabled="currentPage === 1" @click="prevPage">&#60;</button>
+      <button
+        v-for="page in paginationRange"
+        :key="page"
+        :class="['page-btn', { active: page === currentPage } ]"
+        @click="changePage(page)"
+      >
+        {{ page }}
+      </button>
+      <button class="page-btn nav-btn" :disabled="currentPage === totalPages" @click="nextPage">&#62;</button>
+    </div>
+    <OrderReceipt v-if="selectedOrder" :order="selectedOrder" :onClose="closeReceipt" />
     </div>
   </div>
 </template>

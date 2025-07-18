@@ -77,64 +77,86 @@ const next = async () => {
   
 }
 
+// Back button functionality
+function goBack() {
+  router.go(-1)
+}
+
 </script>
 
 <template>
   <div class="summary-page-wrapper">
-    <div class="summary-page">
+  <div class="summary-page">
 
-      <div class="timeline-wrapper">
-        <ordertimeline :data="data" />
+      <!-- pass both data and routes -->
+      <ordertimeline :data="data" />
+
+    <!-- box -->
+    <div class="summary-box">
+
+        <div class="back-button" @click="goBack">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+      <h2>Order summary</h2>
+
+      <!-- content inside box -->
+      <div class="summary-contents">
+
+        <div class="summary-items">
+          <div class="item-row header">
+            <div>Item</div> 
+            <div class="right">
+              <div>Quantity</div> 
+              <div>Price</div>
+            </div>
+            
+          </div>
+          <!--  loop through each item in cart and present info -->
+          <div v-for="item in cartStore.items" :key="item.id" class="item-row">
+            <div class="name">{{ item.name }}</div>
+            <div class="right-text"> 
+              <div class="qty">{{ item.quantity }}</div>
+              <div class="price">${{ (item.quantity * item.price).toFixed(2) }}</div>
+            </div>
+          </div>
+        </div>
+      
+        <div class="summary-totals">
+
+          <div class="cost-wrapper"> 
+            <!--  total cost of items in cart, from script using computed -->
+            <span> Total (Excl. delivery fee): </span> 
+            <span> ${{ (total-1).toFixed(2) }}</span> 
+          </div>
+
+          <div class="total-row">
+            <span>Delivery fee:</span>
+            <span>$1.00</span>
+          </div>
+          <div class="total-row bold">
+            <span>Total:</span>
+            <span>${{ total.toFixed(2) }}</span>
+            
+          </div>
+           <hr />
+        </div>
+
       </div>
 
-      <!-- box -->
-      <div class="summary-box">
+      
 
-        <h2>Order summary</h2>
+      <div class="summary-section">
+        <h2>Delivery details</h2>
 
-        <!-- content inside box -->
-        <div class="summary-contents">
-
-          <div class="summary-items">
-            <div class="item-row header">
-              <div>Item</div> 
-              <div class="right">
-                <div>Quantity</div> 
-                <div>Price</div>
-              </div>
-              
-            </div>
-            <!--  loop through each item in cart and present info -->
-            <div v-for="item in cartStore.items" :key="item.id" class="item-row">
-              <div class="name">{{ item.name }}</div>
-              <div class="right-text"> 
-                <div class="qty">{{ item.quantity }}</div>
-                <div class="price">${{ (item.quantity * item.price).toFixed(2) }}</div>
-              </div>
-            </div>
-          </div>
-        
-          <div class="summary-totals">
-
-            <div class="cost-wrapper"> 
-              <!--  total cost of items in cart, from script using computed -->
-              <span> Total (Excl. delivery fee): </span> 
-              <span> ${{ (total-1).toFixed(2) }}</span> 
-            </div>
-
-            <div class="total-row">
-              <span>Delivery fee:</span>
-              <span>$1.00</span>
-            </div>
-            <div class="total-row bold">
-              <span>Total:</span>
-              <span>${{ total.toFixed(2) }}</span>
-              
-            </div>
-             <hr />
-          </div>
-
+        <div class="delivery-details">
+          <p><strong>Location</strong><br />{{ deliveryStore.building }} {{ deliveryStore.floor }} - {{ deliveryStore.facilityType }}</p>
+          <p><strong>Date</strong><br />{{ deliveryStore.date }}</p>
+          <p><strong>Time</strong><br />{{ deliveryStore.time }}</p>
         </div>
+      </div>
 
         
 
@@ -173,11 +195,10 @@ const next = async () => {
   width: 100%;
   max-width: 1200px;
   padding: 20px;
-}
-
-.timeline-wrapper {
-  width: 100%;
-  align-self: stretch !important; /* forces it to ignore align-items: center */
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .summary-box {
@@ -196,6 +217,32 @@ const next = async () => {
   padding: 50px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   width: 100%;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #4a5568;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.back-button:hover {
+  background: #f7fafc;
+  border-color: #38c172;
+  color: #38c172;
+  transform: scale(1.05);
 }
 
 .summary-contents {

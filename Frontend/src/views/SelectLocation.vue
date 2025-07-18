@@ -65,14 +65,25 @@ async function goToSummary() {
   deliveryStore.roomNumber = roomNumber.value
   router.push('/summary')
 }
+
+// Back button functionality
+function goBack() {
+  router.go(-1)
+}
 </script>
 
 <template>
   <div class="select-location-page-wrapper">
-    <div class="select-location-page">
-      <ordertimeline :data="data" />
+  <div class="select-location-page">
+    <ordertimeline :data="data" />
 
       <div class="delivery-form-container">
+        <div class="back-button" @click="goBack">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
         <div class="form-header">
           <div class="header-accent"></div>
           <h2>Delivery Location</h2>
@@ -86,16 +97,16 @@ async function goToSummary() {
             <div class="select-wrapper">
               <select v-model="building" class="modern-select">
                 <option value="" disabled selected hidden>Select building</option>
-                <option value="Business">School of Business</option>
-                <option value="Law">School of Law</option>
-                <option value="Economics">School of Economics</option>
-                <option value="Accounting">School of Accounting</option>
-                <option value="Scis1">School of Computing and Information Systems 1</option>
-                <option value="Scis2">School of Computing and Information Systems 2</option>
-              </select>
+            <option value="Business">School of Business</option>
+            <option value="Law">School of Law</option>
+            <option value="Economics">School of Economics</option>
+            <option value="Accounting">School of Accounting</option>
+            <option value="Scis1">School of Computing and Information Systems 1</option>
+            <option value="Scis2">School of Computing and Information Systems 2</option>
+          </select>
               <div class="select-arrow"></div>
             </div>
-          </div>
+        </div>
 
           <!-- Floor Selection -->
           <div class="form-section">
@@ -106,10 +117,10 @@ async function goToSummary() {
                 <option value="Level 2">Level 2</option>
                 <option value="Level 3">Level 3</option>
                 <option value="Level 4">Level 4</option>
-              </select>
+          </select>
               <div class="select-arrow"></div>
             </div>
-          </div>
+        </div>
 
           <!-- Room Number -->
           <div class="form-section">
@@ -125,7 +136,7 @@ async function goToSummary() {
             <div v-if="roomNumberError" class="error-message">
               {{ roomNumberError }}
             </div>
-          </div>
+        </div>
 
           <!-- Facility Type -->
           <div class="form-section">
@@ -137,10 +148,10 @@ async function goToSummary() {
                 <option value="Group study room">Group Study Room</option>
                 <option value="Meeting pod">Meeting Pod</option>
                 <option value="Seminar room">Seminar Room</option>
-              </select>
+          </select>
               <div class="select-arrow"></div>
             </div>
-          </div>
+        </div>
 
           <!-- Date -->
           <div class="form-section">
@@ -152,7 +163,7 @@ async function goToSummary() {
                 class="modern-input"
               />
             </div>
-          </div>
+        </div>
 
           <!-- Time -->
           <div class="form-section">
@@ -160,11 +171,11 @@ async function goToSummary() {
             <div class="select-wrapper">
               <select v-model="time" class="modern-select">
                 <option value="" disabled selected hidden>Select time</option>
-                <option value="08:15 AM">08:15 AM</option>
-                <option value="12:00 PM">12:00 PM</option>
-                <option value="03:30 PM">03:30 PM</option>
-                <option value="07:00 PM">07:00 PM</option>
-              </select>
+            <option value="08:15 AM">08:15 AM</option>
+            <option value="12:00 PM">12:00 PM</option>
+            <option value="03:30 PM">03:30 PM</option>
+            <option value="07:00 PM">07:00 PM</option>
+          </select>
               <div class="select-arrow"></div>
             </div>
           </div>
@@ -175,15 +186,12 @@ async function goToSummary() {
           <div class="banner-content">
             <h4>Please complete all fields</h4>
             <p>Fill in all the information above to continue</p>
-          </div>
         </div>
+      </div>
 
         <!-- Next Button -->
-        <div class="button-container">
-          <button class="next-button" @click="goToSummary">
-            <span class="button-text">Continue</span>
-            <div class="button-arrow"></div>
-          </button>
+        <div class="wrapper">
+          <button class="next" @click="goToSummary">next</button>
         </div>
       </div>
     </div>
@@ -224,6 +232,32 @@ async function goToSummary() {
   max-width: 900px;
   margin: 0 auto;
   animation: fadeInUp 0.6s ease-out;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #4a5568;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.back-button:hover {
+  background: #f7fafc;
+  border-color: #38c172;
+  color: #38c172;
+  transform: scale(1.05);
 }
 
 .form-header {
@@ -364,70 +398,26 @@ async function goToSummary() {
   opacity: 0.8;
 }
 
-.button-container {
+.wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 24px;
 }
 
-.next-button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 28px;
-  background: linear-gradient(135deg, #38c172 0%, #2f855a 100%);
+.next {
+  display: block;
+  margin: 24px auto 0;
+  padding: 12px 24px;
+  background-color: #007a3d;
   color: white;
   border: none;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  font-weight: 600;
+  border-radius: 20px;
+  font-size: 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 20px rgba(56, 193, 114, 0.3);
-  position: relative;
-  overflow: hidden;
+  font-weight: bold;
 }
 
-.next-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.6s ease;
-}
-
-.next-button:hover::before {
-  left: 100%;
-}
-
-.next-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(56, 193, 114, 0.4);
-}
-
-.next-button:active {
-  transform: translateY(0);
-}
-
-.button-text {
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.button-arrow {
-  width: 14px;
-  height: 14px;
-  border-right: 2px solid white;
-  border-top: 2px solid white;
-  transform: rotate(45deg);
-  transition: transform 0.2s ease;
-}
-
-.next-button:hover .button-arrow {
-  transform: rotate(45deg) translateX(2px);
+.next:hover {
+  background-color: #036232;
 }
 
 /* Animations */
@@ -471,12 +461,7 @@ async function goToSummary() {
   .form-grid {
     grid-template-columns: 1fr;
     gap: 16px;
-  }
-  
-  .next-button {
-    padding: 12px 24px;
-    font-size: 0.9rem;
-  }
+}
 }
 
 @media (max-width: 480px) {
