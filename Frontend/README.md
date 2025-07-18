@@ -38,6 +38,7 @@ npm install
 
 ### 3. Environment Configuration
 
+The .env has been uploaded as a .txt file in devpost. Please refer to "Backend and Frontend ENV variables.txt" file. 
 Create a `.env` file in the Frontend directory with the following variables:
 
 ```env
