@@ -65,42 +65,73 @@ export default defineComponent({
 
 <template>
   <div class="order-page-wrapper">
-  <div class="order-page" :class="{ faded: isChatExpanded }">
-    <!-- Search Bar -->
-    <!-- <div class="chat-search-bar">
-      <input type="text" placeholder="Order with SMUNCH.AI !" class="chat-input" />
-      <button class="chat-send-btn">Send</button>
-    </div> -->
-    <div>
-      <ChatBar @chatStateChange="handleChatStateChange"/>
-    </div>
+    <div class="order-page" :class="{ faded: isChatExpanded }">
+      <!-- ChatBar Component -->
+      <div class="chat-container">
+        <ChatBar @chatStateChange="handleChatStateChange"/>
+      </div>
 
-    <div class="order-content">
-      <hr class="divider" />
+      <!-- Main Content -->
+      <div class="order-content">
+        <!-- Header Section -->
+        <div class="header-section">
+          <div class="header-accent"></div>
+          <h1 class="page-title">Order with SMUNCH!</h1>
+          <p class="page-subtitle">Choose your favorite restaurant and let us handle the rest</p>
+        </div>
 
-      <h2>order something with SMUNCH!</h2>
-      <div class="merchant-list">
-        <div
-          v-for="merchant in merchants"
-          :key="merchant.id"
-          class="merchant-card"
-          @click="goToMerchant(merchant.merchant_id)"
-        >
-          <div class="logo-wrapper">
-            <img :src="merchant.image_url" alt="merchant logo" class="merchant-logo" />
-          </div>
-          <div class="text">
-            <h3>{{ merchant.name }}</h3>
-            <p>$1.00 delivery fee</p>
+        <!-- Merchant Grid -->
+        <div class="merchant-grid">
+          <div
+            v-for="merchant in merchants"
+            :key="merchant.id"
+            class="merchant-card"
+            @click="goToMerchant(merchant.merchant_id)"
+          >
+            <div class="card-glow"></div>
+            <div class="card-content">
+              <div class="logo-container">
+                <img :src="merchant.image_url" alt="merchant logo" class="merchant-logo" />
+                <div class="logo-overlay"></div>
+              </div>
+              <div class="merchant-info">
+                <h3 class="merchant-name">{{ merchant.name }}</h3>
+                <div class="delivery-info">
+                  <span class="delivery-fee">$1.00 delivery fee</span>
+                  <div class="delivery-badge">
+                    <svg class="delivery-icon" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Fast Delivery</span>
+                  </div>
+                </div>
+              </div>
             </div>
+            <div class="card-hover-effect"></div>
           </div>
         </div>
-      </div> 
+
+        <!-- Empty State -->
+        <div v-if="merchants.length === 0" class="empty-state">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>No restaurants available</h3>
+          <p>Check back later for new options!</p>
+        </div>
+      </div>
     </div>
-  </div> 
+  </div>
 </template>
 
 <style scoped>
+/* Page Layout */
 .order-page-wrapper {
   position: fixed;
   top: 60px;
@@ -115,12 +146,13 @@ export default defineComponent({
 }
 
 .order-page {
-  padding: 30px;
+  padding: 40px 30px;
   font-family: 'Inter', sans-serif;
-  padding-top: 120px; /* Ensures content is not hidden behind the fixed ChatBar */
+  padding-top: 140px;
   position: relative;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
+  animation: fadeInUp 0.6s ease-out;
 }
 
 .order-page::before {
@@ -141,203 +173,317 @@ export default defineComponent({
   opacity: 1;
 }
 
-.order-page h1 {
-  margin-top: 30px;
-  margin-bottom: 18px;
-  font-size: 2.2rem;
+/* Chat Container */
+.chat-container {
+  position: fixed;
+  top: 80px;
+  right: 30px;
+  z-index: 1000;
+}
+
+/* Header Section */
+.header-section {
+  text-align: center;
+  margin-bottom: 60px;
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.header-accent {
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #38c172, #2f855a);
+  margin: 0 auto 24px;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(56, 193, 114, 0.3);
+}
+
+.page-title {
+  font-size: 3.2rem;
   font-weight: 800;
   color: #134e4a;
-  letter-spacing: -0.01em;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
   text-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+  background: linear-gradient(135deg, #134e4a 0%, #0d3d31 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.order-page h2 {
-  margin-top: 60px;
-  margin-bottom: 18px;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #134e4a;
+.page-subtitle {
+  font-size: 1.2rem;
+  color: #468d8c;
+  font-weight: 500;
+  margin: 0;
+  opacity: 0.9;
 }
 
-/* New Chat-like Search Bar
-.chat-search-bar {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  border-radius: 32px;
-  box-shadow: 0 2px 12px rgba(44,62,80,0.10);
-  padding: 6px 10px 6px 24px;
-  margin: 70px 0 24px 0;
-  max-width: 600px;
-  width: 100%;
-  position: relative;
-}
-.order-content {
+/* Merchant Grid */
+.merchant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 32px;
   margin-top: 40px;
-}
-.chat-input {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 1.15rem;
-  padding: 12px 0;
-  color: #444;
-}
-.chat-input::placeholder {
-  color: #b0b6be;
-  opacity: 1;
-}
-.chat-send-btn {
-  background: #38c172;
-  color: #fff;
-  border: none;
-  border-radius: 18px;
-  font-size: 0.98rem;
-  font-weight: 700;
-  padding: 7px 18px;
-  margin-left: 10px;
-  margin-right: 2px;
-  box-shadow: 0 2px 8px rgba(143,79,255,0.10);
-  cursor: pointer;
-  transition: background 0.18s, box-shadow 0.18s;
-  position: relative;
-  z-index: 2;
-}
-.chat-send-btn:hover {
-  background: #0d3d31;
-  box-shadow: 0 4px 16px rgba(143,79,255,0.16);
-} */
-
-.divider {
-  border: none;             
-  height: 1px;               
-  background-color: #524f4f;   
-  margin: 40px 0 16px;        /* space above/below the line */
+  animation: fadeInUp 0.8s ease-out 0.4s both;
 }
 
-.merchant-list {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 40px;
-  margin-top: 20px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  max-width: 1200px;
-  padding-bottom: 16px;
-  padding-top: 16px;
-  scroll-behavior: smooth;
-  scrollbar-width: thin;
-  scrollbar-color: #0d3d31 #ffffff;
-  position: relative;
-  scroll-snap-type: x mandatory;
-}
-.merchant-list > .merchant-card {
-  scroll-snap-align: start;
-}
-.merchant-list-fade {
-  pointer-events: none;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 48px;
-  z-index: 2;
-}
-.merchant-list-fade.left {
-  left: 0;
-  background: linear-gradient(90deg, #e0f7fa 80%, rgba(224,247,250,0));
-}
-.merchant-list-fade.right {
-  right: 0;
-  background: linear-gradient(270deg, #e0f7fa 80%, rgba(224,247,250,0));
-}
+/* Merchant Card */
 .merchant-card {
-  background: rgba(255,255,255,0.95);
-  border: none;
-  border-radius: 18px;
-  padding: 24px 18px 18px 18px;
-  min-width: 170px;
-  height: 240px;
-  text-align: center;
-  box-shadow: 0 4px 24px rgba(44, 62, 80, 0.10);
+  position: relative;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  padding: 32px 24px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  min-height: 320px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
-  cursor: pointer;
-  position: relative;
-  scroll-snap-align: start;
-  overflow: hidden;
-  max-width: 100px;
+  justify-content: space-between;
 }
+
 .merchant-card:hover {
-  transform: translateY(-4px) scale(1.045);
-  box-shadow: 0 16px 40px rgba(44, 62, 80, 0.18);
-  background: #e0f2f1;
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(44, 62, 80, 0.15);
+  background: rgba(255, 255, 255, 0.98);
 }
-.merchant-card::after {
-  content: '';
-  display: block;
+
+.card-glow {
   position: absolute;
-  left: 0; right: 0; top: 0; bottom: 0;
-  pointer-events: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(56, 193, 114, 0.1) 0%, rgba(47, 133, 90, 0.05) 100%);
   opacity: 0;
-  background: linear-gradient(120deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.01) 80%);
-  transition: opacity 0.18s;
+  transition: opacity 0.3s ease;
+  border-radius: 24px;
 }
-.merchant-card:hover::after {
+
+.merchant-card:hover .card-glow {
   opacity: 1;
-  animation: shine 0.7s linear;
 }
-@keyframes shine {
-  0% { opacity: 0; }
-  30% { opacity: 1; }
-  100% { opacity: 0; }
+
+.card-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
-.logo-wrapper {
-  height: 100px !important;
+
+.logo-container {
+  position: relative;
+  height: 140px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid #0d3d31;
-  padding-bottom: 14px;
-  margin-bottom: 2px;
+  margin-bottom: 24px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(176, 247, 239, 0.1) 0%, rgba(255, 255, 255, 0.8) 100%);
+  border: 1px solid rgba(176, 247, 239, 0.3);
+  transition: all 0.3s ease;
 }
+
+.merchant-card:hover .logo-container {
+  background: linear-gradient(135deg, rgba(176, 247, 239, 0.2) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border-color: rgba(56, 193, 114, 0.4);
+}
+
 .merchant-logo {
-  max-height: 90px;
+  max-height: 100px;
   max-width: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 2px 8px rgba(44, 62, 80, 0.10));
+  filter: drop-shadow(0 4px 12px rgba(44, 62, 80, 0.15));
+  transition: all 0.3s ease;
 }
-.merchant-card h3 {
-  font-size: 1.08rem;
+
+.merchant-card:hover .merchant-logo {
+  transform: scale(1.05);
+  filter: drop-shadow(0 6px 16px rgba(44, 62, 80, 0.2));
+}
+
+.logo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-radius: 16px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.merchant-card:hover .logo-overlay {
+  opacity: 1;
+}
+
+.merchant-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.merchant-name {
+  font-size: 1.4rem;
   color: #134e4a;
   font-weight: 700;
-  margin: 0;
-  margin-top: 6px;
+  margin: 0 0 16px 0;
+  line-height: 1.3;
+  text-align: center;
 }
-.merchant-card p {
+
+.delivery-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.delivery-fee {
+  font-size: 1rem;
+  color: #468d8c;
+  font-weight: 600;
+  background: linear-gradient(135deg, rgba(176, 247, 239, 0.3) 0%, rgba(255, 255, 255, 0.8) 100%);
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(176, 247, 239, 0.4);
+}
+
+.delivery-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.85rem;
-  color: #4b5563;
-  margin: 0;
-  margin-top: 2px;
+  color: #38c172;
+  font-weight: 600;
 }
-@media (max-width: 900px) {
-  .merchant-list {
-    gap: 18px;
-    max-width: 98vw;
+
+.delivery-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.card-hover-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 24px;
+  pointer-events: none;
+}
+
+.merchant-card:hover .card-hover-effect {
+  opacity: 1;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  animation: fadeInUp 0.8s ease-out 0.6s both;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  color: #468d8c;
+  opacity: 0.6;
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  color: #134e4a;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  color: #468d8c;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .merchant-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .order-page {
+    padding: 30px 20px;
+    padding-top: 120px;
+  }
+  
+  .page-title {
+    font-size: 2.4rem;
+  }
+  
+  .page-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .merchant-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+  }
+  
   .merchant-card {
-    min-width: 130px;
-    height: 180px;
-    padding: 14px 8px 10px 8px;
+    padding: 24px 20px;
+    min-height: 280px;
   }
-  .logo-wrapper {
-    height: 60px !important;
-    padding-bottom: 8px;
+  
+  .logo-container {
+    height: 120px;
+    margin-bottom: 20px;
   }
+  
   .merchant-logo {
-    max-height: 50px;
+    max-height: 80px;
+  }
+  
+  .merchant-name {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .merchant-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .merchant-card {
+    padding: 20px 16px;
+    min-height: 260px;
+  }
+  
+  .page-title {
+    font-size: 2rem;
   }
 }
 </style>
