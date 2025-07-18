@@ -58,6 +58,11 @@
         </div>
 
         <form @submit.prevent="handleProfileSave" class="profile-form">
+          
+          
+          <!-- This will be implemented in version 2.0 of smunch -->
+
+
           <!-- <div class="form-grid">
             <div class="form-section">
               <div class="bio-header">
@@ -105,12 +110,12 @@
             </div>
           </div> -->
 
-          <div class="form-section">
+          <!-- <div class="form-section">
             <label>Account Verification</label>
             <div class="verification-wrapper">
               <TelegramVerification />
             </div>
-          </div>
+          </div> -->
 
           <div class="form-grid">
             <div class="form-section">

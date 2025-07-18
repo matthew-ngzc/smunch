@@ -645,8 +645,8 @@ function closeGame() {
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
-  padding: 48px 56px;
-  max-width: 90vw;
+  padding: 48px 32px;
+  max-width: 95vw;
   max-height: 90vh;
   margin-top: 10px;
   display: inline-flex;
@@ -655,6 +655,7 @@ function closeGame() {
   position: relative;
   width: fit-content;
   height: fit-content;
+  min-width: 800px;
 }
 
 
@@ -731,14 +732,18 @@ function closeGame() {
 
 .poker-cards {
   display: flex;
-  gap: 2rem;
+  gap: 1rem;
   margin: 32px 0 24px 0;
   justify-content: center;
+  flex-wrap: wrap;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0 20px;
 }
 
 .poker-card {
-  width: 110px;
-  height: 150px;
+  width: 90px;
+  height: 130px;
   background: #e0f7fa;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(44, 62, 80, 0.10);
@@ -746,32 +751,48 @@ function closeGame() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #134e4a;
   border: 2px solid #b2f7ef;
-  transition: background 0.18s, border 0.18s, box-shadow 0.18s;
+  transition: background 0.18s, border 0.18s, box-shadow 0.18s, transform 0.18s;
   position: relative;
+  flex-shrink: 0;
+  padding: 8px;
 }
 
 .poker-card.selected {
   background: #b2f7ef;
   border: 2.5px solid #17614a;
   box-shadow: 0 0 16px #17614a44;
+  transform: scale(1.05);
+}
+
+.poker-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(44, 62, 80, 0.15);
 }
 
 .poker-img {
-  width: 60px;
-  height: 60px;
+  width: 45px;
+  height: 45px;
   object-fit: contain;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  border-radius: 6px;
 }
 
 .poker-name {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: #134e4a;
   text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  max-height: 2.4em;
 }
 
 .emoji-game {
@@ -968,5 +989,84 @@ function closeGame() {
   font-weight: 700;
   color: #17614a;
   margin-left: 2px;
+}
+
+/* Responsive design for poker cards */
+@media (max-width: 1024px) {
+  .game-modal {
+    min-width: 700px;
+    padding: 32px 20px;
+  }
+  
+  .poker-cards {
+    gap: 0.8rem;
+    padding: 0 10px;
+  }
+  
+  .poker-card {
+    width: 80px;
+    height: 120px;
+    font-size: 0.8rem;
+  }
+  
+  .poker-img {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .poker-name {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-modal {
+    min-width: 90vw;
+    padding: 24px 16px;
+  }
+  
+  .poker-cards {
+    gap: 0.6rem;
+    padding: 0 5px;
+  }
+  
+  .poker-card {
+    width: 70px;
+    height: 100px;
+    padding: 4px;
+  }
+  
+  .poker-img {
+    width: 35px;
+    height: 35px;
+    margin-bottom: 4px;
+  }
+  
+  .poker-name {
+    font-size: 0.65rem;
+    line-height: 1.1;
+  }
+}
+
+@media (max-width: 480px) {
+  .poker-cards {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  
+  .poker-card {
+    width: 65px;
+    height: 90px;
+  }
+  
+  .poker-img {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .poker-name {
+    font-size: 0.6rem;
+  }
 }
 </style>

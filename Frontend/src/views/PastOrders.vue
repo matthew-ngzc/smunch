@@ -4,7 +4,7 @@ import { getPastOrders, getMerchantInfoById } from '@/services/orderFoodService'
 import { useAuthStore } from '@/stores/auth'
 import OrderReceipt from '@/components/OrderReceipt.vue'
 import { formatDateTime, formatStatusClass, formatStatus, formatLocation } from '@/utility/orderHelpers'
-import InfoPopup from '@/components/InfoPopup.vue'
+
 import coins from '@/assets/smunch_coin.jpg';
 
 const authStore = useAuthStore()
@@ -90,7 +90,68 @@ function nextPage() {
   <div class="orders-page">
     <div class="orders-header">
       <h2>Order History</h2>
-      <InfoPopup />
+      <div class="info-container">
+        <div class="info-icon">
+          <img src="/infoIcon.png" alt="Info" class="info-icon-img" />
+        </div>
+        <div class="tooltip">
+                      <div class="info-text">
+              <h4>Order Status</h4>
+              <div class="status-list">
+                <div class="status-item">
+                  <span class="dot grey"></span>
+                  <span class="status-name">Refund pending</span>
+                  <span class="status-desc">Refund for an order has been filed</span>
+                </div>
+                <div class="status-item">
+                  <span class="dot grey"></span>
+                  <span class="status-name">Refund completed</span>
+                  <span class="status-desc">Refund for an order has processed</span>
+                </div>
+                <div class="status-item">
+                  <span class="dot grey"></span>
+                  <span class="status-name">Awaiting payment</span>
+                  <span class="status-desc">An order is awaiting payment</span>
+                </div>
+                <div class="status-item">
+                  <span class="dot grey"></span>
+                  <span class="status-name">Awaiting verification</span>
+                  <span class="status-desc">After user makes payment</span>
+                </div>
+                <div class="status-item">
+                  <span class="dot orange"></span>
+                  <span class="status-name">Payment confirmed</span>
+                  <span class="status-desc">Payment for an order has processed</span>
+                </div>
+                <div class="status-item">
+                  <span class="dot yellow"></span>
+                  <span class="status-name">Preparing</span>
+                  <span class="status-desc">Merchant is preparing the order</span>
+                </div>
+                <div class="status-item">
+                  <span class="dot yellow"></span>
+                  <span class="status-name">Collected by runner</span>
+                  <span class="status-desc">Runner has collected the food</span>
+                </div>
+                <div class="status-item">
+                  <span class="dot green"></span>
+                  <span class="status-name">Delivered</span>
+                  <span class="status-desc">Food has been delivered by runner</span>
+                </div>
+                <div class="status-item">
+                  <span class="dot green"></span>
+                  <span class="status-name">Completed</span>
+                  <span class="status-desc">Food has been received by user</span>
+                </div>
+                <div class="status-item">
+                  <span class="dot red"></span>
+                  <span class="status-name">Cancelled</span>
+                  <span class="status-desc">Users order has been cancelled</span>
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
     </div>
 
     <ul class="orders-list">
@@ -433,4 +494,129 @@ function nextPage() {
   color: #222;
   background: #fff;
 }
+
+/* Info tooltip styles (matching Collections.vue) */
+.info-container {
+  position: relative;
+  z-index: 5;
+  cursor: pointer;
+}
+
+.info-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.info-icon:hover {
+  transform: scale(1.05);
+}
+
+.info-icon-img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.tooltip {
+  position: absolute;
+  top: 45px;
+  right: -10px;
+  max-width: 320px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  transform: translateY(-5px);
+  pointer-events: none;
+}
+
+.info-container:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.info-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2f855a;
+  line-height: 1.2;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  text-align: left;
+  letter-spacing: 0.01em;
+  position: relative;
+  white-space: normal;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  backdrop-filter: blur(10px);
+  width: 470px;
+}
+
+.info-text::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 20px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid rgba(255, 255, 255, 0.95);
+}
+
+.info-text h4 {
+  margin: 0 0 0.8rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #134e4a;
+  text-align: center;
+}
+
+.status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.2rem 0;
+  line-height: 1.3;
+}
+
+.status-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #333;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.status-desc {
+  font-size: 0.8rem;
+  color: #666;
+  flex: 1;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot.grey { background-color: #555; }
+.dot.orange { background-color: #fd7e14; }
+.dot.yellow { background-color: #ffc107; }
+.dot.green { background-color: #198754; }
+.dot.red { background-color: #dc3545; }
 </style>
