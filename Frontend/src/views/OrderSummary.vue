@@ -5,7 +5,7 @@ import { useDeliveryStore } from '@/stores/delivery'
 import { useCartStore } from '@/stores/cart'
 import { useOrderStore } from '@/stores/order'
 import { useAuthStore } from '@/stores/auth'
-import ordertimeline from '../components/ordertimeline.vue'
+import ordertimeline from '../components/OrderTimeline.vue'
 import { createOrder } from '@/services/orderFoodService' 
 import { convertToUtcISOString } from '@/utility/orderHelpers'
 
