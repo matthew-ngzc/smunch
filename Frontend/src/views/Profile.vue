@@ -5,6 +5,71 @@
         <h1 class="greeting">My Profile</h1>
         <p class="subtitle">Manage your account settings and preferences</p>
       </div>
+
+      <div class="profile-card">
+        <div class="profile-picture-section">
+          <div class="profile-picture-wrapper">
+            <img :src="profilePicturePreview || defaultProfilePicture" class="profile-picture" alt="Profile Picture" />
+            <div class="picture-overlay">
+              <svg class="camera-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2h-3l-1-1H8L7 3H4zm6 2a4 4 0 100 8 4 4 0 000-8z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          </div>
+          <input type="file" accept="image/*" @change="onProfilePictureChange" ref="fileInput" class="file-input" />
+          <button type="button" @click="fileInput.click()" class="upload-btn">
+            Change Photo
+          </button>
+        </div>
+
+        <form @submit.prevent="handleProfileSave" class="profile-form">
+          <div class="form-section">
+            <h3 class="section-title">Personal Information</h3>
+            <div class="input-group">
+              <label for="bio">Bio</label>
+              <textarea id="bio" v-model="bio" placeholder="Tell us about yourself..." rows="3"></textarea>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">Account Verification</h3>
+            <TelegramVerification />
+          </div>
+
+          <div class="form-section">
+            <h3 class="section-title">Security Settings</h3>
+            <div class="input-group">
+              <label for="currentPassword">Current Password</label>
+              <input id="currentPassword" v-model="currentPassword" type="password" placeholder="Enter current password" />
+            </div>
+            <div class="input-group">
+              <label for="newPassword">New Password</label>
+              <input id="newPassword" v-model="newPassword" type="password" placeholder="Enter new password" />
+            </div>
+            <div class="input-group">
+              <label for="confirmPassword">Confirm New Password</label>
+              <input id="confirmPassword" v-model="confirmPassword" type="password" placeholder="Confirm new password" />
+            </div>
+          </div>
+
+          <button type="submit" class="save-btn">
+            <svg class="save-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+            Save Changes
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
+<!-- <template>
+  <div class="profile-container no-scroll">
+    <div class="profile-content">
+      <div class="header-section">
+        <h1 class="greeting">My Profile</h1>
+        <p class="subtitle">Manage your account settings and preferences</p>
+      </div>
       
       <div class="profile-card">
         <div class="profile-picture-section">
@@ -62,12 +127,146 @@
       </div>
     </div>
   </div>
-</template>
+</template> -->
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
+import axiosInstance from '@/utility/axiosInstance'
+import { useAuthStore } from '@/stores/auth'
+import TelegramVerification from '@/components/TelegramVerification.vue'
+
+const authStore = useAuthStore()
+
+const bio = ref('')
+const currentPassword = ref('')
+const newPassword = ref('')
+const confirmPassword = ref('')
+
+const profilePicturePreview = ref('')
+const selectedProfilePictureFile = ref(null)
+const defaultProfilePicture = 'https://ui-avatars.com/api/?name=User&background=0d3d31&color=fff&size=128'
+
+onMounted(() => {
+  if (authStore.profilePicture) {
+    profilePicturePreview.value = authStore.profilePicture
+  }
+})
+
+const fileInput = ref(null)
+
+function onProfilePictureChange(e) {
+  const file = e.target.files[0]
+  if (file) {
+    selectedProfilePictureFile.value = file
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      profilePicturePreview.value = event.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+async function getImageKitAuthParams() {
+  const response = await axiosInstance.get('/api/users/imagekit-auth')
+  return response.data
+}
+
+async function uploadToImageKit(file) {
+  const authParams = await getImageKitAuthParams()
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('fileName', `profile_${Date.now()}_${file.name}`)
+  formData.append('publicKey', import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY)
+  formData.append('signature', authParams.signature)
+  formData.append('expire', authParams.expire.toString())
+  formData.append('token', authParams.token)
+  formData.append('folder', '/profile_pictures')
+
+  const response = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw new Error(`ImageKit upload failed: ${errorData.message || response.statusText}`)
+  }
+
+  const data = await response.json()
+  return data.url
+}
+
+async function handleProfileSave() {
+  try {
+    let profilePictureUrl = profilePicturePreview.value
+
+    if (selectedProfilePictureFile.value) {
+      profilePictureUrl = await uploadToImageKit(selectedProfilePictureFile.value)
+    }
+
+    if (newPassword.value && newPassword.value !== confirmPassword.value) {
+      alert('New password and confirmation do not match.')
+      return
+    }
+
+    const payload = {}
+    if (bio.value?.trim()) payload.bio = bio.value.trim()
+    if (profilePictureUrl && profilePictureUrl !== defaultProfilePicture) {
+      payload.profile_picture = profilePictureUrl
+    }
+    if (newPassword.value?.trim()) payload.password = newPassword.value
+
+    if (Object.keys(payload).length === 0) {
+      alert('No changes to save.')
+      return
+    }
+
+         const response = await axiosInstance.put('/api/users/profile', payload)
+     
+     console.log('🔍 Backend response:', response.data)
+
+     if (response.data.user.profile_picture) {
+       const newUrl = response.data.user.profile_picture
+       profilePicturePreview.value = newUrl
+
+       // Preload image before updating store
+       await new Promise((resolve, reject) => {
+         const img = new Image()
+         img.onload = resolve
+         img.onerror = reject
+         img.src = newUrl
+       })
+
+       // Update the auth store with the new profile picture
+       authStore.setProfilePicture(newUrl)
+       
+       console.log('✅ Profile picture updated in store:', newUrl)
+       console.log('💾 SessionStorage after update:', sessionStorage.getItem('profilePicture'))
+     } else {
+       console.warn('⚠️ No profile_picture in response')
+     }
+
+    selectedProfilePictureFile.value = null
+    newPassword.value = ''
+    confirmPassword.value = ''
+    currentPassword.value = ''
+
+    alert('Profile updated successfully!')
+  } catch (err) {
+    console.error('Profile update error:', err)
+    if (err.message.includes('ImageKit')) {
+      alert('Failed to upload profile picture. Check your internet connection.')
+    } else {
+      alert('Failed to update profile. Please try again.')
+    }
+  }
+}
+</script>
+
+<!-- <script>
 import axiosInstance from '@/utility/axiosInstance';
 import { useAuthStore } from '@/stores/auth';
-import TelegramVerification from '@/components/TelegramVerification.vue'
+import TelegramVerification from '@/components/TelegramVerification.vue';
 
 export default {
   components: { TelegramVerification },
@@ -80,137 +279,119 @@ export default {
       profilePicturePreview: '',
       selectedProfilePictureFile: null,
       defaultProfilePicture: 'https://ui-avatars.com/api/?name=User&background=0d3d31&color=fff&size=128',
+    };
+  },
+  mounted() {
+    const authStore = useAuthStore();
+    if (authStore.profilePicture) {
+      this.profilePicturePreview = authStore.profilePicture;
     }
   },
   methods: {
     onProfilePictureChange(e) {
-      const file = e.target.files[0]
+      const file = e.target.files[0];
       if (file) {
-        this.selectedProfilePictureFile = file
-        const reader = new FileReader()
+        this.selectedProfilePictureFile = file;
+        const reader = new FileReader();
         reader.onload = (event) => {
-          this.profilePicturePreview = event.target.result
-        }
-        reader.readAsDataURL(file)
+          this.profilePicturePreview = event.target.result;
+        };
+        reader.readAsDataURL(file);
       }
     },
 
     async uploadToImageKit(file) {
-      try {
-        // Generate authentication parameters
-        const authParams = await this.getImageKitAuthParams()
-        
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('fileName', `profile_${Date.now()}_${file.name}`)
-        formData.append('publicKey', import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY)
-        formData.append('signature', authParams.signature)
-        formData.append('expire', authParams.expire.toString())
-        formData.append('token', authParams.token)
-        formData.append('folder', '/profile_pictures')
-        
-        const response = await fetch(`https://upload.imagekit.io/api/v1/files/upload`, {
-          method: 'POST',
-          body: formData
-        })
+      const authParams = await this.getImageKitAuthParams();
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('fileName', `profile_${Date.now()}_${file.name}`);
+      formData.append('publicKey', import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY);
+      formData.append('signature', authParams.signature);
+      formData.append('expire', authParams.expire.toString());
+      formData.append('token', authParams.token);
+      formData.append('folder', '/profile_pictures');
 
-        if (!response.ok) {
-          const errorData = await response.json()
-     
-          throw new Error(`ImageKit upload failed: ${errorData.message || response.statusText}`)
-        }
+      const response = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-        const data = await response.json()
-        return data.url
-      } catch (error) {
-      
-        throw error
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`ImageKit upload failed: ${errorData.message || response.statusText}`);
       }
+
+      const data = await response.json();
+      return data.url;
     },
 
     async getImageKitAuthParams() {
-      try {
-        // Get authentication parameters from your backend
-        const response = await axiosInstance.get('/api/users/imagekit-auth')
-        return response.data
-      } catch (error) {
-   
-        throw new Error('Failed to authenticate with ImageKit')
-      }
+      const response = await axiosInstance.get('/api/users/imagekit-auth');
+      return response.data;
     },
 
     async handleProfileSave() {
       try {
-        let profilePictureUrl = this.profilePicturePreview
+        let profilePictureUrl = this.profilePicturePreview;
 
-        // Upload new profile picture if selected
         if (this.selectedProfilePictureFile) {
-   
-          profilePictureUrl = await this.uploadToImageKit(this.selectedProfilePictureFile)
-       
+          profilePictureUrl = await this.uploadToImageKit(this.selectedProfilePictureFile);
         }
 
-        // Validate password fields
         if (this.newPassword && this.newPassword !== this.confirmPassword) {
-          alert('New password and confirmation do not match.')
-          return
+          alert('New password and confirmation do not match.');
+          return;
         }
 
-        // Prepare update payload - only include fields with actual values
-        const payload = {}
-
-        // Only include bio if it has content
-        if (this.bio && this.bio.trim() !== '') {
-          payload.bio = this.bio.trim()
-        }
-
-        // Only include profile picture if we have a new URL
+        const payload = {};
+        if (this.bio?.trim()) payload.bio = this.bio.trim();
         if (profilePictureUrl && profilePictureUrl !== this.defaultProfilePicture) {
-          payload.profile_picture = profilePictureUrl
+          payload.profile_picture = profilePictureUrl;
         }
+        if (this.newPassword?.trim()) payload.password = this.newPassword;
 
-        // Only include password if user wants to change it
-        if (this.newPassword && this.newPassword.trim() !== '') {
-          payload.password = this.newPassword
-        }
-
-        // Check if we have anything to update
         if (Object.keys(payload).length === 0) {
-          alert('No changes to save.')
-          return
+          alert('No changes to save.');
+          return;
         }
 
-        console.log('Updating profile with payload:', payload)
-        
-        // Check if user is authenticated
-        const authStore = useAuthStore()
-        
-        const response = await axiosInstance.put('/api/users/profile', payload)
+        const authStore = useAuthStore();
+        const response = await axiosInstance.put('/api/users/profile', payload);
 
-        // Update auth store with profile picture from backend response
         if (response.data.user.profile_picture_url) {
-          authStore.setProfilePicture(response.data.user.profile_picture_url)
+          const newUrl = response.data.user.profile_picture_url;
+          this.profilePicturePreview = newUrl;
+
+          // ✅ Preload image before updating
+          await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = newUrl;
+          });
+
+          // ✅ Update both store and sessionStorage
+          authStore.setProfilePicture(newUrl)
         }
 
-        // Reset form
-        this.selectedProfilePictureFile = null
-        this.newPassword = ''
-        this.confirmPassword = ''
-        this.currentPassword = ''
-        
-        alert('Profile updated successfully!')
+        this.selectedProfilePictureFile = null;
+        this.newPassword = '';
+        this.confirmPassword = '';
+        this.currentPassword = '';
+
+        alert('Profile updated successfully!');
       } catch (err) {
-        console.error('Profile update error:', err)
+        console.error('Profile update error:', err);
         if (err.message.includes('ImageKit')) {
-          alert('Failed to upload profile picture. Please check your internet connection and try again.')
+          alert('Failed to upload profile picture. Check your internet connection.');
         } else {
-          alert('Failed to update profile. Please try again.')
+          alert('Failed to update profile. Please try again.');
         }
       }
     }
   }
-}
-</script>
+};
+</script> -->
 
 <style scoped>
 * { box-sizing: border-box; }

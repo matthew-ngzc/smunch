@@ -1,13 +1,15 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed  } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import coins from '@/assets/smunch_coin.jpg'
 import axiosInstance from '@/utility/axiosInstance.js'
+import { storeToRefs } from 'pinia';
 
 const auth = useAuthStore()
 const router = useRouter()
+const { profilePicture } = storeToRefs(auth)
 
 // handling dropdown closure 
 const isOpen = ref(false)
@@ -87,7 +89,7 @@ const logout = async () => {
 
          <div class="profile-wrapper" @click="toggleMenu">
           <div class="icon-circle">
-            <img v-if="auth.profilePicture" :src="auth.profilePicture" alt="Profile Picture" class="profile-pic" />
+            <img v-if="profilePicture" :src="profilePicture" alt="Profile Picture" class="profile-pic" />
             <svg v-else xmlns="http://www.w3.org/2000/svg" width="23px" height="23px" viewBox="0 0 24 24">
               <g fill="none" stroke="#0d3d31" stroke-linecap="round" stroke-width="2">
                 <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1"> </path>
@@ -108,7 +110,7 @@ const logout = async () => {
       <div v-if="isOpen" class="profile-menu" ref="dropdown">
         <div class="menu-header">
           <div class="dropdown-icon-circle">
-            <img v-if="auth.profilePicture" :src="auth.profilePicture" alt="Profile Picture" class="dropdown-profile-pic" />
+            <img v-if="profilePicture" :src="profilePicture" alt="Profile Picture" class="dropdown-profile-pic" />
             <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
               <g fill="none" stroke="#0d3d31" stroke-linecap="round" stroke-width="2">
                 <path d="M4 21v-1c0 -3.31 2.69 -6 6 -6h4c3.31 0 6 2.69 6 6v1"/>
