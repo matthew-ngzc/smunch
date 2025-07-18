@@ -86,13 +86,13 @@ function goBack() {
 
 <template>
   <div class="summary-page-wrapper">
-    <div class="summary-page">
+  <div class="summary-page">
 
       <!-- pass both data and routes -->
       <ordertimeline :data="data" />
 
-      <!-- box -->
-      <div class="summary-box">
+    <!-- box -->
+    <div class="summary-box">
 
         <div class="back-button" @click="goBack">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -100,51 +100,63 @@ function goBack() {
           </svg>
         </div>
 
-        <h2>Order summary</h2>
+      <h2>Order summary</h2>
 
-        <!-- content inside box -->
-        <div class="summary-contents">
+      <!-- content inside box -->
+      <div class="summary-contents">
 
-          <div class="summary-items">
-            <div class="item-row header">
-              <div>Item</div> 
-              <div class="right">
-                <div>Quantity</div> 
-                <div>Price</div>
-              </div>
-              
+        <div class="summary-items">
+          <div class="item-row header">
+            <div>Item</div> 
+            <div class="right">
+              <div>Quantity</div> 
+              <div>Price</div>
             </div>
-            <!--  loop through each item in cart and present info -->
-            <div v-for="item in cartStore.items" :key="item.id" class="item-row">
-              <div class="name">{{ item.name }}</div>
-              <div class="right-text"> 
-                <div class="qty">{{ item.quantity }}</div>
-                <div class="price">${{ (item.quantity * item.price).toFixed(2) }}</div>
-              </div>
+            
+          </div>
+          <!--  loop through each item in cart and present info -->
+          <div v-for="item in cartStore.items" :key="item.id" class="item-row">
+            <div class="name">{{ item.name }}</div>
+            <div class="right-text"> 
+              <div class="qty">{{ item.quantity }}</div>
+              <div class="price">${{ (item.quantity * item.price).toFixed(2) }}</div>
             </div>
           </div>
-        
-          <div class="summary-totals">
-
-            <div class="cost-wrapper"> 
-              <!--  total cost of items in cart, from script using computed -->
-              <span> Total (Excl. delivery fee): </span> 
-              <span> ${{ (total-1).toFixed(2) }}</span> 
-            </div>
-
-            <div class="total-row">
-              <span>Delivery fee:</span>
-              <span>$1.00</span>
-            </div>
-            <div class="total-row bold">
-              <span>Total:</span>
-              <span>${{ total.toFixed(2) }}</span>
-              
-            </div>
-             <hr />
-          </div>
-
         </div>
+      
+        <div class="summary-totals">
+
+          <div class="cost-wrapper"> 
+            <!--  total cost of items in cart, from script using computed -->
+            <span> Total (Excl. delivery fee): </span> 
+            <span> ${{ (total-1).toFixed(2) }}</span> 
+          </div>
+
+          <div class="total-row">
+            <span>Delivery fee:</span>
+            <span>$1.00</span>
+          </div>
+          <div class="total-row bold">
+            <span>Total:</span>
+            <span>${{ total.toFixed(2) }}</span>
+            
+          </div>
+           <hr />
+        </div>
+
+      </div>
+
+      
+
+      <div class="summary-section">
+        <h2>Delivery details</h2>
+
+        <div class="delivery-details">
+          <p><strong>Location</strong><br />{{ deliveryStore.building }} {{ deliveryStore.floor }} - {{ deliveryStore.facilityType }}</p>
+          <p><strong>Date</strong><br />{{ deliveryStore.date }}</p>
+          <p><strong>Time</strong><br />{{ deliveryStore.time }}</p>
+        </div>
+      </div>
 
         
 
@@ -152,10 +164,11 @@ function goBack() {
           <h2>Delivery details</h2>
 
           <div class="delivery-details">
-            <p><strong>Location</strong><br />{{ deliveryStore.building }} {{ deliveryStore.floor }} - {{ deliveryStore.facilityType }}</p>
+            <p><strong>Location</strong><br />{{ deliveryStore.building }} Level {{ deliveryStore.roomNumber }} {{ deliveryStore.facilityType }}</p>
             <p><strong>Date</strong><br />{{ deliveryStore.date }}</p>
             <p><strong>Time</strong><br />{{ deliveryStore.time }}</p>
           </div>
+
         </div>
 
         <button class="next-btn" @click="next">next</button>

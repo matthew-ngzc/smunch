@@ -1,9 +1,9 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { formatDateTime, formatStatusClass, formatStatus, formatLocation } from '@/utility/orderHelpers'
 import { getPaymentQRCode, updatePaymentStatus, getRefreshedOrders } from '@/services/orderFoodService'
 import orderProgress from '../components/orderProgress.vue'
-
+import { realtimeOrdersService } from '@/services/realtimeOrdersService' // for supabase realtime
 
 // define props passed into this component
 // 'order' contains all the order details
@@ -17,13 +17,23 @@ const props = defineProps({
 
 const timelineData = ref(null)
 
-watch(
-  () => props.order,
-  (order) => {
-    if (order) updateTimeline()
-  },
-  { immediate: true }  // runs immediately if order already exists
-)
+let unsubscribeFn = null
+
+// for supabase realtime
+const setupRealtimeSubscription = () => {
+  const userId = authStore.userId
+  realtimeOrdersService.subscribeToOrderChanges(userId, () => {
+    // Refetch orders when real-time change is detected
+    fetchActiveOrders(currentPage.value)
+    updateTimeline()
+  })
+}
+
+// for supabase realtime
+onUnmounted(() => {
+  realtimeOrdersService.unsubscribe()
+
+})
 
 
 function updateTimeline() {
@@ -44,6 +54,8 @@ function updateTimeline() {
 
   if (payment === 'awaiting_payment') currentStep = 1
   else if (payment === 'awaiting_verification') currentStep = 2
+  else if (payment === 'refund_pending') currentStep = 0
+  else if (payment === 'refund_complete') currentStep = 0
   else if (payment === 'payment_confirmed') {
     if (status === 'preparing') currentStep = 4
     else if (status === 'collected_by_runner') currentStep = 5
@@ -58,26 +70,28 @@ function updateTimeline() {
     activeColor: '#3BB143',
     passiveColor: '#ccc'
   }
-
-  watch(timelineData, () => {
-  console.log('timelineData updated:', timelineData.value)
-})
-
 }
+
+
+ watch(() => props.order, (newOrder) => {
+  if (newOrder?.order_id) updateTimeline()
+}, { immediate: true, deep: true })
 
 
 // to reflect order status
 function getCombinedStatus(order) {
   if (order.payment_status === 'awaiting_payment') return 'awaiting_payment'
   if (order.payment_status === 'awaiting_verification') return 'awaiting_verification'
+  if (order.payment_status === 'refund_pending') return 'refund_pending'
+  if (order.payment_status === 'refund_complete') return 'refund_complete'
   if (order.payment_status === 'payment_confirmed') {
     if (order.order_status === 'preparing') return 'preparing'
     if (order.order_status === 'collected_by_runner') return 'collected_by_runner'
     if (order.order_status === 'delivered') return 'delivered'
     if (order.order_status === 'completed') return 'completed'
-    return 'payment_confirmed'
+    return 'payment_confirmed' // fallback
   }
-  return 'awaiting_payment'
+  return 'awaiting_payment' // fallback
 }
 
 
@@ -195,6 +209,24 @@ async function handlePaymentDone() {
     }, 1000) // delay 500ms so it has time to visibly spin
   }
 }
+
+
+// // to allow users to change their status from delivery to completed
+// async function handleConfirmCompletion() {
+//   try {
+//     // call your backend to update order status
+//     await updateOrderStatusToCompleted(props.order.order_id)
+
+//     // manually update local status to reflect change immediately
+//     props.order.order_status = 'completed'
+//     updateTimeline()
+//   } catch (err) {
+//     console.error('failed to confirm order completion:', err)
+//   }
+// }
+
+
+
 </script>
 
 
@@ -230,12 +262,18 @@ async function handlePaymentDone() {
   <div class="order-summary-right">
 
     <div class="status-row">
-      <img v-if="order.order_status !== 'completed' && order.order_status !== 'cancelled'" src="/refreshImage.png" alt="refresh" class="refresh-icon" :class="{ spinning: spinningOrderId === props.order.order_id }" @click="refreshOrderStatus(props.order.order_id)" />
+      <img v-if="order.order_status !== 'completed' && order.order_status !== 'cancelled' && order.payment_status !== 'refund_complete'" src="/refreshImage.png" alt="refresh" class="refresh-icon" :class="{ spinning: spinningOrderId === props.order.order_id }" @click="refreshOrderStatus(props.order.order_id)" />
 
+    <div v-if="showOrderStatus" :class="['status-badge', getOrderStatusBadge(order).class]">
+      {{ getOrderStatusBadge(order).text }}
 
-      <span v-if="showOrderStatus" :class="['status-badge', getOrderStatusBadge(order).class]">
-        {{ getOrderStatusBadge(order).text }}
-      </span>
+      <!-- this is now valid inside the div
+      <div v-if="order.order_status === 'delivered'" class="mark-complete-section">
+        <div class="verify-text">click to verify order completion!</div>
+      </div> -->
+    </div>
+
+     
 
       <template v-else>
         <button
@@ -246,6 +284,7 @@ async function handlePaymentDone() {
         >
           <span v-if="!loadingPayment">Click here to make payment</span>
           <span v-else>Loading...</span>
+
         </button>
         <span v-else :class="['status-badge', formatStatusClass(getCombinedStatus(order))]">
           {{ formatStatus(getCombinedStatus(order)) }}
@@ -270,7 +309,7 @@ async function handlePaymentDone() {
     <hr class="divider" />
 
       <!-- order Progress  -->
-    <orderProgress :data="timelineData" />
+    <orderProgress v-if="timelineData" :data="timelineData" />
 
       <!-- receipt body -->
       <div class="receipt-body">
@@ -309,6 +348,8 @@ async function handlePaymentDone() {
 
         <div class="receipt-footer-message">Thank you for ordering with Smunch</div>
       </div>
+
+      
 
       <!-- payment modal -->
       <div v-if="showPaymentModal" class="payment-modal-backdrop" @click.self="closePaymentModal">
@@ -749,4 +790,16 @@ async function handlePaymentDone() {
     width: 100%;
   }
 }
+
+
+
+.mark-complete-section {
+  margin-top: 6px;
+}
+.verify-text {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+
 </style>

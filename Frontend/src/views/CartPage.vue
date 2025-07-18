@@ -99,10 +99,10 @@ export default defineComponent({
 <template>
 
   <div class="cart-page-wrapper">
-    <div class="cart-page">
+  <div class="cart-page">
 
-      <!-- pass both data and routes -->
-       <ordertimeline :data="data" :routes="routes" />
+    <!-- pass both data and routes -->
+     <ordertimeline :data="data" :routes="routes" />
 
       <div class="cart-container">
 
@@ -114,52 +114,52 @@ export default defineComponent({
 
         <div class="cart-header">
           <div class="header-accent"></div>
-          <h2>Your Cart</h2>
+    <h2>Your Cart</h2>
           <p class="header-subtitle">Review your order items</p>
         </div>
 
         <div class="cart-content">
-          <!-- starts a block that ONLY shows if the cart is not empty -->
+    <!-- starts a block that ONLY shows if the cart is not empty -->
           <div v-if="cart.items.length > 0" class="cart-items">
-            <!-- loops through every item in cart.items, creates div for each item  --> <!-- :key="item.id" is needed to track items  -->
-            <div v-for="item in cart.items" :key="item.id" class="cart-item">
+      <!-- loops through every item in cart.items, creates div for each item  --> <!-- :key="item.id" is needed to track items  -->
+      <div v-for="item in cart.items" :key="item.id" class="cart-item">
 
-              <!-- item image -->
-              <img :src="item.image_url" alt="item image" class="item-image" />
+        <!-- item image -->
+        <img :src="item.image_url" alt="item image" class="item-image" />
               <div class="item-details"> 
-                  <!-- item name -->
+            <!-- item name -->
                 <div class="item-name">{{ item.name }}</div>
                 <div class="item-controls">  
-                    <div class="menu-controls">
-                      <button @click="decrease(item.id)">-</button>
-                      <span>{{ quantities[item.id] }}</span>
-                      <button @click="increase(item.id)">+</button>
-                   </div> 
+              <div class="menu-controls">
+                <button @click="decrease(item.id)">-</button>
+                <span>{{ quantities[item.id] }}</span>
+                <button @click="increase(item.id)">+</button>
+             </div> 
 
-                     <!-- total cost of a particular item , toFixed(2)ensures it always shows 2 decimal places-->
-                  <div class="item-cost">${{ (item.quantity * item.price).toFixed(2) }}</div> 
-                </div>
-              </div>
-            </div>
+               <!-- total cost of a particular item , toFixed(2)ensures it always shows 2 decimal places-->
+            <div class="item-cost">${{ (item.quantity * item.price).toFixed(2) }}</div> 
           </div>
+        </div>
+      </div>
+      </div>
 
           <div v-else class="empty-cart">
-            <p>Your cart is empty.</p>
-          </div>
+        <p>Your cart is empty.</p>
+      </div>
 
           <div class="cart-summary"> 
-            
-            <hr class="divider" />
+        
+        <hr class="divider" />
 
-            <div class="cost-wrapper"> 
-              <!--  total cost of items in cart, from script using computed -->
-              <h3 class="total-cost">Total (Excl. delivery fee): </h3>
-              <h3 class="cost"> ${{ total.toFixed(2) }} </h3>
-            </div>
+        <div class="cost-wrapper"> 
+          <!--  total cost of items in cart, from script using computed -->
+          <h3 class="total-cost">Total (Excl. delivery fee): </h3>
+          <h3 class="cost"> ${{ total.toFixed(2) }} </h3>
+        </div>
 
-            <div v-if="showEmptyCartWarning" class="warning-banner">
-              Your cart is empty. Please select at least one item before proceeding.
-            </div>
+        <div v-if="showEmptyCartWarning" class="warning-banner">
+          Your cart is empty. Please select at least one item before proceeding.
+        </div>
           </div>
         </div>
 
@@ -167,7 +167,7 @@ export default defineComponent({
           <button class="next" @click="next">next</button>
         </div>
       </div>
-    </div>
+  </div>
   </div>
 </template>
 
@@ -392,7 +392,7 @@ export default defineComponent({
 .cost-wrapper {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: center; 
   padding: 16px 0;
 }
 
@@ -521,6 +521,6 @@ export default defineComponent({
   
   .item-name {
     font-size: 1rem;
-  }
+}
 }
 </style> 
