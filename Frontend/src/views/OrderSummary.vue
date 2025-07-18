@@ -77,18 +77,28 @@ const next = async () => {
   
 }
 
+// Back button functionality
+function goBack() {
+  router.go(-1)
+}
+
 </script>
 
 <template>
   <div class="summary-page-wrapper">
     <div class="summary-page">
 
-      <div class="timeline-wrapper">
-        <ordertimeline :data="data" />
-      </div>
+      <!-- pass both data and routes -->
+      <ordertimeline :data="data" />
 
       <!-- box -->
       <div class="summary-box">
+
+        <div class="back-button" @click="goBack">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
 
         <h2>Order summary</h2>
 
@@ -172,11 +182,10 @@ const next = async () => {
   width: 100%;
   max-width: 1200px;
   padding: 20px;
-}
-
-.timeline-wrapper {
-  width: 100%;
-  align-self: stretch !important; /* forces it to ignore align-items: center */
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .summary-box {
@@ -195,6 +204,32 @@ const next = async () => {
   padding: 50px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   width: 100%;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #4a5568;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.back-button:hover {
+  background: #f7fafc;
+  border-color: #38c172;
+  color: #38c172;
+  transform: scale(1.05);
 }
 
 .summary-contents {
