@@ -99,41 +99,41 @@ export default defineComponent({
 
 <template>
   <div class="merchant-page-wrapper">
-    <div class="merchant-page">
-      <div class="merchant-header">
+  <div class="merchant-page">
+    <div class="merchant-header">
 
-        <div class="logo"> 
-          <img :src="merchantInfo.image_url" alt="Merchant Logo" class="merchant-logo" />
-        </div>
-
-        <div class="texts">
-          <p class="merchant-name"> {{ merchantInfo.name }} </p>
-          <p class="location"> {{ merchantInfo.location }} </p>
-        </div>
-      
+      <div class="logo"> 
+        <img :src="merchantInfo.image_url" alt="Merchant Logo" class="merchant-logo" />
       </div>
 
-      <hr />
+      <div class="texts">
+        <p class="merchant-name"> {{ merchantInfo.name }} </p>
+        <p class="location"> {{ merchantInfo.location }} </p>
+      </div>
+    
+    </div>
 
-      <div v-for="item in merchantMenu" :key="item.menu_item_id" class="menu-item">
-        <img :src="item.image_url" class="menu-image" />
-        <div class="menu-info">
-          <h3>{{ item.name.toLowerCase() }}</h3>
-          <p class="desc"> {{ item.description }} </p>
-          <div class="menu-controls">
-            <button @click="decrease(item.menu_item_id)">-</button>
-            <span>{{ quantities[item.menu_item_id] }}</span>
-            <button @click="increase(item.menu_item_id)">+</button>
-          </div>
+    <hr />
+
+    <div v-for="item in merchantMenu" :key="item.menu_item_id" class="menu-item">
+      <img :src="item.image_url" class="menu-image" />
+      <div class="menu-info">
+        <h3>{{ item.name.toLowerCase() }}</h3>
+        <p class="desc"> {{ item.description }} </p>
+        <div class="menu-controls">
+          <button @click="decrease(item.menu_item_id)">-</button>
+          <span>{{ quantities[item.menu_item_id] }}</span>
+          <button @click="increase(item.menu_item_id)">+</button>
         </div>
-        <div class="menu-price">${{ (item.price_cents / 100).toFixed(2) }}</div>
       </div>
+      <div class="menu-price">${{ (item.price_cents / 100).toFixed(2) }}</div>
+    </div>
 
-      <div v-if="showEmptyCartWarning" class="warning-banner">
-        Your cart is empty. Please select at least one item before checking out.
-      </div>
+    <div v-if="showEmptyCartWarning" class="warning-banner">
+      Your cart is empty. Please select at least one item before checking out.
+    </div>
 
-      <button class="checkout-btn" @click="checkout">checkout</button>
+    <button class="checkout-btn" @click="checkout">checkout</button>
     </div>
   </div>
 </template>

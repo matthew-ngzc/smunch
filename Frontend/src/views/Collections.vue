@@ -1,7 +1,17 @@
 <template>
   <div class="collections-wrapper">
-    <div class="collections-container">
+      <div class="collections-container">
+    <div class="title-container">
       <h1 class="title">Smunchy Collection</h1>
+      <div class="collection-info">
+        <div class="info-icon">
+          <img src="/infoIcon.png" alt="Info" class="info-icon-img" />
+        </div>
+        <div class="tooltip">
+          <p class="info-text">Collect all smunchies to unlock the word! Unlock the word to discover a hidden gem!</p>
+        </div>
+      </div>
+    </div>
 
       <!-- Display Word -->
       <div class="word-container">
@@ -327,15 +337,103 @@ const canUnlockCurrentDino = computed(() => {
   width: 100%;
 }
 
+/* Collection Info */
+.collection-info {
+  position: relative;
+  z-index: 5;
+  cursor: pointer;
+}
+
+.info-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.info-icon:hover {
+  transform: scale(1.05);
+}
+
+.info-icon-img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.tooltip {
+  position: absolute;
+  top: 45px;
+  left: -10px;
+  max-width: 280px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  transform: translateY(-5px);
+  pointer-events: none;
+}
+
+.collection-info:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.info-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2f855a;
+  line-height: 1.2;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  text-align: left;
+  letter-spacing: 0.01em;
+  position: relative;
+  white-space: normal;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  backdrop-filter: blur(10px);
+  width: 320px;
+}
+
+.info-text::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 20px;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid rgba(255, 255, 255, 0.95);
+}
+
+/* Title Container */
+.title-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
 /* Title */
 .title {
   font-size: 2rem;
   font-weight: 800;
   color: #134e4a;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
   text-align: center;
   letter-spacing: -0.01em;
   text-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+  position: relative;
+  z-index: 15;
 }
 
 /* Letter Progress Display */

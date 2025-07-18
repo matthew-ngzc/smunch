@@ -74,8 +74,8 @@ function goBack() {
 
 <template>
   <div class="select-location-page-wrapper">
-    <div class="select-location-page">
-      <ordertimeline :data="data" />
+  <div class="select-location-page">
+    <ordertimeline :data="data" />
 
       <div class="delivery-form-container">
         <div class="back-button" @click="goBack">
@@ -97,16 +97,16 @@ function goBack() {
             <div class="select-wrapper">
               <select v-model="building" class="modern-select">
                 <option value="" disabled selected hidden>Select building</option>
-                <option value="Business">School of Business</option>
-                <option value="Law">School of Law</option>
-                <option value="Economics">School of Economics</option>
-                <option value="Accounting">School of Accounting</option>
-                <option value="Scis1">School of Computing and Information Systems 1</option>
-                <option value="Scis2">School of Computing and Information Systems 2</option>
-              </select>
+            <option value="Business">School of Business</option>
+            <option value="Law">School of Law</option>
+            <option value="Economics">School of Economics</option>
+            <option value="Accounting">School of Accounting</option>
+            <option value="Scis1">School of Computing and Information Systems 1</option>
+            <option value="Scis2">School of Computing and Information Systems 2</option>
+          </select>
               <div class="select-arrow"></div>
             </div>
-          </div>
+        </div>
 
           <!-- Floor Selection -->
           <div class="form-section">
@@ -117,10 +117,10 @@ function goBack() {
                 <option value="Level 2">Level 2</option>
                 <option value="Level 3">Level 3</option>
                 <option value="Level 4">Level 4</option>
-              </select>
+          </select>
               <div class="select-arrow"></div>
             </div>
-          </div>
+        </div>
 
           <!-- Room Number -->
           <div class="form-section">
@@ -136,7 +136,7 @@ function goBack() {
             <div v-if="roomNumberError" class="error-message">
               {{ roomNumberError }}
             </div>
-          </div>
+        </div>
 
           <!-- Facility Type -->
           <div class="form-section">
@@ -148,10 +148,10 @@ function goBack() {
                 <option value="Group study room">Group Study Room</option>
                 <option value="Meeting pod">Meeting Pod</option>
                 <option value="Seminar room">Seminar Room</option>
-              </select>
+          </select>
               <div class="select-arrow"></div>
             </div>
-          </div>
+        </div>
 
           <!-- Date -->
           <div class="form-section">
@@ -163,7 +163,7 @@ function goBack() {
                 class="modern-input"
               />
             </div>
-          </div>
+        </div>
 
           <!-- Time -->
           <div class="form-section">
@@ -171,11 +171,11 @@ function goBack() {
             <div class="select-wrapper">
               <select v-model="time" class="modern-select">
                 <option value="" disabled selected hidden>Select time</option>
-                <option value="08:15 AM">08:15 AM</option>
-                <option value="12:00 PM">12:00 PM</option>
-                <option value="03:30 PM">03:30 PM</option>
-                <option value="07:00 PM">07:00 PM</option>
-              </select>
+            <option value="08:15 AM">08:15 AM</option>
+            <option value="12:00 PM">12:00 PM</option>
+            <option value="03:30 PM">03:30 PM</option>
+            <option value="07:00 PM">07:00 PM</option>
+          </select>
               <div class="select-arrow"></div>
             </div>
           </div>
@@ -186,8 +186,8 @@ function goBack() {
           <div class="banner-content">
             <h4>Please complete all fields</h4>
             <p>Fill in all the information above to continue</p>
-          </div>
         </div>
+      </div>
 
         <!-- Next Button -->
         <div class="wrapper">
@@ -417,7 +417,7 @@ function goBack() {
 }
 
 .next:hover {
-   background-color: #036232;
+  background-color: #036232;
 }
 
 /* Animations */
@@ -461,7 +461,7 @@ function goBack() {
   .form-grid {
     grid-template-columns: 1fr;
     gap: 16px;
-  }
+}
 }
 
 @media (max-width: 480px) {
