@@ -11,7 +11,7 @@ import { sendPasswordChangeNotification } from '../utils/mailer.js';
  */
 export const updateUserProfilePictureUrl = async (req, res, next) => {
   try {
-    const userId = req.user.user_id;
+    const userId = req.user.id;
     const { imageUrl } = req.body;
 
     if (!imageUrl) {
@@ -106,12 +106,12 @@ export const updateUserProfilePictureUrl = async (req, res, next) => {
 export const updateUserProfile = async (req, res, next) => {
   try{
     // extract information from body
-    if (!req.user || (!req.user.user_id && !req.user.id)) {
+    if (!req.user || !req.user.id) {
       return res.status(401).json({ message: 'User not authenticated properly' });
     }
     
-    // Handle both 'user_id' and 'id' field names from JWT token
-    const userId = req.user.user_id || req.user.id;
+    // extract userId from token
+    const userId = req.user.id;
 
     let passwordChanged = false;
     const password_changed_at = new Date();
@@ -228,12 +228,12 @@ export const updateUserProfile = async (req, res, next) => {
 export const updateUserCoinsAndDinoStatus = async (req, res, next) => {
   try {
     // Extract user ID from JWT token
-    if (!req.user || (!req.user.user_id && !req.user.id)) {
+    if (!req.user || !req.user.id) {
       return res.status(401).json({ message: 'User not authenticated properly' });
     }
     
     // Handle both 'user_id' and 'id' field names from JWT token
-    const userId = req.user.user_id || req.user.id;
+    const userId = req.user.id;
     
     const { coins, dinoUnlocked } = req.body;
     
