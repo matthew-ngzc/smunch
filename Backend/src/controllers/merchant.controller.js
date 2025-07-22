@@ -14,7 +14,6 @@ import {
 } from '../models/menu.model.js';
 import { MENU_ITEM_STATUS } from '../constants/enums.constants.js';
 import redis from '../lib/redisClient.js';
-import { cache } from 'react';
 
 
 /**
