@@ -18,11 +18,30 @@ export async function getUserByEmailOrThrow(email) {
 
   if (error) throw error;
   if (!data) {
-    const err = new NotFoundError('User', 'email', email);
-    err.status = 404;
-    throw err;
+    throw new NotFoundError('User', 'email', email);
   }
 
+  return data;
+}
+
+/**
+ * Retrieves a user's internal SMUNCH ID based on their Telegram user ID.
+ *
+ * @param {number} telegram_user_id - The Telegram user ID
+ * @returns {Promise<object>} - An object containing the user's internal ID (user_id)
+ * @throws {Error} - If user is not found or query fails
+ */
+export async function getUserIdByTelegramUserIdOrThrow(telegram_user_id){
+  const { data, error } = await supabase
+    .from('users')
+    .select('user_id')
+    .eq('telegram_user_id', telegram_user_id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) {
+    throw new NotFoundError('User', 'email', email);
+  }
   return data;
 }
 
@@ -172,4 +191,50 @@ export async function updateUserProfilePicture(userId, imageUrl) {
     .update({ profile_picture: imageUrl })
     .eq('user_id', userId);
   if (error) throw error;
+}
+
+/**
+ * Links a user's SMUNCH account to their Telegram account.
+ *
+ * Sets the `telegram_user_id`, `telegram_username`, and updates
+ * `telegram_last_linked_at` to the current timestamp.
+ *
+ * @param {number} userId - The SMUNCH user's internal ID
+ * @param {number} telegram_user_id - The Telegram numeric user ID
+ * @param {string} telegram_username - The user's Telegram handle
+ * @returns {Promise<object>} - The updated user object
+ * @throws {Error} - If the update fails
+ */
+export async function linkTelegramInfo(userId, telegram_user_id, telegram_username){
+  return await updateUserProfileOrThrow(userId, { 
+    telegram_user_id,
+    telegram_username,
+    telegram_last_linked_at: new Date()
+  });
+}
+
+/**
+ * Updates the Telegram handle of a user everytime that they use the telebot
+ *
+ * Used to keep the Telegram username in sync if the user renames
+ * their handle after verification.
+ *
+ * @param {number} telegram_user_id - The user's telegram user ID
+ * @param {string} telegram_username - The new Telegram handle
+ * @returns {Promise<object>} - The updated user object
+ * @throws {Error} - If the update fails
+ */
+export async function updateTelegramUsernameByTelegramId(telegram_user_id, telegram_username){
+  const { data, error } = await supabase
+    .from('users')
+    .update({ telegram_username }) //field to update
+    .eq('telegram_user_id', telegram_user_id) //filtering based on eq
+    .select()
+    .single();
+
+  if (!data) {
+    throw new NotFoundError('User', 'telegram_user_id', telegram_user_id);
+  }
+  if (error) throw error;
+  return data;
 }

@@ -1,8 +1,9 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { updateUserProfileOrThrow, updateUserProfilePicture } from '../models/user.model.js';
+import { getUserByIdOrThrow, updateUserProfileOrThrow, updateUserProfilePicture } from '../models/user.model.js';
 import { validatePasswordStrength } from '../utils/auth.utils.js';
 import { sendPasswordChangeNotification } from '../utils/mailer.js';
+import redis from '../lib/redisClient.js';
 
 
 /** 
@@ -336,3 +337,82 @@ export const getImageKitAuthParams = async (req, res, next) => {
     next(error);
   }
 };
+
+
+/**
+ * @swagger
+ * /api/users/request-otp:
+ *   post:
+ *     summary: Generate a 6-digit OTP and Telegram deep-link
+ *     description: |
+ *       This method
+ *       Generates a one-time 6-digit code for linking a Telegram account.  
+ *       The OTP is stored in Redis with a 5-minute TTL together with the
+ *       requesting user's ID (and e-mail) so the bot can later confirm it.  
+ *       The response also includes the URL that opens the Smunch Telegram bot.
+ *
+ *       **Flow overview**
+ *       1. Front-end calls this endpoint (user must be logged in).  
+ *       2. SMUNCH shows the OTP + “Open Telegram” link to the student.  
+ *       3. Student opens the bot, chooses **Verify Telegram account**, and types the OTP.  
+ *       4. The bot cross-checks Redis and asks for final confirmation.  
+ *
+ *       No request body is required; the user is inferred from the bearer token.
+ *     tags: [Telegram]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: false
+ *     responses:
+ *       200:
+ *         description: OTP generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 otp:
+ *                   type: string
+ *                   example: "482731"
+ *                   description: Six-digit one-time code
+ *                 botLink:
+ *                   type: string
+ *                   example: "https://t.me/SmunchBot"
+ *                   description: Link that opens the Smunch Telegram bot
+ *                 expiresIn:
+ *                   type: string
+ *                   example: "5 mins"
+ *                   description: Human-readable time-to-live of the OTP
+ *             example:
+ *               otp: "482731"
+ *               botLink: "https://t.me/SmunchBot"
+ *               expiresIn: "5 mins"
+ *       401:
+ *         description: Unauthorized – missing or invalid bearer token
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Unauthorized"
+ *       500:
+ *         description: Server error (e.g., Redis unavailable)
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Failed to generate OTP"
+ */
+export const getTelegramVerificationOtp = async (req, res, next) => {
+  try{
+    const userId = req.user.id;
+    const user = getUserByIdOrThrow(userId, 'email');
+
+    // create a 6 digit otp
+    const otp = crypto.randomInt(100000, 999999).toString();
+    //put id, email and otp into redis with 5 min TTL
+    await redis.set(`otp:${otp}`, JSON.stringify({id: userId, email: user.email}), 'EX', 300);
+
+    // return response to frontend
+    res.json({otp, botLink: `https://t.me/${process.env.BOT_USERNAME}`,expiresIn: '5 mins'});
+  }catch(err){
+    next(err);
+  }
+} 

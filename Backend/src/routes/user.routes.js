@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticateToken } from '../middlewares/auth.middleware.js';
-import { updateUserProfile, updateUserProfilePictureUrl, getImageKitAuthParams, updateUserCoinsAndDinoStatus } from '../controllers/user.controller.js';
+import { updateUserProfile, updateUserProfilePictureUrl, getImageKitAuthParams, updateUserCoinsAndDinoStatus, getTelegramVerificationOtp } from '../controllers/user.controller.js';
 
 const router = express.Router();
 
@@ -23,5 +23,8 @@ router.put('/collections', authenticateToken, updateUserCoinsAndDinoStatus);
 // Get ImageKit authentication parameters for secure uploads
 // GET /api/users/imagekit-auth
 router.get('/imagekit-auth', authenticateToken, getImageKitAuthParams);
+
+
+router.post('/request-otp', authenticateToken ,getTelegramVerificationOtp);
 
 export default router;
