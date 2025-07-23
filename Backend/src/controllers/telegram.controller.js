@@ -2,7 +2,52 @@ import crypto from 'crypto';
 import redis from '../lib/redisClient.js';
 import { linkTelegramInfo, updateTelegramUsernameByTelegramId } from '../models/user.model.js';
 
-// call this on every new interaction with the bot
+/**
+ * @swagger
+ * /api/telegram/update-username:
+ *   put:
+ *     summary: Update Telegram username
+ *     description: |
+ *       Updates the Telegram username of a user based on their Telegram user ID.  
+ *       This is called every time the bot is interacted with, to keep the username in sync.
+ *     tags: [Telegram]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [telegram_user_id, telegram_username]
+ *             properties:
+ *               telegram_user_id:
+ *                 type: integer
+ *                 example: 123456789
+ *               telegram_username:
+ *                 type: string
+ *                 example: alice_smu
+ *     responses:
+ *       200:
+ *         description: Telegram username updated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Username updated"
+ *               telegram_username: "alice_smu"
+ *               smunch_user_id: 42
+ *       400:
+ *         description: Missing telegram_user_id or telegram_username
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Missing telegram_user_id or telegram_username"
+ *       404:
+ *         description: Telegram user ID not linked to any SMUNCH account
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "User with telegram_user_id = 123456789 does not exist"
+ *               code: "NOT_FOUND_USER"
+ */
 export const updateTelegramUsername = async (req, res, next) => {
   try {
     // extract info from request (from telegram bot)
@@ -18,7 +63,62 @@ export const updateTelegramUsername = async (req, res, next) => {
   }
 };
 
-// linking tele account after verifying otp
+/**
+ * @swagger
+ * /api/telegram/verifyTelegram:
+ *   post:
+ *     summary: Link Telegram account after OTP verification
+ *     description: |
+ *       Links a user's Telegram account to their SMUNCH account after verifying a 6-digit OTP and HMAC signature.  
+ *       Used by the Telegram bot to finalize linking after user confirms the OTP in Telegram.
+ *
+ *       **Verification Flow:**
+ *       1. OTP and Telegram ID are submitted from Telegram
+ *       2. Signature is validated using HMAC-SHA256
+ *       3. OTP is checked against Redis to prevent forgery
+ *       4. Telegram details are stored in the user record
+ *     tags: [Telegram]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [otp, telegram_user_id, telegram_username, signature]
+ *             properties:
+ *               otp:
+ *                 type: string
+ *                 example: "739201"
+ *               telegram_user_id:
+ *                 type: integer
+ *                 example: 123456789
+ *               telegram_username:
+ *                 type: string
+ *                 example: alice_smu
+ *               signature:
+ *                 type: string
+ *                 description: HMAC-SHA256 signature of `${otp}.${telegram_user_id}`
+ *                 example: "f5a8cd8c2464..."
+ *     responses:
+ *       200:
+ *         description: Telegram account linked successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Verification successful"
+ *       400:
+ *         description: OTP expired or invalid
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Invalid or expired OTP"
+ *       401:
+ *         description: Signature mismatch
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Invalid signature"
+ */
 export const linkTelegramAccount = async (req, res, next) => {
   //console.log('[DEBUG TELEBOT] starting verification');
     try{
