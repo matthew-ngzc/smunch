@@ -20,7 +20,7 @@ export const updateTelegramUsername = async (req, res, next) => {
 
 // linking tele account after verifying otp
 export const linkTelegramAccount = async (req, res, next) => {
-  console.log('[DEBUG TELEBOT] starting verification');
+  //console.log('[DEBUG TELEBOT] starting verification');
     try{
         // check signature
         const {otp, telegram_user_id, telegram_username, signature} = req.body;
@@ -32,18 +32,18 @@ export const linkTelegramAccount = async (req, res, next) => {
             return res.status(401).json({ error: 'Invalid signature'});
         }
         
-        console.log('[DEBUG TELEBOT] parsing ok, signature ok');
+        //console.log('[DEBUG TELEBOT] parsing ok, signature ok');
         // get info from redis, double confirm that the otp is correct (if not ppl can just post req send fake otp)
         const cached = await redis.get(`otp:${otp}`);
         if (!cached){
             return res.status(400).json({error: 'Invalid or expired OTP'});
         }
         const {id} = JSON.parse(cached);
-        console.log('[DEBUG TELEBOT] fetched from redis');
+        //console.log('[DEBUG TELEBOT] fetched from redis');
 
         //put into db
         await linkTelegramInfo(id, telegram_user_id, telegram_username);
-        console.log('[DEBUG TELEBOT] put into db');
+        //console.log('[DEBUG TELEBOT] put into db');
         
         //remove from redis
         await redis.del(`otp:${otp}`);
