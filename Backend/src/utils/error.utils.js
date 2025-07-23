@@ -2,11 +2,12 @@
  * Creates a 404 Not Found error with a descriptive message.
  *
  * @param {string} resource - The name of the resource (e.g., 'User')
- * @param {string|number} id - The identifier for the resource (e.g., 123)
+ * @param {string} identifier - The name of the identifier (e.g., 'ID')
+ * @param {string|number} id - The value of the identifier for the resource (e.g., 123)
  * @returns {Error} - An Error object with `.status` and `.code` set
  *
  * @example
- * throw NotFoundError('User', 123);
+ * throw NotFoundError('User', 'ID', 123);
  *  => Error: User with ID 123 does not exist
  */
 export function NotFoundError(resource = 'Resource', identifier = "ID", id = 0) {

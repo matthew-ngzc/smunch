@@ -403,7 +403,7 @@ export const getImageKitAuthParams = async (req, res, next) => {
 export const getTelegramVerificationOtp = async (req, res, next) => {
   try{
     const userId = req.user.id;
-    const user = getUserByIdOrThrow(userId, 'email');
+    const user = await getUserByIdOrThrow(userId, 'email');
 
     // create a 6 digit otp
     const otp = crypto.randomInt(100000, 999999).toString();
