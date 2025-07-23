@@ -5,7 +5,6 @@ from telegram.ext import (
     Application, CommandHandler, CallbackQueryHandler,
     MessageHandler, ConversationHandler, filters,
 )
-from telegram.helpers import escape_markdown
 
 import os, redis, requests, hmac, hashlib, json
 from dotenv import load_dotenv
@@ -84,7 +83,7 @@ async def got_otp(update, ctx):
     ctx.user_data["verify_telegram"] = dict(
         otp = code,
         smunch_user_id = data["id"],
-        email = escape_markdown(data['email'], version=2)
+        email = data['email']
     )
 
     await update.message.reply_text(
