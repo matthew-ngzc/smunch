@@ -8,7 +8,7 @@ from telegram.ext import (
 
 import os, redis, requests, hmac, hashlib, json
 from dotenv import load_dotenv
-from pathlib import Path
+from pathlib import Path #only for .env locating
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[2] / ".env")
 
@@ -112,19 +112,6 @@ async def confirm_yes(update, ctx):
     raw = f"{p['otp']}.{update.effective_user.id}"
     signature = hmac.new(BOT_TOKEN.encode(), raw.encode(), hashlib.sha256).hexdigest()
 
-    # Call backend
-    # try:
-    #     r = requests.post(f"{BACKEND_URL}/api/telegram/confirm-otp", json={
-    #         "otp": p["otp"],
-    #         "telegram_user_id": update.effective_user.id,
-    #         "telegram_handle": update.effective_user.username,
-    #         "signature": signature
-    #     }, timeout=10)
-    #     if r.status_code == 200:
-    #         await update.message.edit_text("✅ Verification complete.")
-    #     else:
-    #         err = r.json().get("error", "Unknown error")
-    #         await update.message.edit_text(f"❌ Verification failed: {err}")
     try:
         r = requests.post(f"{BACKEND_URL}/api/telegram/verifyTelegram", json={
             "otp": p["otp"],
@@ -229,7 +216,6 @@ conv = ConversationHandler(
 
 app = Application.builder().token(os.environ["BOT_TOKEN"]).build()
 app.add_handler(CommandHandler("start", start))
-#app.add_handler(CallbackQueryHandler(choose_verify, pattern="^VERIFY_TG$"))
 app.add_handler(CallbackQueryHandler(choose_payment_order, pattern="^PAY_SS$"))
 app.add_handler(conv)
 app.run_polling()
