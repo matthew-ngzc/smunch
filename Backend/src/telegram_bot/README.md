@@ -6,13 +6,15 @@ This bot helps users verify their Telegram accounts and interact with the SMUNCH
 
 > Run these commands from the `telegram_bot/` directory.
 
-### 1. Create a Virtual Environment
+### Option A: Manual Setup (for Linux/macOS or advanced users)
+
+#### 1. Create a Virtual Environment
 
 ```bash
 python -m venv venv
 ```
 
-### 2. Activate the Environment
+#### 2. Activate the Environment
 
 * **Windows**:
 
@@ -25,11 +27,21 @@ python -m venv venv
   source venv/bin/activate
   ```
 
-### 3. Install Required Packages
+#### 3. Install Required Packages
 
 ```bash
 pip install -r requirements.txt
 ```
+
+### Option B: Automated Setup (Windows only)
+
+Run the following file:
+
+```bash
+setup.bat
+```
+
+This will create the virtual environment and install all dependencies automatically.
 
 ---
 
@@ -37,7 +49,9 @@ pip install -r requirements.txt
 
 > These steps are for daily development or deployment.
 
-### 1. Activate the Virtual Environment
+### Option A: Manual Run (Cross-platform)
+
+#### 1. Activate the Virtual Environment
 
 * **Windows**:
 
@@ -50,21 +64,31 @@ pip install -r requirements.txt
   source venv/bin/activate
   ```
 
-### 2. Run the Bot
+#### 2. Run the Bot
 
 ```bash
 python tele_bot.py
 ```
 
-### 3. Stop the Bot
+#### 3. Stop the Bot
 
 Use `Ctrl + C` in the terminal.
 
-### 4. Deactivate the Virtual Environment
+#### 4. Deactivate the Virtual Environment
 
 ```bash
 deactivate
 ```
+
+### Option B: Quick Run (Windows only)
+
+Use the `.bat` launcher:
+
+```bash
+start_bot.bat
+```
+
+This will run the bot directly using the virtual environment's Python.
 
 ---
 
@@ -80,6 +104,8 @@ pip install <package-name>
 
 ### 2. Regenerate `requirements.txt`
 
+You can do this manually:
+
 ```bash
 # Windows
 powershell -Command "Remove-Item requirements.txt"
@@ -89,6 +115,12 @@ rm requirements.txt
 
 # Then regenerate
 pip freeze > requirements.txt
+```
+
+Or use the helper batch file (Windows only):
+
+```bash
+update_dependencies.bat
 ```
 
 ---
