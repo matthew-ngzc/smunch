@@ -11,23 +11,24 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
-function determineBaseURL(environment) {
-  if (environment === 'railway') {
-    return 'https://backend-production-cbdf.up.railway.app'
-  } 
-  if (environment === 'render') {
-    return 'https://smunch-webapp.onrender.com'
-  }
-  if (environment === 'local') {
-    return 'http://124.243.149.250:3000'
-  }
-  else {
-    return 'http://localhost:3000'
-  }
-}
+// function determineBaseURL(environment) {
+//   if (environment === 'railway') {
+//     return 'https://backend-production-cbdf.up.railway.app'
+//   } 
+//   if (environment === 'render') {
+//     return 'https://smunch-webapp.onrender.com'
+//   }
+//   if (environment === 'local') {
+//     return 'http://124.243.149.250:3000'
+//   }
+//   else {
+//     return 'http://localhost:3000'
+//   }
+// }
 
 // Automatically pick based on Vite environment variable
-const baseURL = determineBaseURL(import.meta.env.VITE_ENVIRONMENT)
+// const baseURL = determineBaseURL(import.meta.env.VITE_ENVIRONMENT)
+const baseURL = import.meta.env.VITE_BACKEND_URL
 
 const axiosInstance = axios.create({
   baseURL,
