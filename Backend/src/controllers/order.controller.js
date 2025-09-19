@@ -9,7 +9,7 @@ import {
   getOrderCountByCustomerIdAndStatusOrThrow
 } from '../models/order.model.js';
 import { getUserByIdOrThrow } from '../models/user.model.js';
-import { generatePayNowQRCode } from '../services/payment.service.js';
+import { generatePayNowQRCodeUsingSGQR } from '../services/payment.service.js';
 import { canUpdatePaymentStatus, isCorrectUser } from '../utils/auth.utils.js';
 
 
@@ -214,7 +214,7 @@ export const createOrder = async (req, res, next) => {
     const amountDollars = (Number(total_amount_cents) / 100).toFixed(2);
 
     //generate the PayNow QR code
-    const {qrCodeDataURL, paymentReference, paynowNumber} = await generatePayNowQRCode({
+    const {qrCodeDataURL, paymentReference, paynowNumber} = await generatePayNowQRCodeUsingSGQR({
       amount: amountDollars,
       orderId: order_id,
     });
