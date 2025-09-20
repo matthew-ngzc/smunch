@@ -22,12 +22,26 @@ if (!process.env.SMUNCH_EMAIL || !process.env.SMUNCH_APP_PASS) {
 }
 
 export const transporter = nodemailer.createTransport({
-  service: 'Gmail', // or your SMTP provider
+  host: 'smtp.gmail.com',
+  port: 465,          // or 587 with secure:false
+  secure: true,       // true for 465, false for 587
   auth: {
     user: process.env.SMUNCH_EMAIL,
-    pass: process.env.SMUNCH_APP_PASS,
+    pass: process.env.SMUNCH_APP_PASS, // Google App Password (NOT your normal password)
   },
+  // optional hardening:
+  connectionTimeout: 15000, // 15s
+  greetingTimeout: 10000,
+  socketTimeout: 20000
 });
+
+// export const transporter = nodemailer.createTransport({
+//   service: 'Gmail', // or your SMTP provider
+//   auth: {
+//     user: process.env.SMUNCH_EMAIL,
+//     pass: process.env.SMUNCH_APP_PASS,
+//   },
+// });
 
 // 3. Run verification test once when module is loaded
 transporter.verify((error, success) => {
