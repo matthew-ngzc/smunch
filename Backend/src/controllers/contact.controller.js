@@ -1,4 +1,4 @@
-import { transporter } from '../utils/mailer.js';
+import { transporter } from '../utils/gmailTransporter.js';
 
 /**
  * POST /api/contact

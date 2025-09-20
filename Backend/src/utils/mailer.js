@@ -1,5 +1,4 @@
 //Using Gmail account
-import nodemailer from 'nodemailer';
 import dotenv from "dotenv";
 import { 
   getPasswordChangeHtml,
@@ -8,10 +7,9 @@ import {
   getReminderEmailHtmlOneDayBefore,
   getTestEmailHtml,
   getVerificationEmailHtml, getResetPasswordHtml } from './emailHtmls.js';
+import { transporter, SMUNCH_FROM_ADDRESS } from './gmailTransporter.js';
 
 dotenv.config();
-
-const SMUNCH_FROM_ADDRESS = '"SMUNCH" <smunch.dev@gmail.com>';
 
 // 1. ENV validation — log and fail fast if missing
 if (!process.env.SMUNCH_EMAIL || !process.env.SMUNCH_APP_PASS) {
@@ -21,19 +19,20 @@ if (!process.env.SMUNCH_EMAIL || !process.env.SMUNCH_APP_PASS) {
   throw new Error('Missing SMUNCH_EMAIL or SMUNCH_APP_PASS');
 }
 
-export const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,          // or 587 with secure:false
-  secure: true,       // true for 465, false for 587
-  auth: {
-    user: process.env.SMUNCH_EMAIL,
-    pass: process.env.SMUNCH_APP_PASS, // Google App Password (NOT your normal password)
-  },
-  // optional hardening:
-  connectionTimeout: 15000, // 15s
-  greetingTimeout: 10000,
-  socketTimeout: 20000
-});
+// * changing because render free block SMTP ports, so need to use gmail api instead
+// export const transporter = nodemailer.createTransport({
+//   host: 'smtp.gmail.com',
+//   port: 465,          // or 587 with secure:false
+//   secure: true,       // true for 465, false for 587
+//   auth: {
+//     user: process.env.SMUNCH_EMAIL,
+//     pass: process.env.SMUNCH_APP_PASS, // Google App Password (NOT your normal password)
+//   },
+//   // optional hardening:
+//   connectionTimeout: 15000, // 15s
+//   greetingTimeout: 10000,
+//   socketTimeout: 20000
+// });
 
 // export const transporter = nodemailer.createTransport({
 //   service: 'Gmail', // or your SMTP provider
@@ -44,13 +43,13 @@ export const transporter = nodemailer.createTransport({
 // });
 
 // 3. Run verification test once when module is loaded
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('[MAILER VERIFY FAILED]', error);
-  } else {
-    console.log('[MAILER] Transporter ready to send emails.');
-  }
-});
+// transporter.verify((error, success) => {
+//   if (error) {
+//     console.error('[MAILER VERIFY FAILED]', error);
+//   } else {
+//     console.log('[MAILER] Transporter ready to send emails.');
+//   }
+// });
 
 /**
  * Sends a testing email, meant for devs
