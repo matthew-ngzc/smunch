@@ -35,7 +35,7 @@ export async function runOneDayBeforeReminders() {
       console.log(`[Reminder Email 1-Day-Before] email sent succesfully for Order ${order.order_id}`);
     } catch (err) {
       console.error(`[Reminder Email 1-Day-Before] Failed for Order ${order.order_id}: ${err.message}`);
-      next(err);
+      throw err;
     }
   }
 
@@ -66,7 +66,7 @@ export async function runFinalCallReminders(slot) {
       await updateOrderReminderTimestamp(order.order_id, 'reminder_40_mins_before_sent_at');
     } catch (err) {
       console.error(`[Reminder Email Final Call] Failed for Order ${order.order_id}: ${err.message}`);
-      next(err);
+      throw err;
     }
   }
 
