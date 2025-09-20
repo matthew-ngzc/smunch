@@ -170,12 +170,12 @@ export async function sendReceiptEmail(to, order) {
  * @param {object} order - Order object including order_id, delivery_time, room, etc.
  * @returns {Promise<void>}
  */
-export async function sendReminderEmailOneDayBefore(user, order) {
-  const html = getReminderEmailHtmlOneDayBefore(order, user.name || 'Smunchie');
+export async function sendReminderEmailOneDayBefore(email, name, order) {
+  const html = getReminderEmailHtmlOneDayBefore(order, name || 'Smunchie');
 
   return transporter.sendMail({
     from: SMUNCH_FROM_ADDRESS,
-    to: user.email,
+    to: email,
     subject: '⏳ Reminder: Complete Your SMUNCH Order',
     html
   });

@@ -1,5 +1,5 @@
 import express from 'express';
-import { addMerchant, assignRunnersToOrders, getPendingPayments, testEmail, verifyPayments } from '../controllers/admin.controller.js';
+import { addMerchant, assignRunnersToOrders, getPendingPayments, testEmail, triggerFinalCallCron, triggerOneDayBeforeCron, verifyPayments } from '../controllers/admin.controller.js';
 import { requireRole } from '../middlewares/role.middleware.js';
 import { authenticateToken } from '../middlewares/auth.middleware.js';
 
@@ -38,5 +38,9 @@ router.post('/payments/verify', authenticateToken, requireRole('admin'), verifyP
 
 
 router.post('/orders/assign-runners', authenticateToken, requireRole('admin'), assignRunnersToOrders)
+
+// Testing the cron jobs manually
+router.post('/cron/reminders/test-final-call', authenticateToken, requireRole('admin'), triggerFinalCallCron);
+router.post('/cron/reminders/test-final-call', authenticateToken, requireRole('admin'), triggerOneDayBeforeCron);
 
 export default router;

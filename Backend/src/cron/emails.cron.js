@@ -23,10 +23,14 @@ export async function runOneDayBeforeReminders() {
 
   for (const order of orders) {
     try {
-      const user = await getUserByIdOrThrow(order.customer_id);
-      if (!user.email) continue;
+      const email = order.customer?.email;
+      const name = order.customer?.name;
+      if (!email) {
+        console.log(`[CRON] ERROR: no email for Order ${order.order_id}`)
+        continue;
+      }
 
-      await sendReminderEmailOneDayBefore(user, order);
+      await sendReminderEmailOneDayBefore(email, name, order);
       await updateOrderReminderTimestamp(order.order_id, 'reminder_1_day_before_sent_at');
       console.log(`[Reminder Email 1-Day-Before] email sent succesfully for Order ${order.order_id}`);
     } catch (err) {
@@ -51,12 +55,13 @@ export async function runFinalCallReminders(slot) {
 
   for (const order of orders) {
     try {
-      const user = await getUserByIdOrThrow(order.customer_id, 'user_id, name, email');
-      if (!user.email) {
-        console.log('[CRON] ERROR: no email for ')
+      const email = order.customer?.email;
+      const name = order.customer?.name;
+      if (!email) {
+        console.log(`[CRON] ERROR: no email for Order ${order.order_id}`)
         continue;
       }
-      await sendReminderEmailFinalCall(user.email, user.name, order);
+      await sendReminderEmailFinalCall(email, name, order);
       await updateOrderReminderTimestamp(order.order_id, 'reminder_40_mins_before_sent_at');
     } catch (err) {
       console.error(`[Reminder Email Final Call] Failed for Order ${order.order_id}: ${err.message}`);

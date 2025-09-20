@@ -13,10 +13,18 @@ import {
 import { getUserByIdOrThrow } from "../models/user.model.js";
 import { buildPendingTransactions } from "../services/payment.service.js";
 import { sendReceiptEmail, sendTestEmail } from "../utils/mailer.js";
-import { buildMerchantList, extractItems, extractRoomKey } from "../utils/order.utils.js";
+import {
+  buildMerchantList,
+  extractItems,
+  extractRoomKey,
+} from "../utils/order.utils.js";
 import { clusterOrdersOptimal } from "../utils/orderGrouping.utils.js";
 import { formatCentsToDollars } from "../utils/payment.utils.js";
 import { shuffleArray } from "../utils/shuffleArray.js";
+import {
+  runFinalCallReminders,
+  runOneDayBeforeReminders,
+} from "../cron/emails.cron.js";
 
 /**
  * @swagger
@@ -422,12 +430,12 @@ export const assignRunnersToOrders = async (req, res, next) => {
     const validSlots = Object.keys(DELIVERY_TIMINGS);
     if (!slot || !validSlots.includes(slot)) {
       return res.status(400).json({
-        message: `Invalid slot. Allowed: ${validSlots.join(', ')}`
+        message: `Invalid slot. Allowed: ${validSlots.join(", ")}`,
       });
     }
     if (!Array.isArray(runner_ids) || runner_ids.length === 0) {
       return res.status(400).json({
-        message: 'runner_ids must be a non-empty array'
+        message: "runner_ids must be a non-empty array",
       });
     }
 
@@ -435,8 +443,8 @@ export const assignRunnersToOrders = async (req, res, next) => {
     const orders = await getFullOrdersForTodayBySlot(slot);
     if (!orders.length) {
       return res.status(200).json({
-        message: 'No orders found for this slot',
-        assignments: []
+        message: "No orders found for this slot",
+        assignments: [],
       });
     }
 
@@ -450,7 +458,7 @@ export const assignRunnersToOrders = async (req, res, next) => {
       // a) pair each order with one runner
       for (let i = 0; i < orders.length; i++) {
         const runnerId = shuffledRunners[i];
-        const order    = orders[i];
+        const order = orders[i];
 
         await assignRunnerToOrders([order.order_id], runnerId);
         await updateOrderStatusBulk([order.order_id], ORDER_STATUSES[2]);
@@ -459,18 +467,22 @@ export const assignRunnersToOrders = async (req, res, next) => {
           runner_id: runnerId,
           overview: {
             total_orders: 1,
-            total_amount_dollars: formatCentsToDollars(order.total_amount_cents)
+            total_amount_dollars: formatCentsToDollars(
+              order.total_amount_cents
+            ),
           },
           merchants: buildMerchantList([order]),
           route: [extractRoomKey(order)],
-          orders: [{
-            order_id:      order.order_id,
-            building:      order.building,
-            room_type:     order.room_type,
-            room_number:   order.room_number,
-            delivery_time: order.delivery_time,
-            items:         extractItems(order)
-          }]
+          orders: [
+            {
+              order_id: order.order_id,
+              building: order.building,
+              room_type: order.room_type,
+              room_number: order.room_number,
+              delivery_time: order.delivery_time,
+              items: extractItems(order),
+            },
+          ],
         });
       }
 
@@ -478,16 +490,16 @@ export const assignRunnersToOrders = async (req, res, next) => {
       for (let i = orders.length; i < shuffledRunners.length; i++) {
         result.push({
           runner_id: shuffledRunners[i],
-          overview: { total_orders: 0, total_amount_dollars: '0.00' },
+          overview: { total_orders: 0, total_amount_dollars: "0.00" },
           merchants: [],
           route: [],
-          orders: []
+          orders: [],
         });
       }
 
       return res
         .status(200)
-        .json({ message: 'Runner assignment complete', assignments: result });
+        .json({ message: "Runner assignment complete", assignments: result });
     }
 
     /* 5️⃣  Case B: orders > runners  ------------------------------------ */
@@ -495,8 +507,8 @@ export const assignRunnersToOrders = async (req, res, next) => {
 
     for (let i = 0; i < clusters.length; i++) {
       const runnerId = shuffledRunners[i];
-      const cluster  = clusters[i];
-      const orderIds = cluster.orders.map(o => o.order_id);
+      const cluster = clusters[i];
+      const orderIds = cluster.orders.map((o) => o.order_id);
 
       await assignRunnerToOrders(orderIds, runnerId);
       await updateOrderStatusBulk(orderIds, ORDER_STATUSES[2]);
@@ -507,25 +519,170 @@ export const assignRunnersToOrders = async (req, res, next) => {
           total_orders: cluster.orders.length,
           total_amount_dollars: formatCentsToDollars(
             cluster.orders.reduce((s, o) => s + o.total_amount_cents, 0)
-          )
+          ),
         },
         merchants: buildMerchantList(cluster.orders),
         route: cluster.route,
-        orders: cluster.orders.map(o => ({
-          order_id:      o.order_id,
-          building:      o.building,
-          room_type:     o.room_type,
-          room_number:   o.room_number,
+        orders: cluster.orders.map((o) => ({
+          order_id: o.order_id,
+          building: o.building,
+          room_type: o.room_type,
+          room_number: o.room_number,
           delivery_time: o.delivery_time,
-          items:         extractItems(o)
-        }))
+          items: extractItems(o),
+        })),
       });
     }
 
     /* 6️⃣  Respond ------------------------------------------------------- */
     res
       .status(200)
-      .json({ message: 'Runner assignment complete', assignments: result });
+      .json({ message: "Runner assignment complete", assignments: result });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+/**
+ * @swagger
+ * /api/admin/cron/reminders/test-final-call:
+ *   post:
+ *     summary: Trigger the 40-minute final-call reminder cron (admin only)
+ *     description: |
+ *       Invokes the cron logic that sends the **final-call reminder emails** for a specific delivery slot.
+ *       
+ *       Use this for manual testing in staging/dev. In production this is normally run by a scheduler.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [slot]
+ *             properties:
+ *               slot:
+ *                 type: string
+ *                 description: Delivery timing slot to process
+ *                 enum: [ "08:15", "12:00", "15:30", "19:00" ]
+ *                 example: "12:00"
+ *     responses:
+ *       200:
+ *         description: Final-call cron executed
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Final call reminder cron executed for slot 12:00"
+ *       400:
+ *         description: Missing or invalid request
+ *         content:
+ *           application/json:
+ *             examples:
+ *               missing_slot:
+ *                 summary: Slot not provided
+ *                 value:
+ *                   message: 'Missing slot (e.g. "12:00")'
+ *       401:
+ *         description: Unauthorized — missing/invalid JWT
+ *       403:
+ *         description: Forbidden — admin role required
+ *       500:
+ *         description: Server error while running the cron
+ */
+/**
+ * POST /api/admin/cron/reminders/test-final-call
+ * Body: { slot: "12:00", dryRun?: boolean }
+ * Requires: Admin JWT
+ *
+ * Simulates the 40-min final-call reminder cron and returns a summary.
+ */
+export const triggerFinalCallCron = async (req, res, next) => {
+  try {
+    const { slot } = req.body;
+    if (!slot) {
+      return res.status(400).json({ message: 'Missing slot (e.g. "12:00")' });
+    }
+
+    await runFinalCallReminders(slot);
+
+    res.json({
+      message: `Final call reminder cron executed for slot ${slot}`,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * @swagger
+ * /api/admin/cron/reminders/test-one-day-before:
+ *   post:
+ *     summary: Trigger the 1-day-before reminder cron (admin only)
+ *     description: |
+ *       Invokes the cron logic that sends the **1-day-before reminder emails** for orders scheduled for the next day.
+ *       
+ *       Use this for manual testing in staging/dev. In production this is normally run by a nightly scheduler.
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [slot]
+ *             properties:
+ *               slot:
+ *                 type: string
+ *                 description: Delivery timing slot to process for the next day
+ *                 enum: [ "08:15", "12:00", "15:30", "19:00" ]
+ *                 example: "12:00"
+ *     responses:
+ *       200:
+ *         description: One-day-before cron executed
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "1-day-before reminder cron executed for slot 12:00"
+ *       400:
+ *         description: Missing or invalid request
+ *         content:
+ *           application/json:
+ *             examples:
+ *               missing_slot:
+ *                 summary: Slot not provided
+ *                 value:
+ *                   message: 'Missing slot (e.g. "12:00")'
+ *       401:
+ *         description: Unauthorized — missing/invalid JWT
+ *       403:
+ *         description: Forbidden — admin role required
+ *       500:
+ *         description: Server error while running the cron
+ */
+/**
+ * POST /api/admin/cron/reminders/test-one-day-before
+ * Body: { slot: "12:00" }
+ * Requires: Admin JWT
+ *
+ * Simulates the 1-day-before reminder cron and returns a summary.
+ */
+export const triggerOneDayBeforeCron = async (req, res, next) => {
+  try {
+    const { slot } = req.body;
+    if (!slot) {
+      return res.status(400).json({ message: 'Missing slot (e.g. "12:00")' });
+    }
+
+    await runOneDayBeforeReminders(slot);
+
+    res.json({
+      message: `1-day-before reminder cron executed for slot ${slot}`,
+    });
   } catch (err) {
     next(err);
   }

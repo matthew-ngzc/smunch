@@ -411,7 +411,7 @@ export async function getOrdersForOneDayBeforeReminder(deliveryDateISO) {
       building,
       room_type,
       room_number,
-      users (
+      customer:users!orders_customer_id_fkey (
         email
       )
     `
@@ -461,7 +461,7 @@ export async function getOrdersForFinalCallReminderBySlot(slot) {
       room_type,
       room_number,
       customer_id,
-      users (
+      customer:users!orders_customer_id_fkey (
         email,
         name
       )
