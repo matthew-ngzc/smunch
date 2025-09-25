@@ -5,7 +5,7 @@ import { runOneDayBeforeReminders, runFinalCallReminders } from './emails.cron.j
 cron.schedule('0 21 * * *', async () => {
   console.log('[CRON] Running: One-day-before reminders (9PM)');
   await runOneDayBeforeReminders();
-});
+}, { timezone: 'Asia/Singapore' });
 
 //* TESTING
 // cron.schedule('*/5 * * * * *', async () => {
@@ -30,7 +30,7 @@ cron.schedule('35 7 * * *', async () => {
   } catch (err) {
     console.error('[CRON] [ERROR]', err.message, err.stack);
   }
-});
+}, { timezone: 'Asia/Singapore' });
 // 12.00pm
 cron.schedule('20 11 * * *', async () => {
   try {
@@ -38,7 +38,7 @@ cron.schedule('20 11 * * *', async () => {
   } catch (err) {
     console.error('[CRON] [ERROR]', err.message, err.stack);
   }
-});
+}, { timezone: 'Asia/Singapore' });
 // 3.30pm
 cron.schedule('50 14 * * *', async () => {
   try {
@@ -46,7 +46,7 @@ cron.schedule('50 14 * * *', async () => {
   } catch (err) {
     console.error('[CRON] [ERROR]', err.message, err.stack);
   }
-});
+}, { timezone: 'Asia/Singapore' });
 // 7.00pm
 cron.schedule('20 18 * * *', async () => {
   try {
@@ -54,7 +54,7 @@ cron.schedule('20 18 * * *', async () => {
   } catch (err) {
     console.error('[CRON] [ERROR]', err.message, err.stack);
   }
-});
+}, { timezone: 'Asia/Singapore' });
 
 //* TESTING
 // cron.schedule('*/5 * * * * *', async () => {
