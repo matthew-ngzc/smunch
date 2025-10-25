@@ -41,36 +41,49 @@ npm install
 
 ### 3. Environment Configuration
 
-The .env has been uploaded as a .txt file in devpost. Please refer to "Backend and Frontend ENV variables.txt" file. 
-Create a `.env` file in the Backend directory with the following variables:
+Create a `.env` file in the Backend directory using the `.env.example` as a template. It should look like this:
 
 ```env
-# Server Configuration
-PORT=3000
-NODE_ENV=development
-FRONTEND_URL=http://localhost:5173
-
-# Supabase Configuration
+# Database
 SUPABASE_URL=your_supabase_url
 SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
-# JWT Configuration
+# Turnstile (CAPTCHA)
+TURNSTILE_SECRET_KEY=your_turnstile_secret_key
+
+# Redis
+REDIS_URL=your_redis_url
 JWT_SECRET=your_jwt_secret_key
 
-# Email Configuration (Resend)
-RESEND_API_KEY=your_resend_api_key
+# Emails
+SMUNCH_NAME=SMUNCH
+SMUNCH_EMAIL=your_email
+# use this if using nodemailer
+SMUNCH_APP_PASS=your_app_password
 
-# ImageKit Configuration
+# use these if using gmail API
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REFRESH_TOKEN=your_google_refresh_token
+
+# URLs
+BACKEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:5173
+
+# Payment
+PAYNOW_NUMBER=your_phone_number
+
+# DEV
+NODE_ENV=development
+
 IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
 IMAGEKIT_PRIVATE_KEY=your_imagekit_private_key
 IMAGEKIT_URL_ENDPOINT=your_imagekit_url_endpoint
 
-# Redis Configuration (Optional)
-REDIS_URL=your_redis_url
-
-# Backend URL for Swagger
-BACKEND_URL=http://localhost:3000
+# telegram bot 
+BOT_TOKEN=your_bot_token
+BOT_USERNAME=your_bot_username
 ```
 
 **Environment Variable Descriptions:**
@@ -80,13 +93,32 @@ BACKEND_URL=http://localhost:3000
 - `SUPABASE_URL`: Your Supabase project URL
 - `SUPABASE_ANON_KEY`: Your Supabase anonymous key
 - `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key
+- `REDIS_URL`: Redis connection URL
 - `JWT_SECRET`: Secret key for JWT token generation
-- `RESEND_API_KEY`: API key for email services
+- `SMUNCH_NAME`: Display/branding name
+- `SMUNCH_EMAIL` — The sender Gmail address used by Nodemailer auth
+- `SMUNCH_APP_PASS` — Gmail App Password used by Nodemailer
 - `IMAGEKIT_PUBLIC_KEY`: ImageKit public key for image uploads
 - `IMAGEKIT_PRIVATE_KEY`: ImageKit private key for image processing
 - `IMAGEKIT_URL_ENDPOINT`: ImageKit URL endpoint
-- `REDIS_URL`: Redis connection URL (optional)
+- `GOOGLE_CLIENT_ID` — OAuth client ID (used by your token-fetch script / Gmail API flow)
+- `GOOGLE_CLIENT_SECRET` — OAuth client secret
+- `GOOGLE_REFRESH_TOKEN` — Long-lived refresh token to obtain access tokens without re-auth
 - `BACKEND_URL`: Backend URL for Swagger documentation
+
+**Using Gmail API to send emails instead of nodmailer:**
+- the reason for using this is because somtimes SMTP ports are blocked (e.g. render free tier)
+- go to the google cloud platform
+- activate gmail API
+- create the credentials and store them (google client id, client secret)
+- run the script below to generate the refreh token
+
+**Updating Refresh Token:**
+- once in awhile if using gmail API to send emails, the refresh token will expire. You will need to regenerate it.
+- run the command below in the terminal in the "Backend" folder and follow the instructions given
+```bash
+npm run refresh
+```
 
 ### 4. Start Development Server
 
@@ -94,12 +126,12 @@ BACKEND_URL=http://localhost:3000
 npm run dev
 ```
 
-The server will start on `http://localhost:3000`
+The server will start on `http://localhost:3000` or `${BACKEND_URL}/api-docs`
 
 ### 5. Access API Documentation
 
 Once the server is running, you can access the Swagger API documentation at:
-`http://localhost:3000/api-docs`
+`http://${BACKEND_URL}/api-docs`
 
 ## Project Structure
 
