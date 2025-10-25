@@ -72,6 +72,10 @@ export async function generatePayNowQRCodeUsingSGQR({amount, orderId}){
       }
     });
 
+    if (!response.headers['content-type']?.includes('image/png')) {
+      throw new Error(`Non-image response: ${response.headers['content-type']}`);
+    }
+
     // convert image to base64 to send to frontend
     const base64Image = Buffer.from(response.data).toString('base64');
     const qrCodeDataURL = `data:image/png;base64,${base64Image}`;
