@@ -157,7 +157,7 @@ Backend/
 
 ## Cloud Deployment
 
-The backend is deployed using Render. The live application can be accessed at: https://smunch-webapp.onrender.com
+The backend is deployed using Render. The live application can be accessed at: https://smunch.onrender.com
 
 ## Dependencies
 
