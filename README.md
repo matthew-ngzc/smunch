@@ -1,5 +1,3 @@
-# WHEN READY TO RESTART CICD, rename the github folder into .github, and modify the workflow if needed
-
 # SMUNCH
 
 **SMUNCH** is a web application designed for students at Singapore Management University (SMU) to solve a common issue: getting food conveniently between or during classes. By connecting students with peers acting as food runners, SMUNCH enables grouped food ordering based on class schedule and delivery directly within SMU buildings.
